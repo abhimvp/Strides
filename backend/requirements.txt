@@ -90,6 +90,7 @@ pymongo==4.13.1
     # via motor
 python-dotenv==1.1.0
     # via
+    #   strides-backend (pyproject.toml)
     #   pydantic-settings
     #   uvicorn
 python-jose==3.5.0

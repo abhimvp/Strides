@@ -6,6 +6,7 @@ dependencies = [
     "fastapi[all]",
     "motor",
     "passlib[bcrypt]",
+    "python-dotenv>=1.1.0",
     "python-jose",
     "requests>=2.32.4",
 ]

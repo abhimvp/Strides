@@ -734,6 +734,7 @@ dependencies = [
     { name = "fastapi", extra = ["all"] },
     { name = "motor" },
     { name = "passlib", extra = ["bcrypt"] },
+    { name = "python-dotenv" },
     { name = "python-jose" },
     { name = "requests" },
 ]
@@ -743,6 +744,7 @@ requires-dist = [
     { name = "fastapi", extras = ["all"] },
     { name = "motor" },
     { name = "passlib", extras = ["bcrypt"] },
+    { name = "python-dotenv", specifier = ">=1.1.0" },
     { name = "python-jose" },
     { name = "requests", specifier = ">=2.32.4" },
 ]

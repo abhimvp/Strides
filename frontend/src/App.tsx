@@ -8,8 +8,10 @@ import type { Task, TasksByCategory } from "./types";
 export default function App() {
   const [tasks, setTasks] = useState<TasksByCategory>(initialTasks);
   const weekDays = getWeekDays();
+  console.log("Week Days:", weekDays); // Debugging line
 
   const toggleTask = (category: string, taskId: number, dayIndex: number) => {
+    console.log(`Toggling task ${taskId} in category ${category} for day ${dayIndex}`); // Debugging line
     const newTasks = { ...tasks };
     const taskToUpdate = newTasks[category].find(
       (task: Task) => task.id === taskId

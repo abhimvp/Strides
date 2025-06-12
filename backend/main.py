@@ -3,6 +3,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from utils.database import client  # Import the mongodb client
+from routes import auth
 
 
 # --- Lifespan Manager for Database Connection ---
@@ -43,6 +44,11 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# --- Include API Routers ---
+app.include_router(
+    auth.router, prefix="/api/auth", tags=["Authentication"]
+)  # <--- INCLUDE THE ROUTER
 
 
 # --- API Routes ---

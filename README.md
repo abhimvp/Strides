@@ -74,6 +74,34 @@ export default {
 
 ## Backend
 
+### Features
+
+#### System for user sign-up and login
+
+- Implementing User Authentication : creating the models, utility functions, and API routes needed for user signup and login.
+- `Defining the Data Models`:
+
+  - We need to `define` what a "User" looks like in our application. We'll use `Pydantic` for this, which integrates perfectly with FastAPI.
+  - create a new file named user_models.py. Explanation:
+    - UserBase: The basic information about a user.
+    - UserCreate: The data we expect to receive from a user when they sign up (email and a plain text password).
+    - UserInDB: The data as it is stored in our database (with a hashed password). We use Field(alias="\_id") because MongoDB uses `_id` for its primary key.
+    - Token & TokenData: Models for handling the JWT authentication tokens.
+
+- `Creating Security and Token Utilities`:
+
+  - We need helper functions to handle password hashing and JWT creation.
+  - create a new file named security.py
+    - Security Note: This code generates a default SECRET_KEY. For a real application, you should generate a strong, random key and store it in your .env file. You can generate one with openssl rand -hex 32 in your terminal.
+
+- `Building the Authentication API Routes`:
+
+  - Now we'll create the actual `/signup` and `/login` endpoints.In `routes/` folder, create a new file named auth.py
+
+- `Connecting the Routes to the Main App`:
+  - The final step is to tell our main FastAPI application to use these new routes.Import the auth router and include it in the app(main.py)
+  - We add a `prefix="/api/auth"` so all routes in this file will start with that path (e.g., `/api/auth/signup`). The tags parameter groups them nicely in the API docs.
+
 ### Notes-Backend
 
 - Setting Up "Strides" Backend with FastAPI(Python framework).

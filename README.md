@@ -4,7 +4,7 @@ Implies making consistent, noticeable progress.
 
 ## Frontend
 
-### Notes
+### Notes-Frontend
 
 - Setting Up Your React(Typescript) Frontend with Vite and Tailwind CSS.
 - Create a New React Project with Vite : `pnpm create vite`
@@ -71,3 +71,100 @@ export default {
     - Tailwind CSS Official Documentation: The docs have an amazing search feature. If you search for "margin" or "color," it will take you right to the page showing all the available classes. It's your ultimate reference.
       <https://tailwindcss.com/docs>
     - Tailwind CSS IntelliSense Extension for VS Code: This is a must-have. When you install this extension, it will autocomplete class names for you and, more importantly, when you hover your mouse over a class name in your code, it will show you the exact CSS it produces!
+
+## Backend
+
+### Notes-Backend
+
+- Setting Up "Strides" Backend with FastAPI(Python framework).
+- Navigate to the root of your main project directory, Strides, which currently contains your `frontend` folder
+- Create the Backend Project Folder.(`mkdir backend` & `cd backend`)
+- Create and Activate a Python Virtual Environment with `uv`:
+  - `Remember` : A virtual environment is a private, isolated space for your Python project's dependencies.
+  - **uv** will automatically create a **.venv** folder, which is the standard name.
+
+```bash
+abhis@Tinku MINGW64 ~/Desktop/Strides/backend (main)
+$ uv venv
+Using CPython 3.12.0
+Creating virtual environment at: .venv
+Activate with: source .venv/Scripts/activate
+
+abhis@Tinku MINGW64 ~/Desktop/Strides/backend (main)
+$ source .venv/Scripts/activate
+(backend)
+abhis@Tinku MINGW64 ~/Desktop/Strides/backend (main)
+$ #  virtual environment is active.
+```
+
+- Define Your Project Dependencies:
+  - This is the most important step for a professional setup. We will define our project's dependencies in a `pyproject.toml` file.
+  - In the root of your backend folder, create a new file named pyproject.toml , paste the code.
+  - uv will create a virtual environment and uv.lock file in the root of your project the first time you run a project command, i.e., uv run, uv sync, or uv lock.
+
+```bash
+(backend)
+abhis@Tinku MINGW64 ~/Desktop/Strides/backend (main)
+$ uv sync
+warning: No `requires-python` value found in the workspace. Defaulting to `>=3.12`.
+Resolved 51 packages in 347ms
+Audited 49 packages in 0.56ms
+```
+
+- You can add dependencies to your pyproject.toml with the uv add command. This will also update the lockfile and project environment:`uv add requests`
+- You can also specify version constraints or alternative sources:
+
+```bash
+# Specify a version constraint
+uv add 'requests==2.31.0'
+
+# Add a git dependency
+uv add git+https://github.com/psf/requests
+```
+
+- If you're migrating from a requirements.txt file, you can use uv add with the -r flag to add all dependencies from the file: Add all dependencies from `requirements.txt` : `uv add -r requirements.txt -c constraints.txt`
+- To remove a package, you can use uv remove: `uv remove requests`
+- To upgrade a package, run uv lock with the --upgrade-package flag:`uv lock --upgrade-package requests`
+
+- Install Project Dependencies with uv
+
+  - uv pip install "fastapi[all]" motor "passlib[bcrypt]" python-jose
+    - `fastapi[all]`: Installs FastAPI and all its optional dependencies, including uvicorn (our web server).
+    - `motor`: The official, asynchronous driver for connecting our FastAPI app to MongoDB.
+    - `passlib[bcrypt]`: A library for securely hashing and verifying passwords.
+    - `python-jose`: A library for creating, signing, and verifying JWTs (JSON Web Tokens) for user authentication.
+
+- `requirements.txt`: This file is a "lock file." It's generated from your pyproject.toml and lists the exact versions of all your direct dependencies and all of their sub-dependencies. This guarantees that every developer and every server has the identical environment.
+- Compile the lock file. This command reads pyproject.toml, resolves all the dependencies, and writes their exact versions into requirements.txt
+  - `uv pip compile pyproject.toml -o requirements.txt`
+  - Sync your virtual environment. This command installs all the packages from the requirements.txt file into your virtual environment.
+    - `uv pip sync requirements.txt`
+
+```bash
+# whenever we add new libraries , we need to run this command as well
+uv pip compile pyproject.toml -o requirements.txt
+```
+
+- Create the Initial Backend File Structure: Let's create a few files and folders inside the backend directory to keep our code organized from the start.
+
+  - Create a main file for our application - `main.py`.
+  - Create folders for our different code modules:
+    - `models/` (for Pydantic data models)
+    - `routes/` (for our API route definitions)
+    - `utils/` (for helper functions, like password hashing)
+
+- Add Boilerplate Code to main.py ( note : This code sets up a basic FastAPI app and, most importantly, configures CORS (Cross-Origin Resource Sharing). This middleware is what will permit your React app (running on localhost:5173) to make requests to your backend (which will run on a different port, like localhost:8000))
+
+- Run the Backend Development Server:
+
+  - From the backend directory, run the following command:
+    - `uvicorn main:app --reload`
+      - `main`: Refers to the main.py file.
+      - `app`: Refers to the app = FastAPI() object inside that file.
+      - `--reload`: Tells the server to automatically restart whenever you save changes to your code.
+    - Your terminal will show that the server is running on <http://127.0.0.1:8000>
+
+- Verify and See the Magic:
+  - Open your web browser and go to <http://127.0.0.1:8000>. You should see the JSON message: {"message":"Strides backend is running!"} - `Yaaasssss`
+  - Now, go to <http://127.0.0.1:8000/docs>. You will see the automatic, interactive API documentation generated by FastAPI. This is one of its most powerful features and will be incredibly useful as we build out our routes.
+  - `You now have a fully functional backend server set up and ready for us to build our authentication and task management logic.`

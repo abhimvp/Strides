@@ -1,0 +1,11 @@
+[project]
+name = "strides-backend"
+version = "0.1.0"
+requires-python = ">=3.12"
+dependencies = [
+    "fastapi[all]",
+    "motor",
+    "passlib[bcrypt]",
+    "python-jose",
+    "requests>=2.32.4",
+]

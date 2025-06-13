@@ -4,7 +4,7 @@ import { getWeekDays } from "../utils/date";
 import { initialTasks } from "../data/mockTasks";
 import { Header } from "../components/Header";
 import { TaskList } from "../components/TaskList";
-import { useAuth } from "../context/AuthContext";
+import { useAuth } from "../hooks/useAuth";
 
 export const Dashboard = () => {
   const [tasks, setTasks] = useState<TasksByCategory>(initialTasks);

@@ -1,12 +1,5 @@
-import React, {
-  createContext,
-  useState,
-  useContext,
-  useEffect,
-  ReactNode,
-} from "react";
+import React, { createContext, useState, useEffect, ReactNode } from "react";
 import { loginUser } from "../services/authService";
-import { UserCreate } from "../types";
 
 interface AuthContextType {
   isAuthenticated: boolean;
@@ -15,11 +8,13 @@ interface AuthContextType {
   logout: () => void;
 }
 
-const AuthContext = createContext<AuthContextType | undefined>(undefined);
+export const AuthContext = createContext<AuthContextType | undefined>(
+  undefined
+);
 
-export const AuthProvider = ({ children }: { children: ReactNode }) => {
-//   console.log("AuthProvider initialized");
-//   console.log(" localSTorage : ", localStorage); // TBD
+export default function AuthProvider({ children }: { children: ReactNode }) {
+  //   console.log("AuthProvider initialized");
+  //   console.log(" localSTorage : ", localStorage); // TBD
   const [token, setToken] = useState<string | null>(
     localStorage.getItem("token")
   );
@@ -56,12 +51,4 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       {children}
     </AuthContext.Provider>
   );
-};
-
-export const useAuth = () => {
-  const context = useContext(AuthContext);
-  if (context === undefined) {
-    throw new Error("useAuth must be used within an AuthProvider");
-  }
-  return context;
-};
+}

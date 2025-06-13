@@ -45,6 +45,22 @@ Implies making consistent, noticeable progress.
   - A new file for the Custom Hook (src/hooks/useAuth.ts). Its only job is to provide a clean way for other components to access that state.
 - This makes our code cleaner, easier to understand, and fully compatible with Vite's Fast Refresh feature, leading to a smoother development experience.
 
+#### Tasks - frontend
+
+- We'll be modifying the frontend dashboard to fetch real data from the backend TASKS API we just built, making the application fully dynamic and persistent.
+- create a new API service for tasks, setting up an axios interceptor for clean authentication, and updating the Dashboard page to handle live data, including the special case for new users.
+- `Integrating the Live Tasks API into the Frontend:` steps needed to connect your React dashboard to the live backend API for fetching and updating user-specific tasks.
+- `Create an API Client with Auth Interceptors`: To avoid manually adding the authentication token to every API request, we'll create a central axios instance that automatically includes it. This is a very professional and clean pattern.
+  - In src/services/ folder, create a new file named `api.ts`
+- `Create a Task Service`: let's create a dedicated service for all task-related API calls, using our new API client.
+  - In src/services/ folder, create a new file named `taskService.ts`
+- `Update Frontend Types`: Our frontend types should match the backend Pydantic models for consistency.The id field on UserTasks is now optional to match the backend fix.
+  - Go to src/types/index.ts and update/replace its contents.
+- `Update the Dashboard Page`: This is the biggest change. We will replace our static mock data with live data fetching, loading states, and API calls.
+  - Go to src/pages/Dashboard.tsx and do the necessary changes.
+- `Update Mock Data Structure`: Our mock data needs a slight adjustment to match our new UserTasks type structure.
+  - Open src/data/mockTasks.ts and replace its contents.
+
 ### Notes-Frontend
 
 - Setting Up Your React(Typescript) Frontend with Vite and Tailwind CSS.
@@ -95,6 +111,7 @@ export default {
 - Tailwind CSS works by scanning all of your HTML files, JavaScript components, and any other templates for class names, generating the corresponding styles and then writing them to a static CSS file.It's fast, flexible, and reliable — with zero-runtime.
 
 - `let's know the core of how Tailwind CSS works!`
+
   - The className string is a list of individual "utility classes," where each class does one specific CSS job. Your browser knows what these classes mean because the @import "tailwindcss"; line you added uses your project's configuration to generate a big CSS file with all the necessary styles.
   - Let's break down your example: <p className="text-slate-500 mt-2">
     - text-slate-500: This sets the text color.
@@ -112,6 +129,17 @@ export default {
     - Tailwind CSS Official Documentation: The docs have an amazing search feature. If you search for "margin" or "color," it will take you right to the page showing all the available classes. It's your ultimate reference.
       <https://tailwindcss.com/docs>
     - Tailwind CSS IntelliSense Extension for VS Code: This is a must-have. When you install this extension, it will autocomplete class names for you and, more importantly, when you hover your mouse over a class name in your code, it will show you the exact CSS it produces!
+
+- **What `StrictMode` Does in Development**:
+  - To help you find potential problems in your code, StrictMode will intentionally run certain functions twice. This includes the useEffect hook.
+  - So, here's what happens:
+    - Your Dashboard component mounts for the first time.
+    - StrictMode immediately unmounts it and then remounts it.
+    - This causes the useEffect hook (which contains your fetchUserTasks API call) to run twice.
+  - Is This a Problem?
+    - No, it is not. This double-rendering behavior only happens in development mode.
+    - When you build your app for production, StrictMode is disabled, and the useEffect hook will only run once as you would normally expect.
+    - It's a development-only tool to help you write better, more resilient code.
 
 ## Backend
 

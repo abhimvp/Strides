@@ -30,7 +30,8 @@ class UserTasks(BaseModel):
     It links a list of categories to a specific owner_id
     """
 
-    id: PyObjectId = Field(alias="_id")
+    # FIX: Make the id optional with a default of None
+    id: Optional[PyObjectId] = Field(alias="_id", default=None)
     owner_id: str
     categories: List[Category]
 

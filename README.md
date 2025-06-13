@@ -4,9 +4,9 @@ Implies making consistent, noticeable progress.
 
 ## Frontend
 
-### Features
+### Features-frontend
 
-#### System for user sign-up and login
+#### System for user sign-up and login-frontend
 
 - Now we have backend authentication system up and running. We now have the secure foundation needed to build the rest of the app.
 - The next logical step is to connect our frontend to this new backend authentication system.
@@ -115,9 +115,9 @@ export default {
 
 ## Backend
 
-### Features
+### Features-backend
 
-#### System for user sign-up and login
+#### System for user sign-up and login-backend
 
 - Implementing User Authentication : creating the models, utility functions, and API routes needed for user signup and login.
 - `Defining the Data Models`:
@@ -142,6 +142,27 @@ export default {
 - `Connecting the Routes to the Main App`:
   - The final step is to tell our main FastAPI application to use these new routes.Import the auth router and include it in the app(main.py)
   - We add a `prefix="/api/auth"` so all routes in this file will start with that path (e.g., `/api/auth/signup`). The tags parameter groups them nicely in the API docs.
+
+#### Tasks - backend
+
+- The next logical step is to make the dashboard functional by connecting it to the database. **Right now, it's still showing the same hardcoded example data for every user.**
+- Build the Backend API for `Tasks`: `create the necessary endpoints` for a user to manage their own tasks. This will include routes for:
+  - Creating new tasks and categories.
+  - Reading (fetching) the logged-in user's tasks from the database.
+  - Updating tasks (like checking off a day).
+  - Deleting tasks.
+- Building the Task Management API: creating the Pydantic models and API routes for managing user-specific tasks.
+- `Defining the Task and Category Models`: we need to define what our task data looks like in code. We'll create a new model file for this.
+  - In your backend/models/ folder, create a new file named task_models.py.Explanation:
+    - Task: Represents a single to-do item, just like in our frontend.
+    - Category: A category that has a name and contains a list of Task items.
+    - UserTasks: This is the main model. It represents the entire document we will store in a new tasks collection in MongoDB. It links a list of categories to a specific owner_id.
+    - UserTasksCreate: The data we'll use when a new user saves their initial set of tasks.
+- `Creating a Dependency to Get the Current User`: To make our routes secure, **we need a reliable way to identify which user is making the request**. We'll create a reusable "dependency" for this.
+  - In `backend/utils/security.py` file.Add the `get_current_user` function and the necessary imports to the bottom of the file.
+- `Building the Task Management API Routes`: we'll create the endpoints for fetching, creating, and updating a user's tasks.
+  - In backend/routes/ folder, create a new file named `tasks.py`
+- `Connecting the New Routes to the Main App`: let's tell our main FastAPI application to use these new task routes.
 
 ### Notes-Backend
 

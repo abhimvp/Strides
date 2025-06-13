@@ -19,7 +19,7 @@ class Task(BaseModel):
     history: List[TaskHistory]
     frequency: Optional[str] = None
     prescription: Optional[bool] = None
-    notes: Optional[str] = None
+    notes: Optional[str] = None  # <-- The newly added optional field
 
 
 class Category(BaseModel):

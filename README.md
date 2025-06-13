@@ -127,6 +127,14 @@ Implies making consistent, noticeable progress.
 - `Update the AuthPage to Use Toasts`: let's replace the alert() and error messages on our login/signup page.
 - `Update the Dashboard Page to Use Toasts`: we'll do the same for our Dashboard page, replacing all alerts with toast notifications.
 
+#### UI/UX Improvements: Task Notes & Accordion Categories
+
+- Implementing two major user experience enhancements: adding optional notes to tasks and making categories collapsible.
+- `Update the "Add Task" Form`: we'll add an optional "Notes" field to our AddTaskForm component.Add a textarea for the notes and update the onAddTask prop to include the new data.
+- `Update the TaskItem to Display Notes`: we'll add a small info icon that shows the notes in a tooltip on hover.Add the Info icon from lucide-react and the tooltip logic.
+- `Update the TaskList for Accordion Behavior` : This component will now manage being open or closed.
+- `Update the Dashboard Page Logic`: we add the state management for the accordion and update the handleAddTask function.
+
 ### Notes-Frontend
 
 - Setting Up Your React(Typescript) Frontend with Vite and Tailwind CSS.
@@ -262,6 +270,10 @@ export default {
 
 - To support the new frontend structure, your backend models must also be updated.
 - In backend/models/task_models.py.Add a `TaskHistory` model and update the `Task` model to use it.
+
+#### Include the optional notes field in our Pydantic models
+
+
 
 ### Notes-Backend
 

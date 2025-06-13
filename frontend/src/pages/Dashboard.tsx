@@ -37,22 +37,29 @@ export const Dashboard = () => {
   const [isCategoryModalOpen, setIsCategoryModalOpen] = useState(false);
   const [deletionInfo, setDeletionInfo] = useState<DeletionInfo>(null);
   const [editingInfo, setEditingInfo] = useState<EditingInfo>(null);
+  const [openCategory, setOpenCategory] = useState<string | null>(null);
 
   const weekData = getWeekDays();
   const { logout } = useAuth();
 
+  // Update useEffect to open the first category on load
   useEffect(() => {
     const fetchUserTasks = async () => {
       try {
         const data = await getTasks();
         if (data && data.categories.length === 0 && !data.id) {
-          setUserTasks({
+          const initialData = {
             owner_id: data.owner_id,
             categories: initialTasks.categories,
-          });
+          };
+          setUserTasks(initialData);
+          setOpenCategory(initialData.categories[0]?.name || null);
           setIsNewUser(true);
         } else {
           setUserTasks(data);
+          if (data && data.categories.length > 0) {
+            setOpenCategory(data.categories[0].name);
+          }
         }
       } catch (error) {
         console.error("Failed to fetch tasks:", error);
@@ -92,6 +99,12 @@ export const Dashboard = () => {
         setUserTasks(previousTasks); // Revert to previous state on error
       }
     }
+  };
+
+  const handleCategoryHeaderClick = (categoryName: string) => {
+    setOpenCategory((prevOpenCategory) =>
+      prevOpenCategory === categoryName ? null : categoryName
+    );
   };
 
   const handleEditTask = (
@@ -152,26 +165,29 @@ export const Dashboard = () => {
     const newCategory: Category = { name: categoryName, tasks: [] };
     const newCategories = [...userTasks.categories, newCategory];
     updateAndSaveChanges(newCategories);
+    // THE FIX: Set the new category as the open one
+    setOpenCategory(categoryName);
     toast.success(`Category "${categoryName}" successfully!`);
   };
 
-  const handleAddTask = (categoryName: string, taskText: string) => {
+  const handleAddTask = (
+    categoryName: string,
+    taskData: { text: string; notes?: string }
+  ) => {
     if (!userTasks) return;
     const newCategories = JSON.parse(JSON.stringify(userTasks.categories));
     const category = newCategories.find(
       (c: Category) => c.name === categoryName
     );
-
     if (category) {
       const newTask: Task = {
         id: Date.now(),
-        text: taskText,
-        // THE FIX: Initialize with an empty array to match the new TaskHistory[] type
+        text: taskData.text,
+        notes: taskData.notes || undefined,
         history: [],
       };
       category.tasks.push(newTask);
       updateAndSaveChanges(newCategories);
-      toast.success(`Task "${taskText}" added!`);
     }
   };
 
@@ -239,7 +255,7 @@ export const Dashboard = () => {
   const handleLogout = () => {
     logout();
     toast.success("Logged out successfully!");
-  }
+  };
 
   if (isLoading) {
     return (
@@ -295,6 +311,8 @@ export const Dashboard = () => {
               weekDays={weekData}
               weekDates={weekData}
               onToggleTask={handleToggleTask}
+              onHeaderClick={() => handleCategoryHeaderClick(category.name)}
+              isOpen={openCategory === category.name} // Pass down isOpen state
               onAddTask={handleAddTask}
               onEditCategory={handleEditCategory}
               onEditTask={handleEditTask}
@@ -330,7 +348,6 @@ export const Dashboard = () => {
           />
         )}
       </Modal>
-
       <Modal
         isOpen={isCategoryModalOpen}
         onClose={() => setIsCategoryModalOpen(false)}
@@ -341,7 +358,6 @@ export const Dashboard = () => {
           onClose={() => setIsCategoryModalOpen(false)}
         />
       </Modal>
-
       <ConfirmationDialog
         isOpen={!!deletionInfo}
         onClose={() => setDeletionInfo(null)}

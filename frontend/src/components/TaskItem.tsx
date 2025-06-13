@@ -6,6 +6,7 @@ import {
   Circle,
   Trash2,
   Pencil,
+  Info,
 } from "lucide-react";
 import type { Task } from "../types";
 // This interface defines the props that the TaskItem component will receive.
@@ -33,22 +34,32 @@ export const TaskItem = ({
   onDelete,
   onEdit,
 }: TaskItemProps) => {
-  // Create a quick lookup map for history entries for performance
   const historyMap = new Map(task.history.map((h) => [h.date, h.completed]));
 
   return (
     <div className="flex justify-between items-center py-3 hover:bg-slate-50 rounded-lg -mx-2 px-2 group">
       {/* Left Side: Task Info */}
-      <div className="flex-grow items-center gap-2">
-        <p className="font-medium">{task.text}</p>
-        <button
-          onClick={() => onEdit(categoryName, task.id, task.text)}
-          className="text-gray-400 hover:text-blue-500 opacity-0 group-hover:opacity-100 transition-opacity"
-          aria-label={`Edit task ${task.text}`}
-        >
-          <Pencil size={16} />
-        </button>
-        <div className="flex items-center gap-4 text-xs text-slate-400 mt-1">
+      <div className="flex-grow pr-4">
+        <div className="flex items-center gap-2 mb-1">
+          <p className="font-medium">{task.text}</p>
+          {task.notes && (
+            <div className="relative flex items-center group/tooltip">
+              <Info size={16} className="text-blue-400 cursor-pointer" />
+              <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-max max-w-xs bg-gray-800 text-white text-xs rounded py-1 px-2 opacity-0 group-hover/tooltip:opacity-100 transition-opacity pointer-events-none">
+                {task.notes}
+                <div className="absolute top-full left-1/2 -translate-x-1/2 w-0 h-0 border-x-4 border-x-transparent border-t-4 border-t-gray-800"></div>
+              </div>
+            </div>
+          )}
+          <button
+            onClick={() => onEdit(categoryName, task.id, task.text)}
+            className="text-gray-400 hover:text-blue-500 opacity-0 group-hover:opacity-100 transition-opacity"
+            aria-label={`Edit task ${task.text}`}
+          >
+            <Pencil size={16} />
+          </button>
+        </div>
+        <div className="flex items-center gap-4 text-xs text-slate-400">
           {task.frequency && (
             <span className="flex items-center gap-1">
               <Bell size={12} /> {task.frequency}
@@ -59,7 +70,6 @@ export const TaskItem = ({
               <Paperclip size={12} /> Attach prescription
             </span>
           )}
-          {task.notes && <span className="text-blue-500">{task.notes}</span>}
         </div>
       </div>
 

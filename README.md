@@ -118,6 +118,15 @@ Implies making consistent, noticeable progress.
 - Update the `TaskList` Component: Add the Pencil icon and the onEditCategory handler.
 - Update the `Dashboard` Page : add the state management and handler functions for editing to our main Dashboard page
 
+#### UI Polish : Implementing Toast Notifications
+
+- Replacing browser alerts with a professional toast notification system using `react-hot-toast`
+  - We'll replace all the jarring browser alert() pop-ups with a smooth, non-intrusive "[toast](https://react-hot-toast.com/)" notification system.
+- Install : `pnpm add react-hot-toast`
+- `Add the Toaster Component to Your App`: For the toast notifications to appear, we need to add the Toaster component to the root of our application. This `component listens for toast events and renders the pop-ups`.
+- `Update the AuthPage to Use Toasts`: let's replace the alert() and error messages on our login/signup page.
+- `Update the Dashboard Page to Use Toasts`: we'll do the same for our Dashboard page, replacing all alerts with toast notifications.
+
 ### Notes-Frontend
 
 - Setting Up Your React(Typescript) Frontend with Vite and Tailwind CSS.

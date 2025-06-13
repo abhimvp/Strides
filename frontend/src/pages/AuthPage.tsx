@@ -1,31 +1,38 @@
 import React, { useState } from "react";
 import { useAuth } from "../hooks/useAuth";
 import { signupUser } from "../services/authService";
+import toast from "react-hot-toast"; // <-- Import the toast function
+// Modify the handleSubmit function to call toast.success() or toast.error()
+// instead of using alert() or setting an error state.
 
 export const AuthPage = () => {
   const [isLogin, setIsLogin] = useState(true);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [error, setError] = useState<string | null>(null);
   const { login } = useAuth();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError(null);
+    const loadingToast = toast.loading("Processing..."); // Show a loading indicator
     try {
       if (isLogin) {
         const formData = new FormData();
         formData.append("username", email); // form expects 'username' for email
         formData.append("password", password);
         await login(formData);
+        toast.success("Logged in successfully!");
       } else {
         await signupUser({ email, password });
+        toast.success("Signup successful! Please log in.");
         // Automatically switch to login view after successful signup
         setIsLogin(true);
-        alert("Signup successful! Please log in.");
       }
     } catch (err: any) {
-      setError(err.response?.data?.detail || "An unexpected error occurred.");
+      const errorMessage =
+        err.response?.data?.detail || "An unexpected error occurred.";
+      toast.error(errorMessage);
+    } finally {
+      toast.dismiss(loadingToast); // Dismiss the loading indicator
     }
   };
 
@@ -42,11 +49,6 @@ export const AuthPage = () => {
           <h2 className="text-2xl font-bold text-center mb-6">
             {isLogin ? "Log In" : "Sign Up"}
           </h2>
-          {error && (
-            <p className="bg-red-100 text-red-700 p-3 rounded-md mb-4 text-center">
-              {error}
-            </p>
-          )}
           <form onSubmit={handleSubmit} className="space-y-6">
             <div>
               <label className="text-sm font-bold text-gray-600 block">

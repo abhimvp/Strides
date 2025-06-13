@@ -15,6 +15,7 @@ import {
   updateTasks,
 } from "../services/taskService";
 import { EditForm } from "../components/EditForm";
+import toast from "react-hot-toast";
 
 type DeletionInfo = {
   type: "task" | "category";
@@ -64,26 +65,31 @@ export const Dashboard = () => {
 
   const handleSaveInitialTasks = async () => {
     if (!userTasks) return;
+    const toastId = toast.loading("Saving your setup...");
     try {
       const savedTasks = await createInitialTasks(userTasks.categories);
       setUserTasks(savedTasks);
       setIsNewUser(false);
-      alert("Your Strides have been saved!");
+      toast.success("Your Strides have been saved!", { id: toastId });
     } catch (error) {
       console.error("Failed to save initial tasks:", error);
+      toast.error("Could not save your setup.", { id: toastId });
     }
   };
 
   const updateAndSaveChanges = async (newCategories: Category[]) => {
+    const previousTasks = userTasks; // Keep a backup to revert on error
     setUserTasks((prev) =>
       prev ? { ...prev, categories: newCategories } : null
     );
     if (!isNewUser) {
       try {
         await updateTasks(newCategories);
+        // A success toast here can be a bit noisy on every check, so we can omit it.
       } catch (error) {
         console.error("Failed to update tasks:", error);
-        alert("Failed to save changes.");
+        toast.error("Failed to save changes. Reverting.");
+        setUserTasks(previousTasks); // Revert to previous state on error
       }
     }
   };
@@ -130,6 +136,7 @@ export const Dashboard = () => {
       }
     }
     updateAndSaveChanges(newCategories);
+    toast.success(`Item updated successfully!`);
     setEditingInfo(null); // Close the modal
   };
 
@@ -145,6 +152,7 @@ export const Dashboard = () => {
     const newCategory: Category = { name: categoryName, tasks: [] };
     const newCategories = [...userTasks.categories, newCategory];
     updateAndSaveChanges(newCategories);
+    toast.success(`Category "${categoryName}" successfully!`);
   };
 
   const handleAddTask = (categoryName: string, taskText: string) => {
@@ -163,6 +171,7 @@ export const Dashboard = () => {
       };
       category.tasks.push(newTask);
       updateAndSaveChanges(newCategories);
+      toast.success(`Task "${taskText}" added!`);
     }
   };
 
@@ -224,7 +233,13 @@ export const Dashboard = () => {
     }
 
     updateAndSaveChanges(newCategories);
+    toast.success(`'${deletionInfo?.type}' deleted successfully.`);
   };
+
+  const handleLogout = () => {
+    logout();
+    toast.success("Logged out successfully!");
+  }
 
   if (isLoading) {
     return (
@@ -250,7 +265,7 @@ export const Dashboard = () => {
                 </button>
               )}
               <button
-                onClick={logout}
+                onClick={handleLogout}
                 className="bg-red-500 text-white py-2 px-4 rounded-lg shadow-md hover:bg-red-600 transition-all"
               >
                 Logout

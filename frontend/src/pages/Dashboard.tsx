@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from "react";
+import { PlusCircle } from "lucide-react";
 import { getWeekDays } from "../utils/date";
 import { initialTasks } from "../data/mockTasks";
 import { Header } from "../components/Header";
 import { TaskList } from "../components/TaskList";
+import { Modal } from "../components/Modal";
 import { useAuth } from "../hooks/useAuth";
 import type { UserTasks, Category, Task } from "../types";
 import {
@@ -10,11 +12,13 @@ import {
   createInitialTasks,
   updateTasks,
 } from "../services/taskService";
+import { AddCategoryForm } from "../components/AddCategoryForm";
 
 export const Dashboard = () => {
   const [userTasks, setUserTasks] = useState<UserTasks | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isNewUser, setIsNewUser] = useState(false);
+  const [isCategoryModalOpen, setIsCategoryModalOpen] = useState(false); // New state for category modal
   const weekDays = getWeekDays();
   //   console.log("Week Days:", weekDays); // Debugging line
   const { logout } = useAuth();
@@ -98,6 +102,27 @@ export const Dashboard = () => {
     }
   };
 
+  const handleAddCategory = (categoryName: string) => {
+    if (!userTasks) return;
+
+    // Check for duplicate category names
+    const doesExist = userTasks.categories.some(
+      (cat) => cat.name.toLowerCase() === categoryName.toLowerCase()
+    );
+    if (doesExist) {
+      alert("A category with this name already exists.");
+      return;
+    }
+
+    const newCategory: Category = {
+      name: categoryName,
+      tasks: [], // New categories start with no tasks
+    };
+
+    const newCategories = [...userTasks.categories, newCategory];
+    updateAndSaveChanges(newCategories);
+  };
+
   const handleAddTask = (categoryName: string, taskText: string) => {
     if (!userTasks) return;
 
@@ -126,52 +151,75 @@ export const Dashboard = () => {
   }
 
   return (
-    <div className="bg-slate-50 min-h-screen font-sans text-gray-800">
-      <div className="container mx-auto p-4 sm:p-6 md:p-8 max-w-4xl">
-        <div className="flex justify-between items-start mb-4">
-          <Header />
-          <div className="flex items-center gap-4 mt-4">
-            {isNewUser && (
+    <>
+      <div className="bg-slate-50 min-h-screen font-sans text-gray-800">
+        <div className="container mx-auto p-4 sm:p-6 md:p-8 max-w-4xl">
+          <div className="flex justify-between items-start mb-4">
+            <Header />
+            <div className="flex items-center gap-4 mt-4">
+              {isNewUser && (
+                <button
+                  onClick={handleSaveInitialTasks}
+                  className="bg-green-500 text-white py-2 px-4 rounded-lg shadow-md hover:bg-green-600 transition-all font-semibold"
+                >
+                  Save My Strides
+                </button>
+              )}
               <button
-                onClick={handleSaveInitialTasks}
-                className="bg-green-500 text-white py-2 px-4 rounded-lg shadow-md hover:bg-green-600 transition-all font-semibold"
+                onClick={logout}
+                className="bg-red-500 text-white py-2 px-4 rounded-lg shadow-md hover:bg-red-600 transition-all"
               >
-                Save My Strides
+                Logout
               </button>
-            )}
-            <button
-              onClick={logout}
-              className="bg-red-500 text-white py-2 px-4 rounded-lg shadow-md hover:bg-red-600 transition-all"
+            </div>
+          </div>
+
+          {isNewUser && (
+            <div
+              className="bg-blue-100 border-l-4 border-blue-500 text-blue-700 p-4 mb-6 rounded-md"
+              role="alert"
             >
-              Logout
+              <p className="font-bold">Welcome to Strides!</p>
+              <p>
+                We've started you off with some example tasks. Feel free to
+                edit, add, or delete them, then click "Save My Strides" to
+                begin!
+              </p>
+            </div>
+          )}
+          <div className="mt-8 text-center">
+            <button
+              onClick={() => setIsCategoryModalOpen(true)}
+              className="inline-flex items-center gap-2 text-lg text-slate-600 hover:text-blue-600 transition-colors py-2 px-4"
+            >
+              <PlusCircle size={24} />
+              Create a New Category
             </button>
           </div>
+
+          {userTasks?.categories.map((category) => (
+            <TaskList
+              key={category.name}
+              category={category.name}
+              tasks={category.tasks}
+              weekDays={weekDays}
+              onToggleTask={handleToggleTask}
+              onAddTask={handleAddTask}
+            />
+          ))}
         </div>
-
-        {isNewUser && (
-          <div
-            className="bg-blue-100 border-l-4 border-blue-500 text-blue-700 p-4 mb-6 rounded-md"
-            role="alert"
-          >
-            <p className="font-bold">Welcome to Strides!</p>
-            <p>
-              We've started you off with some example tasks. Feel free to edit,
-              add, or delete them, then click "Save My Strides" to begin!
-            </p>
-          </div>
-        )}
-
-        {userTasks?.categories.map((category) => (
-          <TaskList
-            key={category.name}
-            category={category.name}
-            tasks={category.tasks}
-            weekDays={weekDays}
-            onToggleTask={handleToggleTask}
-            onAddTask={handleAddTask}
-          />
-        ))}
       </div>
-    </div>
+
+      <Modal
+        isOpen={isCategoryModalOpen}
+        onClose={() => setIsCategoryModalOpen(false)}
+        title="Create New Category"
+      >
+        <AddCategoryForm
+          onAddCategory={handleAddCategory}
+          onClose={() => setIsCategoryModalOpen(false)}
+        />
+      </Modal>
+    </>
   );
 };

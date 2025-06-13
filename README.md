@@ -64,6 +64,7 @@ Implies making consistent, noticeable progress.
 #### Making the Dashboard editable
 
 - `Feature : Add a new task`: Adding the functionality to create a new task within a category on your dashboard.
+
   - `Create a Reusable Modal Component:` A modal (or popup dialog) is a great way to handle forms without leaving the page. We'll create a generic modal component that we can reuse for adding tasks, editing tasks, creating categories, etc.
     - In src/components/ folder, create a new file named `Modal.tsx`
   - `Create the "Add Task" Form Component`: This component will be the form that lives inside our new modal.
@@ -72,6 +73,15 @@ Implies making consistent, noticeable progress.
     - Go to src/components/TaskList.tsx and make the necessary changes
   - `Update the Dashboard Page to Handle Adding Tasks`: Finally, we'll add the logic to our main Dashboard page to handle creating the new task, updating the state, and saving it to the backend.
     - In src/pages/Dashboard.tsx , Add the new `handleAddTask` function and pass it down to the TaskList component.
+
+- `Feature : Adding Tasks & Categories` : adding new tasks and creating new categories on the dashboard.
+  - `Create Reusable UI Components`: If you've already created this from the previous step, you can skip this.`(Done)` in src/components/ , `Modal.tsx`.
+  - `Add Task Form Component` : Done in above step - file : AddTaskForm.tsx
+  - `Add Category Form Component` :
+    - In src/components/, create a new file named `AddCategoryForm.tsx`.
+    - Update the TaskList Component : The TaskList component is already complete from the previous step. No changes are needed here.
+    - `Update the Dashboard Page to Handle Creating Categories` : We'll add the new state and handler function for creating categories to our main Dashboard page.
+      - Go to src/pages/Dashboard.tsx and make the necessary changes.
 
 ### Notes-Frontend
 

@@ -14,11 +14,19 @@ import {
   createInitialTasks,
   updateTasks,
 } from "../services/taskService";
+import { EditForm } from "../components/EditForm";
 
 type DeletionInfo = {
   type: "task" | "category";
   name: string;
   id?: number;
+} | null;
+
+type EditingInfo = {
+  type: "task" | "category";
+  categoryName: string;
+  taskId?: number;
+  currentText: string;
 } | null;
 
 export const Dashboard = () => {
@@ -27,6 +35,7 @@ export const Dashboard = () => {
   const [isNewUser, setIsNewUser] = useState(false);
   const [isCategoryModalOpen, setIsCategoryModalOpen] = useState(false);
   const [deletionInfo, setDeletionInfo] = useState<DeletionInfo>(null);
+  const [editingInfo, setEditingInfo] = useState<EditingInfo>(null);
 
   const weekData = getWeekDays();
   const { logout } = useAuth();
@@ -77,6 +86,51 @@ export const Dashboard = () => {
         alert("Failed to save changes.");
       }
     }
+  };
+
+  const handleEditTask = (
+    categoryName: string,
+    taskId: number,
+    currentText: string
+  ) => {
+    setEditingInfo({
+      type: "task",
+      categoryName,
+      taskId,
+      currentText,
+    });
+  };
+
+  const handleEditCategory = (categoryName: string) => {
+    setEditingInfo({
+      type: "category",
+      categoryName,
+      currentText: categoryName,
+    });
+  };
+
+  const handleEditSave = (newValue: string) => {
+    if (!userTasks || !editingInfo) return;
+    const newCategories = JSON.parse(JSON.stringify(userTasks.categories));
+    if (editingInfo.type === "category") {
+      const category = newCategories.find(
+        (c: Category) => c.name === editingInfo.categoryName
+      );
+      if (category) category.name = newValue;
+    } else {
+      // type is 'task'
+      const category = newCategories.find(
+        (c: Category) => c.name === editingInfo.categoryName
+      );
+      if (category) {
+        const task = category.tasks.find(
+          (t: Task) => t.id === editingInfo.taskId
+        );
+        if (task) task.text = newValue;
+      }
+    }
+    updateAndSaveChanges(newCategories);
+    setEditingInfo(null); // Close the modal
   };
 
   const handleAddCategory = (categoryName: string) => {
@@ -227,6 +281,8 @@ export const Dashboard = () => {
               weekDates={weekData}
               onToggleTask={handleToggleTask}
               onAddTask={handleAddTask}
+              onEditCategory={handleEditCategory}
+              onEditTask={handleEditTask}
               onDeleteTask={handleDeleteTask}
               onDeleteCategory={handleDeleteCategory}
             />
@@ -243,6 +299,22 @@ export const Dashboard = () => {
           </div>
         </div>
       </div>
+      <Modal
+        isOpen={!!editingInfo}
+        onClose={() => setEditingInfo(null)}
+        title={`Edit ${editingInfo?.type}`}
+      >
+        {editingInfo && (
+          <EditForm
+            initialValue={editingInfo.currentText}
+            onSave={handleEditSave}
+            onClose={() => setEditingInfo(null)}
+            label={`${
+              editingInfo.type === "category" ? "Category" : "Task"
+            } Name`}
+          />
+        )}
+      </Modal>
 
       <Modal
         isOpen={isCategoryModalOpen}

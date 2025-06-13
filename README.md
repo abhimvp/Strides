@@ -109,6 +109,15 @@ Implies making consistent, noticeable progress.
 - `Update the Dashboard Page Logic`: we update the main Dashboard page to use our new date logic.
   - In src/pages/Dashboard.tsx : update code.
 
+#### Feature : Editing Tasks & Categories
+
+- adding the ability to edit the names of existing tasks and categories on the dashboard.
+- `Create a Reusable Edit Form Component`: We'll create a generic form for editing any piece of text.
+  - In your src/components/ folder, create a new file named `EditForm.tsx`.
+- Update the `TaskItem` Component: Add the Pencil icon and the onEdit handler.
+- Update the `TaskList` Component: Add the Pencil icon and the onEditCategory handler.
+- Update the `Dashboard` Page : add the state management and handler functions for editing to our main Dashboard page
+
 ### Notes-Frontend
 
 - Setting Up Your React(Typescript) Frontend with Vite and Tailwind CSS.

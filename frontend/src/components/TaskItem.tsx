@@ -1,6 +1,13 @@
 import React from "react";
-import { Bell, Paperclip, CheckCircle, Circle, Trash2 } from "lucide-react";
-import type { Task, TaskHistory } from "../types";
+import {
+  Bell,
+  Paperclip,
+  CheckCircle,
+  Circle,
+  Trash2,
+  Pencil,
+} from "lucide-react";
+import type { Task } from "../types";
 // This interface defines the props that the TaskItem component will receive.
 // It includes the task object, the category it belongs to, and a function to handle toggling the task's completion state.
 
@@ -15,6 +22,7 @@ interface TaskItemProps {
     currentState: boolean
   ) => void;
   onDelete: (categoryName: string, taskId: number) => void;
+  onEdit: (categoryName: string, taskId: number, currentText: string) => void;
 }
 
 export const TaskItem = ({
@@ -23,6 +31,7 @@ export const TaskItem = ({
   weekDates,
   onToggle,
   onDelete,
+  onEdit,
 }: TaskItemProps) => {
   // Create a quick lookup map for history entries for performance
   const historyMap = new Map(task.history.map((h) => [h.date, h.completed]));
@@ -30,8 +39,15 @@ export const TaskItem = ({
   return (
     <div className="flex justify-between items-center py-3 hover:bg-slate-50 rounded-lg -mx-2 px-2 group">
       {/* Left Side: Task Info */}
-      <div className="flex-grow">
+      <div className="flex-grow items-center gap-2">
         <p className="font-medium">{task.text}</p>
+        <button
+          onClick={() => onEdit(categoryName, task.id, task.text)}
+          className="text-gray-400 hover:text-blue-500 opacity-0 group-hover:opacity-100 transition-opacity"
+          aria-label={`Edit task ${task.text}`}
+        >
+          <Pencil size={16} />
+        </button>
         <div className="flex items-center gap-4 text-xs text-slate-400 mt-1">
           {task.frequency && (
             <span className="flex items-center gap-1">

@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Plus, Trash2 } from "lucide-react";
+import { Plus, Trash2, Pencil } from "lucide-react";
 import type { Task } from "../types";
 import { TaskItem } from "./TaskItem";
 import { Modal } from "./Modal";
@@ -25,6 +25,12 @@ interface TaskListProps {
   onAddTask: (category: string, taskText: string) => void;
   onDeleteTask: (category: string, taskId: number) => void;
   onDeleteCategory: (category: string) => void;
+  onEditCategory: (categoryName: string) => void;
+  onEditTask: (
+    categoryName: string,
+    taskId: number,
+    currentText: string
+  ) => void;
 }
 
 export const TaskList = ({
@@ -36,6 +42,8 @@ export const TaskList = ({
   onAddTask,
   onDeleteTask,
   onDeleteCategory,
+  onEditCategory,
+  onEditTask,
 }: TaskListProps) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
 
@@ -45,11 +53,21 @@ export const TaskList = ({
 
   return (
     <>
-      <section className="mb-8">
-        <div className="flex justify-between items-center mb-4 group">
-          <h2 className="text-2xl font-semibold text-slate-700">{category}</h2>
-
+      <section className="mb-8 group">
+        <div className="flex justify-between items-center mb-4">
           {/* Action Buttons Container */}
+          <div className="flex items-center gap-2">
+            <h2 className="text-2xl font-semibold text-slate-700">
+              {category}
+            </h2>
+            <button
+              onClick={() => onEditCategory(category)}
+              className="text-gray-400 hover:text-blue-500 opacity-0 group-hover:opacity-100 transition-opacity"
+              aria-label={`Edit category ${category}`}
+            >
+              <Pencil size={18} />
+            </button>
+          </div>
           <div className="flex items-center gap-2">
             <button
               onClick={() => onDeleteCategory(category)}
@@ -99,6 +117,7 @@ export const TaskList = ({
               weekDates={weekDates}
               onToggle={onToggleTask}
               onDelete={onDeleteTask}
+              onEdit={onEditTask}
             />
           ))}
           {tasks.length === 0 && (
@@ -115,7 +134,7 @@ export const TaskList = ({
         title={`Add Task to "${category}"`}
       >
         <AddTaskForm
-          onAddTask={handleAddTask}
+          onAddTask={(taskText) => onAddTask(category, taskText)}
           onClose={() => setIsModalOpen(false)}
         />
       </Modal>

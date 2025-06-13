@@ -75,6 +75,7 @@ Implies making consistent, noticeable progress.
     - In src/pages/Dashboard.tsx , Add the new `handleAddTask` function and pass it down to the TaskList component.
 
 - `Feature : Adding Tasks & Categories` : adding new tasks and creating new categories on the dashboard.
+
   - `Create Reusable UI Components`: If you've already created this from the previous step, you can skip this.`(Done)` in src/components/ , `Modal.tsx`.
   - `Add Task Form Component` : Done in above step - file : AddTaskForm.tsx
   - `Add Category Form Component` :
@@ -82,6 +83,16 @@ Implies making consistent, noticeable progress.
     - Update the TaskList Component : The TaskList component is already complete from the previous step. No changes are needed here.
     - `Update the Dashboard Page to Handle Creating Categories` : We'll add the new state and handler function for creating categories to our main Dashboard page.
       - Go to src/pages/Dashboard.tsx and make the necessary changes.
+
+- `Feature : Deleting Tasks & Categories`: adding the ability to delete tasks and categories from the dashboard.
+  - `Create a Reusable Confirmation Dialog`: Instead of using the jarring browser confirm() pop-up, we'll create a nice-looking confirmation dialog that fits our app's style. We can reuse our Modal component for this.
+    - In src/components/ folder, create a new file named `ConfirmationDialog.tsx`.
+  - `Update the TaskItem Component` : We'll add a small "trash" icon to each task row that appears on hover.
+    - In src/components/TaskItem.tsx , make changes and We've added a `group` class to the main `div` and a `group-hover:opacity-100` class to the button to create the hover effect.
+  - `Update the TaskList Component`: We'll add a delete button next to the category title and pass the delete handlers down to the TaskItem.
+    - In src/components/TaskList.tsx, make the necessary changes.
+  - `Update the Dashboard Page`: let's add the deletion logic to the Dashboard page.
+    - In src/pages/Dashboard.tsx, make the necessary changes.
 
 ### Notes-Frontend
 

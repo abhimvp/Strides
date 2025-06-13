@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Plus } from "lucide-react";
+import { Plus, Trash2 } from "lucide-react";
 import type { Task } from "../types";
 import { TaskItem } from "./TaskItem";
 import { Modal } from "./Modal";
@@ -11,6 +11,8 @@ interface TaskListProps {
   weekDays: string[];
   onToggleTask: (category: string, taskId: number, dayIndex: number) => void;
   onAddTask: (category: string, taskText: string) => void;
+  onDeleteTask: (category: string, taskId: number) => void;
+  onDeleteCategory: (category: string) => void;
 }
 
 export const TaskList = ({
@@ -19,6 +21,8 @@ export const TaskList = ({
   weekDays,
   onToggleTask,
   onAddTask,
+  onDeleteTask,
+  onDeleteCategory,
 }: TaskListProps) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
 
@@ -29,19 +33,31 @@ export const TaskList = ({
   return (
     <>
       <section className="mb-8">
-        <div className="flex justify-between items-center mb-4">
+        <div className="flex justify-between items-center mb-4 group">
           <h2 className="text-2xl font-semibold text-slate-700">{category}</h2>
-          <button
-            onClick={() => setIsModalOpen(true)}
-            className="flex items-center gap-2 text-sm bg-blue-500 text-white py-2 px-4 rounded-lg shadow-md hover:bg-blue-600 transition-all focus:outline-none focus:ring-2 focus:ring-blue-400"
-          >
-            <Plus size={16} />
-            Add Task
-          </button>
+
+          {/* Action Buttons Container */}
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => onDeleteCategory(category)}
+              className="p-2 text-gray-400 hover:text-red-500 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity"
+              aria-label={`Delete category ${category}`}
+            >
+              <Trash2 size={18} />
+            </button>
+            <button
+              onClick={() => setIsModalOpen(true)}
+              className="flex items-center gap-2 text-sm bg-blue-500 text-white py-2 px-4 rounded-lg shadow-md hover:bg-blue-600 transition-all focus:outline-none focus:ring-2 focus:ring-blue-400"
+            >
+              <Plus size={16} />
+              Add Task
+            </button>
+          </div>
         </div>
         <div className="bg-white rounded-xl shadow-lg p-4">
-          <div className="grid grid-cols-[3fr,2fr] gap-4">
-            <div className="font-bold text-slate-500 text-sm uppercase tracking-wider">
+          {/* Task List Header */}
+          <div className="flex justify-between items-center border-b pb-2 mb-2">
+            <div className="font-bold text-slate-500 text-sm uppercase tracking-wider flex-grow">
               Task
             </div>
             <div className="grid grid-cols-7 gap-2 text-center font-bold text-slate-500 text-sm uppercase tracking-wider">
@@ -55,14 +71,18 @@ export const TaskList = ({
                 </span>
               ))}
             </div>
+            {/* Placeholder for delete button column */}
+            <div className="w-10"></div>
           </div>
-          <hr className="my-3 border-slate-200" />
+
+          {/* Task Items */}
           {tasks.map((task) => (
             <TaskItem
               key={task.id}
               task={task}
               category={category}
               onToggle={onToggleTask}
+              onDelete={onDeleteTask}
             />
           ))}
           {tasks.length === 0 && (

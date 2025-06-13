@@ -4,7 +4,7 @@ import { initialTasks } from "../data/mockTasks";
 import { Header } from "../components/Header";
 import { TaskList } from "../components/TaskList";
 import { useAuth } from "../hooks/useAuth";
-import type { UserTasks, Category } from "../types";
+import type { UserTasks, Category, Task } from "../types";
 import {
   getTasks,
   createInitialTasks,
@@ -77,21 +77,43 @@ export const Dashboard = () => {
       }
     }
 
-    // Optimistically update the UI immediately for a snappy feel
-    setUserTasks({ ...userTasks, categories: newCategories });
+    updateAndSaveChanges(newCategories);
+  };
 
-    // *** THE FIX: Only send the update to the backend if the user is NOT new ***
+  const updateAndSaveChanges = async (newCategories: Category[]) => {
+    // Optimistically update UI
+    setUserTasks((prev) =>
+      prev ? { ...prev, categories: newCategories } : null
+    );
+
+    // Only save to backend if the user is not in the initial setup phase
     if (!isNewUser) {
       try {
         await updateTasks(newCategories);
       } catch (error) {
-        console.error("Failed to update task:", error);
-        // If the API call fails, revert the change and show an error
-        setUserTasks(userTasks);
-        alert(
-          "Sorry, there was an error saving your progress. Please try again."
-        );
+        console.error("Failed to update tasks:", error);
+        // Optionally revert state and show error
+        alert("Failed to save changes.");
       }
+    }
+  };
+
+  const handleAddTask = (categoryName: string, taskText: string) => {
+    if (!userTasks) return;
+
+    const newCategories = JSON.parse(JSON.stringify(userTasks.categories));
+    const category = newCategories.find(
+      (c: Category) => c.name === categoryName
+    );
+
+    if (category) {
+      const newTask: Task = {
+        id: Date.now(), // Use timestamp for a simple unique ID
+        text: taskText,
+        history: Array(7).fill(false),
+      };
+      category.tasks.push(newTask);
+      updateAndSaveChanges(newCategories);
     }
   };
 
@@ -146,6 +168,7 @@ export const Dashboard = () => {
             tasks={category.tasks}
             weekDays={weekDays}
             onToggleTask={handleToggleTask}
+            onAddTask={handleAddTask}
           />
         ))}
       </div>

@@ -61,6 +61,18 @@ Implies making consistent, noticeable progress.
 - `Update Mock Data Structure`: Our mock data needs a slight adjustment to match our new UserTasks type structure.
   - Open src/data/mockTasks.ts and replace its contents.
 
+#### Making the Dashboard editable
+
+- `Feature : Add a new task`: Adding the functionality to create a new task within a category on your dashboard.
+  - `Create a Reusable Modal Component:` A modal (or popup dialog) is a great way to handle forms without leaving the page. We'll create a generic modal component that we can reuse for adding tasks, editing tasks, creating categories, etc.
+    - In src/components/ folder, create a new file named `Modal.tsx`
+  - `Create the "Add Task" Form Component`: This component will be the form that lives inside our new modal.
+    - In src/components/ folder, create a new file named `AddTaskForm.tsx`.
+  - `Update the TaskList Component`: Now we'll modify our TaskList component. It will manage the state for the "Add Task" modal and pass down a function to the Dashboard to actually add the task.
+    - Go to src/components/TaskList.tsx and make the necessary changes
+  - `Update the Dashboard Page to Handle Adding Tasks`: Finally, we'll add the logic to our main Dashboard page to handle creating the new task, updating the state, and saving it to the backend.
+    - In src/pages/Dashboard.tsx , Add the new `handleAddTask` function and pass it down to the TaskList component.
+
 ### Notes-Frontend
 
 - Setting Up Your React(Typescript) Frontend with Vite and Tailwind CSS.

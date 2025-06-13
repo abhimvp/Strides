@@ -4,6 +4,34 @@ Implies making consistent, noticeable progress.
 
 ## Frontend
 
+### Features
+
+#### System for user sign-up and login
+
+- Now we have backend authentication system up and running. We now have the secure foundation needed to build the rest of the app.
+- The next logical step is to connect our frontend to this new backend authentication system.
+- About [pnpm](https://pnpm.io/pnpm-cli)
+- We'll use `axios` for making clean API requests to our backend : `pnpm add axios`
+- `Implement API calls`:
+  - **Create an API Service Layer**:To keep our API calls organized.
+  - Create a new folder `src/services` & Inside it, create a new file named `authService.ts`.
+- `Manage User State:` This is the most important part. We will use React's Context API to create a global "authentication context." This will allow our entire application to know:
+  - Is a user currently logged in?
+  - What is their access token?
+  - Who is the current user?
+- **`This will enable us to do things like show the "dashboard" if the user is logged in, or show the login page if they are not`**
+- `Create the Global Authentication Context`: This is the heart of our frontend authentication. It will provide user state and login/logout functions to our entire app.
+  - Create a new folder `src/context` & Inside it, create a new file named `AuthContext.tsx`
+- `Build the Auth UI in React`: Create the Login and Signup Pages - for our users to interact with.
+  - Create a new folder `src/pages` & Inside src/pages, create a new file named `AuthPage.tsx`. This single component will handle both Login and Signup to keep things simple.(For Now)
+- `Create the Dashboard Page`: We need to move our main task tracking UI into its own page.
+  - In src/pages/, create a new file named `Dashboard.tsx` & Add a "Logout" button.
+  - Go to current `src/App.tsx`, copy the `ENTIRE` content of the App function `(from const [tasks, setTasks]...` to the closing `</div>)`, and paste it inside a new Dashboard component in this file. You will also need to move the imports and the utility functions.
+  - Update the Main App.tsx and main.tsx.
+    - Finally, let's tie everything together.
+    - `App.tsx` will now act as a router, deciding which page to show based on the auth state.
+    - `main.tsx` will wrap our app in the AuthProvider.
+
 ### Notes-Frontend
 
 - Setting Up Your React(Typescript) Frontend with Vite and Tailwind CSS.

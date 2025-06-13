@@ -1,44 +1,14 @@
-import React, { useState } from "react";
-import { initialTasks } from "./data/mockTasks";
-import { getWeekDays } from "./utils/date";
-import { Header } from "./components/Header";
-import { TaskList } from "./components/TaskList";
-import type { Task, TasksByCategory } from "./types";
+import React from "react";
+import { useAuth } from "./context/AuthContext";
+import { Dashboard } from "./pages/Dashboard";
+import { AuthPage } from "./pages/AuthPage";
 
 export default function App() {
-  const [tasks, setTasks] = useState<TasksByCategory>(initialTasks);
-  const weekDays = getWeekDays();
-  console.log("Week Days:", weekDays); // Debugging line
-
-  const toggleTask = (category: string, taskId: number, dayIndex: number) => {
-    console.log(`Toggling task ${taskId} in category ${category} for day ${dayIndex}`); // Debugging line
-    const newTasks = { ...tasks };
-    const taskToUpdate = newTasks[category].find(
-      (task: Task) => task.id === taskId
-    );
-
-    if (taskToUpdate) {
-      const newHistory = [...taskToUpdate.history];
-      newHistory[dayIndex] = !newHistory[dayIndex];
-      taskToUpdate.history = newHistory;
-      setTasks(newTasks);
-    }
-  };
+  const { isAuthenticated } = useAuth();
 
   return (
-    <div className="bg-slate-50 min-h-screen font-sans text-gray-800">
-      <div className="container mx-auto p-4 sm:p-6 md:p-8 max-w-4xl">
-        <Header />
-        {Object.entries(tasks).map(([category, taskList]) => (
-          <TaskList
-            key={category}
-            category={category}
-            tasks={taskList}
-            weekDays={weekDays}
-            onToggleTask={toggleTask}
-          />
-        ))}
-      </div>
-    </div>
+  <>
+    {isAuthenticated ? <Dashboard /> : <AuthPage />}
+  </>
   );
 }

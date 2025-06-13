@@ -1,0 +1,97 @@
+import React, { useState } from "react";
+import { useAuth } from "../context/AuthContext";
+import { signupUser } from "../services/authService";
+
+export const AuthPage = () => {
+  const [isLogin, setIsLogin] = useState(true);
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState<string | null>(null);
+  const { login } = useAuth();
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError(null);
+    try {
+      if (isLogin) {
+        const formData = new FormData();
+        formData.append("username", email); // form expects 'username' for email
+        formData.append("password", password);
+        await login(formData);
+      } else {
+        await signupUser({ email, password });
+        // Automatically switch to login view after successful signup
+        setIsLogin(true);
+        alert("Signup successful! Please log in.");
+      }
+    } catch (err: any) {
+      setError(err.response?.data?.detail || "An unexpected error occurred.");
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-slate-50 flex flex-col justify-center items-center">
+      <div className="max-w-md w-full mx-auto">
+        <h1 className="text-4xl font-bold text-center text-slate-800 mb-2">
+          Strides
+        </h1>
+        <p className="text-center text-slate-500 mb-8">
+          Your daily checkpoint for growth.
+        </p>
+        <div className="bg-white p-8 rounded-xl shadow-lg">
+          <h2 className="text-2xl font-bold text-center mb-6">
+            {isLogin ? "Log In" : "Sign Up"}
+          </h2>
+          {error && (
+            <p className="bg-red-100 text-red-700 p-3 rounded-md mb-4 text-center">
+              {error}
+            </p>
+          )}
+          <form onSubmit={handleSubmit} className="space-y-6">
+            <div>
+              <label className="text-sm font-bold text-gray-600 block">
+                Email
+              </label>
+              <input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="w-full p-2 border border-gray-300 rounded-md mt-1 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                required
+              />
+            </div>
+            <div>
+              <label className="text-sm font-bold text-gray-600 block">
+                Password
+              </label>
+              <input
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="w-full p-2 border border-gray-300 rounded-md mt-1 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                required
+              />
+            </div>
+            <div>
+              <button
+                type="submit"
+                className="w-full py-2 px-4 bg-blue-500 text-white rounded-md hover:bg-blue-600 font-semibold"
+              >
+                {isLogin ? "Log In" : "Create Account"}
+              </button>
+            </div>
+          </form>
+          <p className="text-center text-sm mt-6">
+            {isLogin ? "Don't have an account?" : "Already have an account?"}
+            <button
+              onClick={() => setIsLogin(!isLogin)}
+              className="text-blue-500 hover:underline ml-1 font-semibold"
+            >
+              {isLogin ? "Sign Up" : "Log In"}
+            </button>
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+};

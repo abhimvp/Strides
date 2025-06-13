@@ -5,12 +5,18 @@ from pydantic import BaseModel, Field
 from models.user_models import PyObjectId
 
 
+# Add this new model
+class TaskHistory(BaseModel):
+    date: str
+    completed: bool
+
+
 class Task(BaseModel):
     """Task: Represents a single to-do item, just like in our frontend"""
 
     id: int
     text: str
-    history: List[bool]
+    history: List[TaskHistory]
     frequency: Optional[str] = None
     prescription: Optional[bool] = None
     notes: Optional[str] = None

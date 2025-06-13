@@ -1,8 +1,14 @@
+// This new interface will define our history objects
+export interface TaskHistory {
+  date: string; // Stored in "YYYY-MM-DD" format
+  completed: boolean;
+}
+
 // Matches the Task model in FastAPI
 export interface Task {
   id: number;
   text: string;
-  history: boolean[];
+  history: TaskHistory[]; // <-- The history is now an array of these objects
   frequency?: string;
   prescription?: boolean;
   notes?: string;

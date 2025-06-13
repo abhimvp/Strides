@@ -5,11 +5,23 @@ import { TaskItem } from "./TaskItem";
 import { Modal } from "./Modal";
 import { AddTaskForm } from "./AddTaskForm";
 
+interface WeekDay {
+  day: string;
+  date: number;
+  isToday: boolean;
+}
+
 interface TaskListProps {
   category: string;
   tasks: Task[];
-  weekDays: string[];
-  onToggleTask: (category: string, taskId: number, dayIndex: number) => void;
+  weekDays: WeekDay[];
+  weekDates: { fullDate: string; isPast: boolean }[];
+  onToggleTask: (
+    category: string,
+    taskId: number,
+    date: string,
+    currentState: boolean
+  ) => void;
   onAddTask: (category: string, taskText: string) => void;
   onDeleteTask: (category: string, taskId: number) => void;
   onDeleteCategory: (category: string) => void;
@@ -19,6 +31,7 @@ export const TaskList = ({
   category,
   tasks,
   weekDays,
+  weekDates,
   onToggleTask,
   onAddTask,
   onDeleteTask,
@@ -61,14 +74,16 @@ export const TaskList = ({
               Task
             </div>
             <div className="grid grid-cols-7 gap-2 text-center font-bold text-slate-500 text-sm uppercase tracking-wider">
-              {weekDays.map((day, i) => (
-                <span
-                  key={i}
-                  className="w-8 h-8 flex items-center justify-center"
-                  title={`Day ${i + 1}`}
+              {weekDays.map(({ day, date, isToday }) => (
+                <div
+                  key={day}
+                  className={`w-8 h-10 flex flex-col items-center justify-center rounded-md ${
+                    isToday ? "bg-blue-100 text-blue-600" : ""
+                  }`}
                 >
-                  {day}
-                </span>
+                  <span>{day}</span>
+                  <span className="text-xs">{date}</span>
+                </div>
               ))}
             </div>
             {/* Placeholder for delete button column */}
@@ -80,7 +95,8 @@ export const TaskList = ({
             <TaskItem
               key={task.id}
               task={task}
-              category={category}
+              categoryName={category}
+              weekDates={weekDates}
               onToggle={onToggleTask}
               onDelete={onDeleteTask}
             />

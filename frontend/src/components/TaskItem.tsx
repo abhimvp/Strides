@@ -1,22 +1,32 @@
 import React from "react";
 import { Bell, Paperclip, CheckCircle, Circle, Trash2 } from "lucide-react";
-import type { Task } from "../types";
+import type { Task, TaskHistory } from "../types";
 // This interface defines the props that the TaskItem component will receive.
 // It includes the task object, the category it belongs to, and a function to handle toggling the task's completion state.
 
 interface TaskItemProps {
   task: Task;
-  category: string;
-  onToggle: (category: string, taskId: number, dayIndex: number) => void;
-  onDelete: (category: string, taskId: number) => void;
+  categoryName: string;
+  weekDates: { fullDate: string; isPast: boolean }[];
+  onToggle: (
+    categoryName: string,
+    taskId: number,
+    date: string,
+    currentState: boolean
+  ) => void;
+  onDelete: (categoryName: string, taskId: number) => void;
 }
 
 export const TaskItem = ({
   task,
-  category,
+  categoryName,
+  weekDates,
   onToggle,
   onDelete,
 }: TaskItemProps) => {
+  // Create a quick lookup map for history entries for performance
+  const historyMap = new Map(task.history.map((h) => [h.date, h.completed]));
+
   return (
     <div className="flex justify-between items-center py-3 hover:bg-slate-50 rounded-lg -mx-2 px-2 group">
       {/* Left Side: Task Info */}
@@ -40,28 +50,34 @@ export const TaskItem = ({
       {/* Right Side: Checkmarks and Delete Button */}
       <div className="flex items-center gap-2">
         <div className="grid grid-cols-7 gap-2 items-center">
-          {task.history.map((done, i) => (
-            <button
-              key={i}
-              onClick={() => onToggle(category, task.id, i)}
-              className="flex justify-center items-center h-8 w-8 rounded-lg transition-all focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-400"
-              aria-label={`Mark task ${task.text} for day ${i + 1} as ${
-                done ? "incomplete" : "complete"
-              }`}
-            >
-              {done ? (
-                <CheckCircle className="text-green-500" size={22} />
-              ) : (
-                <Circle
-                  className="text-slate-300 hover:text-slate-400"
-                  size={22}
-                />
-              )}
-            </button>
-          ))}
+          {weekDates.map(({ fullDate, isPast }) => {
+            const isCompleted = historyMap.get(fullDate) || false;
+            return (
+              <button
+                key={fullDate}
+                onClick={() =>
+                  onToggle(categoryName, task.id, fullDate, isCompleted)
+                }
+                disabled={isPast}
+                className="flex justify-center items-center h-8 w-8 rounded-lg transition-all focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-400 disabled:opacity-50 disabled:cursor-not-allowed"
+                aria-label={`Mark task ${task.text} for date ${fullDate} as ${
+                  isCompleted ? "incomplete" : "complete"
+                }`}
+              >
+                {isCompleted ? (
+                  <CheckCircle className="text-green-500" size={22} />
+                ) : (
+                  <Circle
+                    className="text-slate-300 hover:text-slate-400"
+                    size={22}
+                  />
+                )}
+              </button>
+            );
+          })}
         </div>
         <button
-          onClick={() => onDelete(category, task.id)}
+          onClick={() => onDelete(categoryName, task.id)}
           className="p-1 text-gray-400 hover:text-red-500 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
           aria-label={`Delete task ${task.text}`}
         >

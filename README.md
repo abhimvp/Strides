@@ -94,6 +94,21 @@ Implies making consistent, noticeable progress.
   - `Update the Dashboard Page`: let's add the deletion logic to the Dashboard page.
     - In src/pages/Dashboard.tsx, make the necessary changes.
 
+#### Feature Implementation: Weekly Calendar View
+
+- let's refactor the dashboard to display a proper weekly calendar (Sunday-Saturday) with dates, highlighting for the current day, and disabled past dates.
+- `Update Frontend Types`: The most important change is to our data model. We need to track completions by date.
+  - In src/types/index.ts , Find the Task interface and modify the history property.
+- `Update the Date Utility`: We need a more powerful function to generate our week.
+  - In src/utils/date.ts , we write updated logic
+- `Update UI Components`:
+  - `TaskItem Component` : This component now needs to find the right history entry for each day and disable past days.
+    - In src/components/TaskItem.tsx : update code
+  - `TaskList Component`: This component will now display the date numbers in the header
+    - In src/components/TaskList.tsx : : update code
+- `Update the Dashboard Page Logic`: we update the main Dashboard page to use our new date logic.
+  - In src/pages/Dashboard.tsx : update code.
+
 ### Notes-Frontend
 
 - Setting Up Your React(Typescript) Frontend with Vite and Tailwind CSS.
@@ -224,6 +239,11 @@ export default {
 - `Building the Task Management API Routes`: we'll create the endpoints for fetching, creating, and updating a user's tasks.
   - In backend/routes/ folder, create a new file named `tasks.py`
 - `Connecting the New Routes to the Main App`: let's tell our main FastAPI application to use these new task routes.
+
+#### #### Feature Implementation: Weekly Calendar View - Update Backend Models
+
+- To support the new frontend structure, your backend models must also be updated.
+- In backend/models/task_models.py.Add a `TaskHistory` model and update the `Task` model to use it.
 
 ### Notes-Backend
 

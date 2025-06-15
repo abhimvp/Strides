@@ -9,6 +9,7 @@ export interface Task {
   id: number;
   text: string;
   history: TaskHistory[]; // <-- The history is now an array of these objects
+  move_history?: MoveHistory[];
   frequency?: string;
   prescription?: boolean;
   notes?: string;
@@ -31,4 +32,9 @@ export interface UserTasks {
 export interface UserCreate {
   email: string;
   password: string;
+}
+
+export interface MoveHistory {
+  category_name: string;
+  moved_at: string;
 }

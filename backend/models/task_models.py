@@ -1,8 +1,14 @@
 """Task Models: This module defines the data models for tasks and categories in our application."""
 
 from typing import List, Optional
+from datetime import datetime, timezone
 from pydantic import BaseModel, Field
 from models.user_models import PyObjectId
+
+
+class MoveHistory(BaseModel):
+    category_name: str
+    moved_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
 
 # Add this new model
@@ -17,6 +23,7 @@ class Task(BaseModel):
     id: int
     text: str
     history: List[TaskHistory]
+    move_history: List[MoveHistory] = []
     frequency: Optional[str] = None
     prescription: Optional[bool] = None
     notes: Optional[str] = None  # <-- The newly added optional field

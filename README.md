@@ -2,6 +2,9 @@
 
 Implies making consistent, noticeable progress.
 
+To start backend: `uvicorn main:app --reload`
+To start frontend: `pnpm dev`
+
 ## Frontend
 
 ### Features-frontend
@@ -134,6 +137,21 @@ Implies making consistent, noticeable progress.
 - `Update the TaskItem to Display Notes`: we'll add a small info icon that shows the notes in a tooltip on hover.Add the Info icon from lucide-react and the tooltip logic.
 - `Update the TaskList for Accordion Behavior` : This component will now manage being open or closed.
 - `Update the Dashboard Page Logic`: we add the state management for the accordion and update the handleAddTask function.
+
+#### Moving Tasks Between Categories
+
+- Adding the ability for a user to move a task from one category to another using a [Drag-and-Drop](https://dndkit.com/) System. using `dnd-kit`.
+- Install dnd-kit Libraries : `pnpm add @dnd-kit/core @dnd-kit/sortable @dnd-kit/utilities`.
+- `Update Backend & Frontend Types for History Tracking(Future UseCase)`(TODO): To track where a task has been, we need to add a new field to our Task model on both the backend and frontend.
+  - `Backend Model`: Open backend/models/task_models.py. Add a MoveHistory model and update the Task model.
+  - `Frontend Types`: Open src/types/index.ts and make the corresponding change.
+- `Refactor UI Components for Drag-and-Drop`:
+  - **`TaskItem`** Component: This component will now be a "**`draggable`**" item.
+    - Open src/components/TaskItem.tsx and replace its contents with this version, which uses the `useSortable` hook from `dnd-kit`.
+  - **`TaskList`** Component: This component will now be a "**`droppable`**" container for tasks.
+    - Open src/components/TaskList.tsx and replace its contents with this version.
+  - `Update the Dashboard Page with Drag-and-Drop Logic`: This is the main change. The Dashboard will now manage the entire drag-and-drop context and handle the logic when a drag operation ends.
+    - Open src/pages/Dashboard.tsx and replace its entire contents with the full, updated code below.
 
 ### Notes-Frontend
 
@@ -272,8 +290,6 @@ export default {
 - In backend/models/task_models.py.Add a `TaskHistory` model and update the `Task` model to use it.
 
 #### Include the optional notes field in our Pydantic models
-
-
 
 ### Notes-Backend
 

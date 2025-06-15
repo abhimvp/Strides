@@ -7,10 +7,13 @@ import {
   Trash2,
   Pencil,
   Info,
+  GripVertical,
 } from "lucide-react";
 import type { Task } from "../types";
 // This interface defines the props that the TaskItem component will receive.
 // It includes the task object, the category it belongs to, and a function to handle toggling the task's completion state.
+import { useSortable } from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
 
 interface TaskItemProps {
   task: Task;
@@ -34,10 +37,40 @@ export const TaskItem = ({
   onDelete,
   onEdit,
 }: TaskItemProps) => {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging, // Get the isDragging state from the hook
+  } = useSortable({
+    id: task.id,
+    data: {
+      type: "Task",
+      categoryName: categoryName,
+    },
+  });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.5 : 1, // Make the item semi-transparent while dragging
+  };
+
   const historyMap = new Map(task.history.map((h) => [h.date, h.completed]));
 
   return (
-    <div className="flex justify-between items-center py-3 hover:bg-slate-50 rounded-lg -mx-2 px-2 group">
+    <div
+      ref={setNodeRef}
+      style={style}
+      {...attributes}
+      className="flex justify-between items-center py-3 bg-white rounded-lg -mx-2 px-2 group mb-2 shadow-sm touch-none"
+    >
+      {/* Drag Handle */}
+      <div {...listeners} className="cursor-grab text-slate-400 p-2">
+        <GripVertical size={20} />
+      </div>
       {/* Left Side: Task Info */}
       <div className="flex-grow pr-4">
         <div className="flex items-center gap-2 mb-1">

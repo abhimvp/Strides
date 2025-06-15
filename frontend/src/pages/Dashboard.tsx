@@ -1,10 +1,23 @@
 import React, { useState, useEffect } from "react";
-import { PlusCircle } from "lucide-react";
-import { Header } from "../components/Header";
+import {
+  DndContext,
+  closestCenter,
+  PointerSensor,
+  useSensor,
+  useSensors,
+} from "@dnd-kit/core";
+import type {
+  DragEndEvent,
+  DragOverEvent,
+  DragStartEvent,
+} from "@dnd-kit/core";
+import toast from "react-hot-toast";
 import { TaskList } from "../components/TaskList";
+import { Header } from "../components/Header";
 import { Modal } from "../components/Modal";
 import { AddCategoryForm } from "../components/AddCategoryForm";
 import { ConfirmationDialog } from "../components/ConfirmationDialog";
+import { EditForm } from "../components/EditForm";
 import { initialTasks } from "../data/mockTasks";
 import type { UserTasks, Category, Task, TaskHistory } from "../types";
 import { getWeekDays } from "../utils/date";
@@ -14,8 +27,7 @@ import {
   createInitialTasks,
   updateTasks,
 } from "../services/taskService";
-import { EditForm } from "../components/EditForm";
-import toast from "react-hot-toast";
+import { PlusCircle } from "lucide-react";
 
 type DeletionInfo = {
   type: "task" | "category";
@@ -30,6 +42,9 @@ type EditingInfo = {
   currentText: string;
 } | null;
 
+// New type to reliably track the dragged item
+type ActiveDragItem = { id: number; categoryName: string } | null;
+
 export const Dashboard = () => {
   const [userTasks, setUserTasks] = useState<UserTasks | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -38,6 +53,7 @@ export const Dashboard = () => {
   const [deletionInfo, setDeletionInfo] = useState<DeletionInfo>(null);
   const [editingInfo, setEditingInfo] = useState<EditingInfo>(null);
   const [openCategory, setOpenCategory] = useState<string | null>(null);
+  const [activeDragItem, setActiveDragItem] = useState<ActiveDragItem>(null);
 
   const weekData = getWeekDays();
   const { logout } = useAuth();
@@ -69,6 +85,97 @@ export const Dashboard = () => {
     };
     fetchUserTasks();
   }, []);
+
+  // Improve drag-and-drop for touch and mouse
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 8,
+      },
+    })
+  );
+
+  // --- DND Event Handlers ---
+
+  const handleDragStart = (event: DragStartEvent) => {
+    const { active } = event;
+    // Reliably store the active item's info when the drag begins
+    setActiveDragItem({
+      id: active.id as number,
+      categoryName: active.data.current?.categoryName,
+    });
+  };
+
+  const handleDragOver = (event: DragOverEvent) => {
+    const { over } = event;
+    if (!over || !activeDragItem) return;
+
+    const overId = over.id as string;
+    const overCategoryName =
+      over.data.current?.type === "Category"
+        ? overId
+        : over.data.current?.categoryName;
+
+    if (overCategoryName && openCategory !== overCategoryName) {
+      // This prevents a setState call during render if you just moved the mouse slightly
+      if (activeDragItem.categoryName !== overCategoryName) {
+        setOpenCategory(overCategoryName);
+      }
+    }
+  };
+
+  const handleDragEnd = (event: DragEndEvent) => {
+    if (!activeDragItem) return;
+    const { over } = event;
+    setActiveDragItem(null);
+
+    if (!over) return;
+
+    const sourceCategoryName = activeDragItem.categoryName;
+    let destinationCategoryName;
+    if (over.data.current?.type === "Category") {
+      destinationCategoryName = over.id as string;
+    } else {
+      destinationCategoryName = over.data.current?.categoryName;
+    }
+
+    if (
+      !sourceCategoryName ||
+      !destinationCategoryName ||
+      sourceCategoryName === destinationCategoryName
+    ) {
+      return;
+    }
+
+    setUserTasks((prev) => {
+      if (!prev) return null;
+      const newCategories = JSON.parse(JSON.stringify(prev.categories));
+      const sourceCategory = newCategories.find(
+        (c: Category) => c.name === sourceCategoryName
+      );
+      const destinationCategory = newCategories.find(
+        (c: Category) => c.name === destinationCategoryName
+      );
+      if (!sourceCategory || !destinationCategory) return prev;
+
+      const taskIndex = sourceCategory.tasks.findIndex(
+        (t: Task) => t.id === activeDragItem.id
+      );
+      if (taskIndex === -1) return prev;
+
+      const [movedTask] = sourceCategory.tasks.splice(taskIndex, 1);
+      if (!movedTask.move_history) movedTask.move_history = [];
+      movedTask.move_history.push({
+        category_name: destinationCategory.name,
+        moved_at: new Date().toISOString(),
+      });
+      destinationCategory.tasks.push(movedTask);
+
+      updateAndSaveChanges(newCategories);
+      toast.success(`Task moved to "${destinationCategory.name}"`);
+      return { ...prev, categories: newCategories };
+    });
+  };
 
   const handleSaveInitialTasks = async () => {
     if (!userTasks) return;
@@ -266,7 +373,13 @@ export const Dashboard = () => {
   }
 
   return (
-    <>
+    <DndContext
+      sensors={sensors}
+      collisionDetection={closestCenter}
+      onDragStart={handleDragStart}
+      onDragOver={handleDragOver}
+      onDragEnd={handleDragEnd}
+    >
       <div className="bg-slate-50 min-h-screen font-sans text-gray-800">
         <div className="container mx-auto p-4 sm:p-6 md:p-8 max-w-4xl">
           <div className="flex justify-between items-start mb-4">
@@ -310,9 +423,9 @@ export const Dashboard = () => {
               tasks={category.tasks}
               weekDays={weekData}
               weekDates={weekData}
-              onToggleTask={handleToggleTask}
+              isOpen={openCategory === category.name}
               onHeaderClick={() => handleCategoryHeaderClick(category.name)}
-              isOpen={openCategory === category.name} // Pass down isOpen state
+              onToggleTask={handleToggleTask}
               onAddTask={handleAddTask}
               onEditCategory={handleEditCategory}
               onEditTask={handleEditTask}
@@ -345,6 +458,9 @@ export const Dashboard = () => {
             label={`${
               editingInfo.type === "category" ? "Category" : "Task"
             } Name`}
+            isTask={editingInfo.type === "task"}
+            categories={userTasks?.categories.map((c) => c.name) || []}
+            currentCategory={editingInfo.categoryName}
           />
         )}
       </Modal>
@@ -365,6 +481,6 @@ export const Dashboard = () => {
         title={`Delete ${deletionInfo?.type}`}
         message={`Are you sure you want to delete this ${deletionInfo?.type}? This action cannot be undone.`}
       />
-    </>
+    </DndContext>
   );
 };

@@ -493,6 +493,7 @@ export const Dashboard = () => {
               {userTasks?.categories.map((category) => (
                 <TaskList
                   key={category.name}
+                  isNewUser={isNewUser}
                   category={category.name}
                   tasks={category.tasks}
                   weekDays={weekData}

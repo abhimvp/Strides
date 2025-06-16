@@ -41,6 +41,7 @@ interface TaskListProps {
   ) => void;
   isOpen: boolean;
   onHeaderClick: () => void;
+  isNewUser: boolean; // <-- Add this to the interface
 }
 
 export const TaskList = ({
@@ -56,6 +57,7 @@ export const TaskList = ({
   onDeleteCategory,
   onEditCategory,
   onEditTask,
+  isNewUser, // <-- Add this to the props
 }: TaskListProps) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
 
@@ -153,6 +155,7 @@ export const TaskList = ({
             {tasks.map((task) => (
               <TaskItem
                 key={task.id}
+                isNewUser={isNewUser}
                 task={task}
                 categoryName={category}
                 weekDates={weekDates}

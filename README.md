@@ -7,8 +7,6 @@ To start frontend: `pnpm dev`
 
 <!-- TODO : Add Daily log feature for each of the task i create and remind user if he wants to make a note about what he/she did today or something to remind themselves about , this is different than current notes(optional) feature , so when the user clicks on task (>) icon a small side tab opens up and user can view the date and note he entered for past 7 days and a input box for him/her enter a note for current day. -->
 
-<!-- TODO : And also disable/remove the not able to change or enter check-in for previous days , only condition is when new user logs in today he can't just create check-ins for previous days , for existing user , he can make check-in edits from the time he/she joined that app. -->
-
 ## Frontend
 
 ### Features-frontend
@@ -179,6 +177,13 @@ To start frontend: `pnpm dev`
 - Create the MonthlyView Component : main new component for our feature - In your src/pages/ folder, create a new file named `MonthlyView.tsx`.
 - Update Dashboard.tsx to Include Tabs: Now, we'll add the view switcher to your main dashboard page.
   - Open src/pages/Dashboard.tsx.Add a new state for the current view and the MonthlyView component.
+
+#### Allowing Edits to Past Check-ins
+
+- Allowing existing users to modify check-ins for past days, while restricting new users.
+- Update the Dashboard.tsx Component, We need to pass the isNewUser state down to our list components.Find where the `<TaskList>` component is rendered inside the .map() function.Add the isNewUser prop to it.
+- Update the TaskList.tsx Component : Now, we need to accept the isNewUser prop in the TaskList and pass it further down to each TaskItem , Update the TaskListProps interface to include isNewUser.Pass the prop down to the `<TaskItem>` component.
+- Update the TaskItem.tsx Component (The Main Fix). We update the logic on the check-in button itself. Update the TaskItemProps interface to include isNewUser.Find the check-in `<button>` and modify its disabled attribute.
 
 ### Notes-Frontend
 

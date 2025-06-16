@@ -27,6 +27,7 @@ interface TaskItemProps {
   ) => void;
   onDelete: (categoryName: string, taskId: number) => void;
   onEdit: (categoryName: string, taskId: number, currentText: string) => void;
+  isNewUser: boolean;
 }
 
 export const TaskItem = ({
@@ -36,6 +37,7 @@ export const TaskItem = ({
   onToggle,
   onDelete,
   onEdit,
+  isNewUser,
 }: TaskItemProps) => {
   const {
     attributes,
@@ -117,7 +119,8 @@ export const TaskItem = ({
                 onClick={() =>
                   onToggle(categoryName, task.id, fullDate, isCompleted)
                 }
-                disabled={isPast}
+                // THE FIX: Only disable past dates if the user is new.
+                disabled={isNewUser && isPast}
                 className="flex justify-center items-center h-8 w-8 rounded-lg transition-all focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-400 disabled:opacity-50 disabled:cursor-not-allowed"
                 aria-label={`Mark task ${task.text} for date ${fullDate} as ${
                   isCompleted ? "incomplete" : "complete"

@@ -18,3 +18,11 @@ export const updateTasks = async (categories: Category[]) => {
   const response = await api.put("/tasks/", categories);
   return response.data;
 };
+
+// Fetches task completion history for a specific month
+export const getMonthlyHistory = async (year: number, month: number) => {
+  const response = await api.get('/tasks/history', {
+    params: { year, month }
+  });
+  return response.data;
+};

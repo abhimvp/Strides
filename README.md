@@ -5,6 +5,10 @@ Implies making consistent, noticeable progress.
 To start backend: `uvicorn main:app --reload`
 To start frontend: `pnpm dev`
 
+<!-- TODO : Add Daily log feature for each of the task i create and remind user if he wants to make a note about what he/she did today or something to remind themselves about , this is different than current notes(optional) feature , so when the user clicks on task (>) icon a small side tab opens up and user can view the date and note he entered for past 7 days and a input box for him/her enter a note for current day. -->
+
+<!-- TODO : And also disable/remove the not able to change or enter check-in for previous days , only condition is when new user logs in today he can't just create check-ins for previous days , for existing user , he can make check-in edits from the time he/she joined that app. -->
+
 ## Frontend
 
 ### Features-frontend
@@ -167,6 +171,15 @@ To start frontend: `pnpm dev`
   - Enhance the "Edit Task" Modal: Allow the user to edit not just the task's name and category, but also its notes.
     - Update the AddTaskForm Component : We'll add a category dropdown to this form. It will be optional and will only show up if a list of categories is provided.
 
+#### Implementing the Monthly Calendar View : Task-Centric
+
+- Adding a monthly progress view to the "Strides" application.
+- The Monthly View UI : Now, we'll build the frontend components to display the calendar.
+- `Update` the taskService.ts : Add a new function to `call our new backend endpoint`.Add the `getMonthlyHistory` function.
+- Create the MonthlyView Component : main new component for our feature - In your src/pages/ folder, create a new file named `MonthlyView.tsx`.
+- Update Dashboard.tsx to Include Tabs: Now, we'll add the view switcher to your main dashboard page.
+  - Open src/pages/Dashboard.tsx.Add a new state for the current view and the MonthlyView component.
+
 ### Notes-Frontend
 
 - Setting Up Your React(Typescript) Frontend with Vite and Tailwind CSS.
@@ -304,6 +317,12 @@ export default {
 - In backend/models/task_models.py.Add a `TaskHistory` model and update the `Task` model to use it.
 
 #### Include the optional notes field in our Pydantic models
+
+#### Implementing the Monthly Calendar View-Backend
+
+- Adding a monthly progress view to the "Strides" application.
+- `The Smart History API`: First, we need to create a new, efficient API endpoint that can fetch task history for a specific month.
+- `Add a New Route` to routes/tasks.py . Open backend/routes/tasks.py and add the following new endpoint to the bottom of the file. This endpoint will use a powerful MongoDB aggregation query to fetch only the relevant data.
 
 ### Notes-Backend
 

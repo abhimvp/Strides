@@ -1,8 +1,10 @@
-from typing import List
+from typing import Dict, List
 from fastapi import APIRouter, Depends, HTTPException, status
 from models.task_models import UserTasks, Category
 from utils.database import database
 from utils.security import get_current_user
+from datetime import datetime, date
+from calendar import monthrange
 
 router = APIRouter()
 tasks_collection = database.get_collection("tasks")
@@ -68,3 +70,63 @@ async def update_user_tasks(
         )
 
     return updated_doc
+
+
+@router.get("/history", response_model=Dict[int, List[str]])
+async def get_monthly_history(
+    year: int,
+    month: int,
+    current_user_email: str = Depends(get_current_user),
+):
+    """
+    Retrieve a map of tasks and their completed dates for a specific month.
+    The response will be like: { "taskId": ["2025-06-15", "2025-06-16"], ... }
+    """
+    # Calculate the start and end dates for the given month
+    start_date_str = date(year, month, 1).isoformat()
+    _, num_days = monthrange(year, month)
+    end_date_str = date(year, month, num_days).isoformat()
+
+    pipeline = [
+        # 1. Find the document for the logged-in user
+        {"$match": {"owner_id": current_user_email}},
+        # 2. Deconstruct the arrays to process each task individually
+        {"$unwind": "$categories"},
+        {"$unwind": "$categories.tasks"},
+        # 3. Reshape the data and filter the history for the requested month
+        {
+            "$project": {
+                "task_id": "$categories.tasks.id",
+                "completed_dates": {
+                    "$filter": {
+                        "input": "$categories.tasks.history",
+                        "as": "h",
+                        "cond": {
+                            "$and": [
+                                {"$gte": ["$$h.date", start_date_str]},
+                                {"$lte": ["$$h.date", end_date_str]},
+                                {"$eq": ["$$h.completed", True]},
+                            ]
+                        },
+                    }
+                },
+            }
+        },
+        # 4. Group the results by task ID
+        {
+            "$group": {
+                "_id": "$task_id",
+                "completed_dates": {"$first": "$completed_dates.date"},
+            }
+        },
+    ]
+
+    cursor = tasks_collection.aggregate(pipeline)
+
+    # 5. Format the result into the desired dictionary
+    history_map = {}
+    async for doc in cursor:
+        if doc["_id"] is not None and doc["completed_dates"]:
+            history_map[doc["_id"]] = doc["completed_dates"]
+
+    return history_map

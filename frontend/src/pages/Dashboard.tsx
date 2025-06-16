@@ -29,6 +29,7 @@ import {
   updateTasks,
 } from "../services/taskService";
 import { PlusCircle, Plus } from "lucide-react";
+import { MonthlyView } from "./MonthlyView";
 
 type DeletionInfo = {
   type: "task" | "category";
@@ -47,6 +48,8 @@ type EditingInfo = {
 // New type to reliably track the dragged item
 type ActiveDragItem = { id: number; categoryName: string } | null;
 
+type View = "weekly" | "monthly"; // Type for our view state
+
 const DEFAULT_CATEGORY = "Not Yet Categorized";
 
 export const Dashboard = () => {
@@ -59,6 +62,7 @@ export const Dashboard = () => {
   const [editingInfo, setEditingInfo] = useState<EditingInfo>(null);
   const [openCategory, setOpenCategory] = useState<string | null>(null);
   const [activeDragItem, setActiveDragItem] = useState<ActiveDragItem>(null);
+  const [currentView, setCurrentView] = useState<View>("weekly"); // New state for tabs
 
   const weekData = getWeekDays();
   const { logout } = useAuth();
@@ -403,7 +407,7 @@ export const Dashboard = () => {
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        Loading your Strides...
+        Loading...
       </div>
     );
   }
@@ -445,47 +449,77 @@ export const Dashboard = () => {
               </button>
             </div>
           </div>
-          <div className="mt-8 text-center">
-            <button
-              onClick={() => setIsCategoryModalOpen(true)}
-              className="inline-flex items-center gap-2 text-lg text-slate-600 hover:text-blue-600 transition-colors py-2 px-4"
-            >
-              <PlusCircle size={24} />
-              Create a New Category
-            </button>
+          {/* View Switcher Tabs */}
+          <div className="mb-6 border-b-2 border-slate-200">
+            <nav className="-mb-0.5 flex space-x-6">
+              <button
+                onClick={() => setCurrentView("weekly")}
+                className={`py-2 px-1 border-b-4 font-medium text-lg transition-colors ${
+                  currentView === "weekly"
+                    ? "border-blue-500 text-blue-600"
+                    : "border-transparent text-slate-500 hover:text-slate-700"
+                }`}
+              >
+                Weekly View
+              </button>
+              <button
+                onClick={() => setCurrentView("monthly")}
+                className={`py-2 px-1 border-b-4 font-medium text-lg transition-colors ${
+                  currentView === "monthly"
+                    ? "border-blue-500 text-blue-600"
+                    : "border-transparent text-slate-500 hover:text-slate-700"
+                }`}
+              >
+                Monthly View
+              </button>
+            </nav>
           </div>
 
-          {isNewUser && (
-            <div
-              className="bg-blue-100 border-l-4 border-blue-500 text-blue-700 p-4 mb-6 rounded-md"
-              role="alert"
-            >
-              <p className="font-bold">Welcome to Strides!</p>
-              <p>
-                We've started you off with some example tasks. Feel free to
-                edit, add, or delete them, then click "Save My Strides" to
-                begin!
-              </p>
-            </div>
+          {currentView === "weekly" ? (
+            <>
+              {isNewUser && (
+                <div
+                  className="bg-blue-100 border-l-4 border-blue-500 text-blue-700 p-4 mb-6 rounded-md"
+                  role="alert"
+                >
+                  <p className="font-bold">Welcome to Strides!</p>
+                  <p>
+                    We've started you off with some example tasks. Feel free to
+                    edit, add, or delete them, then click "Save My Strides" to
+                    begin!
+                  </p>
+                </div>
+              )}
+              {userTasks?.categories.map((category) => (
+                <TaskList
+                  key={category.name}
+                  category={category.name}
+                  tasks={category.tasks}
+                  weekDays={weekData}
+                  weekDates={weekData}
+                  isOpen={openCategory === category.name}
+                  onHeaderClick={() => handleCategoryHeaderClick(category.name)}
+                  onToggleTask={handleToggleTask}
+                  onAddTask={handleAddTask}
+                  onEditCategory={handleEditCategory}
+                  onEditTask={handleEditTask}
+                  onDeleteTask={handleDeleteTask}
+                  onDeleteCategory={handleDeleteCategory}
+                />
+              ))}
+              <div className="mt-8 text-center">
+                <button
+                  onClick={() => setIsCategoryModalOpen(true)}
+                  className="inline-flex items-center gap-2 text-lg text-slate-600 hover:text-blue-600 transition-colors py-2 px-4"
+                >
+                  <PlusCircle size={24} />
+                  Create a New Category
+                </button>
+              </div>
+            </>
+          ) : (
+            <MonthlyView userTasks={userTasks} />
           )}
-
-          {userTasks?.categories.map((category) => (
-            <TaskList
-              key={category.name}
-              category={category.name}
-              tasks={category.tasks}
-              weekDays={weekData}
-              weekDates={weekData}
-              isOpen={openCategory === category.name}
-              onHeaderClick={() => handleCategoryHeaderClick(category.name)}
-              onToggleTask={handleToggleTask}
-              onAddTask={handleAddTask}
-              onEditCategory={handleEditCategory}
-              onEditTask={handleEditTask}
-              onDeleteTask={handleDeleteTask}
-              onDeleteCategory={handleDeleteCategory}
-            />
-          ))}
         </div>
       </div>
       {/* Updated Modal rendering for Global Add Task */}

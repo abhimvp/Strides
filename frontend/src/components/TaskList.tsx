@@ -17,6 +17,7 @@ interface WeekDay {
 }
 
 interface TaskListProps {
+  onOpenLog: (task: Task) => void;
   category: string;
   tasks: Task[];
   weekDays: WeekDay[];
@@ -58,6 +59,7 @@ export const TaskList = ({
   onEditCategory,
   onEditTask,
   isNewUser, // <-- Add this to the props
+  onOpenLog,
 }: TaskListProps) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
 
@@ -162,6 +164,7 @@ export const TaskList = ({
                 onToggle={onToggleTask}
                 onDelete={onDeleteTask}
                 onEdit={onEditTask}
+                onOpenLog={onOpenLog}
               />
             ))}
           </SortableContext>
@@ -178,6 +181,7 @@ export const TaskList = ({
         title={`Add Task to "${category}"`}
       >
         <AddTaskForm
+          defaultCategory={category}
           onAddTask={(taskData) => onAddTask(category, taskData)}
           onClose={() => setIsModalOpen(false)}
         />

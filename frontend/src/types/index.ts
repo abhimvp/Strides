@@ -4,12 +4,19 @@ export interface TaskHistory {
   completed: boolean;
 }
 
+// Add this new interface
+export interface DailyLog {
+  date: string;
+  note: string;
+}
+
 // Matches the Task model in FastAPI
 export interface Task {
   id: number;
   text: string;
   history: TaskHistory[]; // <-- The history is now an array of these objects
   move_history?: MoveHistory[];
+  daily_logs?: DailyLog[];
   frequency?: string;
   prescription?: boolean;
   notes?: string;

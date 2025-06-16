@@ -17,6 +17,12 @@ class TaskHistory(BaseModel):
     completed: bool
 
 
+# Add this new model for a single log entry
+class DailyLog(BaseModel):
+    date: str  # Stored in "YYYY-MM-DD" format
+    note: str
+
+
 class Task(BaseModel):
     """Task: Represents a single to-do item, just like in our frontend"""
 
@@ -24,6 +30,7 @@ class Task(BaseModel):
     text: str
     history: List[TaskHistory]
     move_history: List[MoveHistory] = []
+    daily_logs: List[DailyLog] = []
     frequency: Optional[str] = None
     prescription: Optional[bool] = None
     notes: Optional[str] = None  # <-- The newly added optional field

@@ -8,6 +8,7 @@ import {
   Pencil,
   Info,
   GripVertical,
+  MessageSquare,
 } from "lucide-react";
 import type { Task } from "../types";
 // This interface defines the props that the TaskItem component will receive.
@@ -16,6 +17,7 @@ import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 
 interface TaskItemProps {
+  onOpenLog: (task: Task) => void;
   task: Task;
   categoryName: string;
   weekDates: { fullDate: string; isPast: boolean }[];
@@ -32,6 +34,7 @@ interface TaskItemProps {
 
 export const TaskItem = ({
   task,
+  onOpenLog,
   categoryName,
   weekDates,
   onToggle,
@@ -86,6 +89,13 @@ export const TaskItem = ({
               </div>
             </div>
           )}
+          <button
+            onClick={() => onOpenLog(task)}
+            className="text-gray-400 hover:text-blue-500 opacity-0 group-hover:opacity-100 transition-opacity"
+            aria-label={`View logs for ${task.text}`}
+          >
+            <MessageSquare size={16} />
+          </button>
           <button
             onClick={() => onEdit(categoryName, task.id, task.text)}
             className="text-gray-400 hover:text-blue-500 opacity-0 group-hover:opacity-100 transition-opacity"

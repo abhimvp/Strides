@@ -185,6 +185,17 @@ To start frontend: `pnpm dev`
 - Update the TaskList.tsx Component : Now, we need to accept the isNewUser prop in the TaskList and pass it further down to each TaskItem , Update the TaskListProps interface to include isNewUser.Pass the prop down to the `<TaskItem>` component.
 - Update the TaskItem.tsx Component (The Main Fix). We update the logic on the check-in button itself. Update the TaskItemProps interface to include isNewUser.Find the check-in `<button>` and modify its disabled attribute.
 
+#### Daily Logs for Tasks - Frontend
+
+- Implementing a journaling feature that allows users to add daily notes to each of their tasks.
+- `First, we need to update our data structures to support daily logs.`
+- `Update Frontend Types`: Open src/types/index.ts to mirror the backend changes.
+- Frontend Implementation : Now, we'll build the UI for viewing and editing these logs.
+- Create the `DailyLogModal` Component: This new component will be the main interface for our feature.In src/components/, create a new file named DailyLogModal.tsx
+- Update TaskItem.tsx to Include Log Button - Add a MessageSquare icon and an onOpenLog prop.
+- Update TaskList.tsx to Relay Props - Update the TaskListProps interface and pass the new onOpenLog prop to `<TaskItem>`
+- Update Dashboard.tsx with Final Logic: Finally, we integrate the new modal and its logic into our main dashboard. - Add the new state and handlers for the daily log feature.
+
 ### Notes-Frontend
 
 - Setting Up Your React(Typescript) Frontend with Vite and Tailwind CSS.
@@ -328,6 +339,12 @@ export default {
 - Adding a monthly progress view to the "Strides" application.
 - `The Smart History API`: First, we need to create a new, efficient API endpoint that can fetch task history for a specific month.
 - `Add a New Route` to routes/tasks.py . Open backend/routes/tasks.py and add the following new endpoint to the bottom of the file. This endpoint will use a powerful MongoDB aggregation query to fetch only the relevant data.
+
+#### Daily Logs for Tasks - Backend
+
+- Implementing a journaling feature that allows users to add daily notes to each of their tasks.
+- `First, we need to update our data structures to support daily logs.`
+- `Update Backend Models`: Open backend/models/task_models.py and add a new `DailyLog` model, then `update` the Task model to include a list of these logs.
 
 ### Notes-Backend
 

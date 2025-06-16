@@ -153,6 +153,20 @@ To start frontend: `pnpm dev`
   - `Update the Dashboard Page with Drag-and-Drop Logic`: This is the main change. The Dashboard will now manage the entire drag-and-drop context and handle the logic when a drag operation ends.
     - Open src/pages/Dashboard.tsx and replace its entire contents with the full, updated code below.
 
+#### Default "Inbox Category"
+
+- Implementing a global "Add Task" button that adds tasks to a default "Uncategorized/Inbox" category, creating it if the user isn't sure to which category the task belongs to.
+- Improve the user workflow by adding a default "Uncategorized" category.This will lower the barrier for users to add tasks, as they won't have to decide on a category immediately. They can capture their thoughts quickly and organize them later.
+  - Add a `Global "Add Task"` Button: We'll add a main, prominent button to the Dashboard header area.
+  - Create a New Modal State: This button will trigger its own modal, separate from the ones inside each category list.
+  - Update the handleAddTask Logic: We'll make this function smarter. It will check if a default category (e.g., "Inbox") exists. If not, it will create it. Then, it will add the new task to that "Inbox" category.
+  - `This will be a much smoother and more intuitive experience for the user.`
+- `Advanced Task Creation and Editing` :
+  - Upgrading our forms to allow selecting a category when creating a task and editing notes when updating a task.
+  - Enhance the Global "Add Task" Modal: Instead of always adding to a default category, give the user a dropdown of their existing categories, with the default ("Inbox") as the first option.
+  - Enhance the "Edit Task" Modal: Allow the user to edit not just the task's name and category, but also its notes.
+    - Update the AddTaskForm Component : We'll add a category dropdown to this form. It will be optional and will only show up if a list of categories is provided.
+
 ### Notes-Frontend
 
 - Setting Up Your React(Typescript) Frontend with Vite and Tailwind CSS.

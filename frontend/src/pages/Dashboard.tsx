@@ -15,6 +15,7 @@ import toast from "react-hot-toast";
 import { TaskList } from "../components/TaskList";
 import { Header } from "../components/Header";
 import { Modal } from "../components/Modal";
+import { AddTaskForm } from "../components/AddTaskForm";
 import { AddCategoryForm } from "../components/AddCategoryForm";
 import { ConfirmationDialog } from "../components/ConfirmationDialog";
 import { EditForm } from "../components/EditForm";
@@ -27,7 +28,7 @@ import {
   createInitialTasks,
   updateTasks,
 } from "../services/taskService";
-import { PlusCircle } from "lucide-react";
+import { PlusCircle, Plus } from "lucide-react";
 
 type DeletionInfo = {
   type: "task" | "category";
@@ -40,16 +41,20 @@ type EditingInfo = {
   categoryName: string;
   taskId?: number;
   currentText: string;
+  currentNotes?: string;
 } | null;
 
 // New type to reliably track the dragged item
 type ActiveDragItem = { id: number; categoryName: string } | null;
+
+const DEFAULT_CATEGORY = "Not Yet Categorized";
 
 export const Dashboard = () => {
   const [userTasks, setUserTasks] = useState<UserTasks | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isNewUser, setIsNewUser] = useState(false);
   const [isCategoryModalOpen, setIsCategoryModalOpen] = useState(false);
+  const [isGlobalTaskModalOpen, setIsGlobalTaskModalOpen] = useState(false);
   const [deletionInfo, setDeletionInfo] = useState<DeletionInfo>(null);
   const [editingInfo, setEditingInfo] = useState<EditingInfo>(null);
   const [openCategory, setOpenCategory] = useState<string | null>(null);
@@ -219,11 +224,16 @@ export const Dashboard = () => {
     taskId: number,
     currentText: string
   ) => {
+    // Find the full task object to get its current notes
+    const task = userTasks?.categories
+      .find((c) => c.name === categoryName)
+      ?.tasks.find((t) => t.id === taskId);
     setEditingInfo({
       type: "task",
       categoryName,
       taskId,
       currentText,
+      currentNotes: task?.notes || "", // Pass current notes to the form
     });
   };
 
@@ -235,29 +245,50 @@ export const Dashboard = () => {
     });
   };
 
-  const handleEditSave = (newValue: string) => {
+  const handleEditSave = (data: {
+    newText: string;
+    newCategory?: string;
+    newNotes?: string;
+  }) => {
     if (!userTasks || !editingInfo) return;
-    const newCategories = JSON.parse(JSON.stringify(userTasks.categories));
+
+    const { newText, newCategory, newNotes } = data;
+    let newCategories = JSON.parse(JSON.stringify(userTasks.categories));
+    const originalCategoryName = editingInfo.categoryName;
+
     if (editingInfo.type === "category") {
-      const category = newCategories.find(
-        (c: Category) => c.name === editingInfo.categoryName
+      const categoryToEdit = newCategories.find(
+        (c: Category) => c.name === originalCategoryName
       );
-      if (category) category.name = newValue;
+      if (categoryToEdit) categoryToEdit.name = newText;
     } else {
       // type is 'task'
-      const category = newCategories.find(
-        (c: Category) => c.name === editingInfo.categoryName
+      const sourceCategory = newCategories.find(
+        (c: Category) => c.name === originalCategoryName
       );
-      if (category) {
-        const task = category.tasks.find(
-          (t: Task) => t.id === editingInfo.taskId
-        );
-        if (task) task.text = newValue;
+      const taskToUpdate = sourceCategory?.tasks.find(
+        (t: Task) => t.id === editingInfo.taskId
+      );
+      if (sourceCategory && taskToUpdate) {
+        taskToUpdate.text = newText;
+        taskToUpdate.notes = newNotes || undefined;
+
+        if (newCategory && newCategory !== originalCategoryName) {
+          sourceCategory.tasks = sourceCategory.tasks.filter(
+            (t: Task) => t.id !== editingInfo.taskId
+          );
+          const destinationCategory = newCategories.find(
+            (c: Category) => c.name === newCategory
+          );
+          if (destinationCategory) destinationCategory.tasks.push(taskToUpdate);
+          toast.success(`Task moved to "${newCategory}"`);
+        } else {
+          toast.success(`Task updated successfully!`);
+        }
       }
     }
     updateAndSaveChanges(newCategories);
-    toast.success(`Item updated successfully!`);
-    setEditingInfo(null); // Close the modal
+    setEditingInfo(null);
   };
 
   const handleAddCategory = (categoryName: string) => {
@@ -283,19 +314,24 @@ export const Dashboard = () => {
   ) => {
     if (!userTasks) return;
     const newCategories = JSON.parse(JSON.stringify(userTasks.categories));
-    const category = newCategories.find(
-      (c: Category) => c.name === categoryName
-    );
-    if (category) {
-      const newTask: Task = {
-        id: Date.now(),
-        text: taskData.text,
-        notes: taskData.notes || undefined,
-        history: [],
-      };
-      category.tasks.push(newTask);
-      updateAndSaveChanges(newCategories);
+    let category = newCategories.find((c: Category) => c.name === categoryName);
+    if (!category) {
+      const newCategory: Category = { name: categoryName, tasks: [] };
+      newCategories.push(newCategory);
+      category = newCategory;
     }
+    const newTask: Task = {
+      id: Date.now(),
+      text: taskData.text,
+      notes: taskData.notes || undefined,
+      history: [],
+      move_history: [
+        { category_name: categoryName, moved_at: new Date().toISOString() },
+      ],
+    };
+    category.tasks.push(newTask);
+    updateAndSaveChanges(newCategories);
+    setOpenCategory(categoryName);
   };
 
   const handleToggleTask = (
@@ -385,6 +421,14 @@ export const Dashboard = () => {
           <div className="flex justify-between items-start mb-4">
             <Header />
             <div className="flex items-center gap-4 mt-4">
+              {/* New Global Add Task Button */}
+              <button
+                onClick={() => setIsGlobalTaskModalOpen(true)}
+                className="flex items-center gap-2 text-sm bg-blue-500 text-white py-2 px-4 rounded-lg shadow-md hover:bg-blue-600 font-semibold"
+              >
+                <Plus size={16} />
+                Add Task
+              </button>
               {isNewUser && (
                 <button
                   onClick={handleSaveInitialTasks}
@@ -400,6 +444,15 @@ export const Dashboard = () => {
                 Logout
               </button>
             </div>
+          </div>
+          <div className="mt-8 text-center">
+            <button
+              onClick={() => setIsCategoryModalOpen(true)}
+              className="inline-flex items-center gap-2 text-lg text-slate-600 hover:text-blue-600 transition-colors py-2 px-4"
+            >
+              <PlusCircle size={24} />
+              Create a New Category
+            </button>
           </div>
 
           {isNewUser && (
@@ -433,18 +486,28 @@ export const Dashboard = () => {
               onDeleteCategory={handleDeleteCategory}
             />
           ))}
-
-          <div className="mt-8 text-center">
-            <button
-              onClick={() => setIsCategoryModalOpen(true)}
-              className="inline-flex items-center gap-2 text-lg text-slate-600 hover:text-blue-600 transition-colors py-2 px-4"
-            >
-              <PlusCircle size={24} />
-              Create a New Category
-            </button>
-          </div>
         </div>
       </div>
+      {/* Updated Modal rendering for Global Add Task */}
+      <Modal
+        isOpen={isGlobalTaskModalOpen}
+        onClose={() => setIsGlobalTaskModalOpen(false)}
+        title="Add a New Task"
+      >
+        <AddTaskForm
+          categories={[
+            DEFAULT_CATEGORY,
+            ...(userTasks?.categories.map((c) => c.name) || []),
+          ]}
+          defaultCategory={DEFAULT_CATEGORY}
+          onAddTask={(taskData, categoryName) => {
+            handleAddTask(categoryName, taskData);
+            toast.success(`Task added to ${categoryName}!`);
+          }}
+          onClose={() => setIsGlobalTaskModalOpen(false)}
+        />
+      </Modal>
+      {/* Updated Modal rendering for EditForm */}
       <Modal
         isOpen={!!editingInfo}
         onClose={() => setEditingInfo(null)}
@@ -452,7 +515,8 @@ export const Dashboard = () => {
       >
         {editingInfo && (
           <EditForm
-            initialValue={editingInfo.currentText}
+            initialText={editingInfo.currentText}
+            initialNotes={editingInfo.currentNotes}
             onSave={handleEditSave}
             onClose={() => setEditingInfo(null)}
             label={`${

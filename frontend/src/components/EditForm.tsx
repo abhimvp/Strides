@@ -1,8 +1,15 @@
 import React, { useState, useEffect } from "react";
 
+interface EditFormData {
+  newText: string;
+  newCategory?: string;
+  newNotes?: string;
+}
+
 interface EditFormProps {
-  initialValue: string;
-  onSave: (newText: string, newCategory?: string) => void;
+  initialText: string;
+  initialNotes?: string;
+  onSave: (data: EditFormData) => void;
   onClose: () => void;
   label: string;
   isTask: boolean;
@@ -11,7 +18,8 @@ interface EditFormProps {
 }
 
 export const EditForm = ({
-  initialValue,
+  initialText,
+  initialNotes = "",
   onSave,
   onClose,
   label,
@@ -19,19 +27,25 @@ export const EditForm = ({
   categories,
   currentCategory,
 }: EditFormProps) => {
-  const [textValue, setTextValue] = useState(initialValue);
+  const [textValue, setTextValue] = useState(initialText);
+  const [notesValue, setNotesValue] = useState(initialNotes);
   const [selectedCategory, setSelectedCategory] = useState(currentCategory);
 
   useEffect(() => {
-    setTextValue(initialValue);
+    setTextValue(initialText);
+    setNotesValue(initialNotes);
     setSelectedCategory(currentCategory);
-  }, [initialValue, currentCategory]);
+  }, [initialText, initialNotes, currentCategory]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (textValue.trim()) {
-      onSave(textValue.trim(), selectedCategory);
-      onClose(); // Close modal on save
+      onSave({
+        newText: textValue.trim(),
+        newCategory: selectedCategory,
+        newNotes: notesValue.trim(),
+      });
+      onClose();
     }
   };
 
@@ -55,26 +69,43 @@ export const EditForm = ({
           />
         </div>
         {isTask && (
-          <div>
-            <label
-              htmlFor="category"
-              className="block text-sm font-medium text-gray-700"
-            >
-              Category
-            </label>
-            <select
-              id="category"
-              value={selectedCategory}
-              onChange={(e) => setSelectedCategory(e.target.value)}
-              className="mt-1 block w-full px-3 py-2 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-            >
-              {categories.map((cat) => (
-                <option key={cat} value={cat}>
-                  {cat}
-                </option>
-              ))}
-            </select>
-          </div>
+          <>
+            <div>
+              <label
+                htmlFor="category"
+                className="block text-sm font-medium text-gray-700"
+              >
+                Category
+              </label>
+              <select
+                id="category"
+                value={selectedCategory}
+                onChange={(e) => setSelectedCategory(e.target.value)}
+                className="mt-1 block w-full px-3 py-2 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+              >
+                {categories.map((cat) => (
+                  <option key={cat} value={cat}>
+                    {cat}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label
+                htmlFor="editNotes"
+                className="block text-sm font-medium text-gray-700"
+              >
+                Notes (Optional)
+              </label>
+              <textarea
+                id="editNotes"
+                value={notesValue}
+                onChange={(e) => setNotesValue(e.target.value)}
+                rows={3}
+                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+              />
+            </div>
+          </>
         )}
       </div>
       <div className="flex justify-end gap-4 mt-6">

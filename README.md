@@ -5,7 +5,9 @@ Implies making consistent, noticeable progress.
 To start backend: `uvicorn main:app --reload`
 To start frontend: `pnpm dev`
 
-<!-- TODO : Add Daily log feature for each of the task i create and remind user if he wants to make a note about what he/she did today or something to remind themselves about , this is different than current notes(optional) feature , so when the user clicks on task (>) icon a small side tab opens up and user can view the date and note he entered for past 7 days and a input box for him/her enter a note for current day. -->
+## Tools to refer later
+
+- [You can now go from GitHub README to working MVP with a single prompt in Cursor](https://www.linkedin.com/posts/eric-vyacheslav-156273169_you-can-now-go-from-github-readme-to-working-ugcPost-7340332667403411457-xNTJ?utm_source=share&utm_medium=member_desktop&rcm=ACoAACPeyxkBonrLXm1cT_CSwVkX1QTcKmY9BK0)
 
 ## Frontend
 
@@ -483,3 +485,24 @@ Successfully connected to MongoDB.
 - Configure Database Access
 - Configure Network Access
 - Get Your Connection String
+
+## Build AI Agents using LangGraph,Langchain-ecosystem
+
+[Install Langchain packages reference guide](https://python.langchain.com/docs/how_to/installation/)
+
+```bash
+# Install the necessary packages to build AI Agents
+(backend)
+abhis@Tinku MINGW64 ~/Desktop/Strides/backend (main)
+$ uv add langgraph langchain_core langchain_community langsmith langchain-google-genai langchain langchain[google-genai] pydantic
+```
+
+### Create a simple agent and connect it to frontend
+
+- Backend :
+  - create a new file -> backend/routes/agent.py : This file will contain the API endpoint for your AI agent.
+  - Update backend/main.py to include the new router
+- Frontend :
+  - Create a new file frontend/src/services/agentService.ts : This service will handle communication with your new backend agent endpoint.
+  - Create a new component frontend/src/components/AIAgent.tsx: This component will provide the UI for interacting with the AI agent.
+  - Add the AIAgent component to your Dashboard.tsx page

@@ -4,9 +4,16 @@ version = "0.1.0"
 requires-python = ">=3.12"
 dependencies = [
     "fastapi[all]",
+    "langchain[google-genai]>=0.3.25",
+    "langchain-community>=0.3.25",
+    "langchain-core>=0.3.65",
+    "langchain-google-genai>=2.1.5",
+    "langgraph>=0.4.8",
+    "langsmith>=0.3.45",
     "motor",
     "passlib[bcrypt]",
     "python-dotenv>=1.1.0",
     "python-jose",
     "requests>=2.32.4",
+    "pydantic>=2.11.5",
 ]

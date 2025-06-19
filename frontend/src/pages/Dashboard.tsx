@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import AIAgent from "../components/AIAgent";
 import {
   DndContext,
   closestCenter,
@@ -559,6 +560,9 @@ export const Dashboard = () => {
                   <PlusCircle size={24} />
                   Create a New Category
                 </button>
+              </div>
+              <div>
+                <AIAgent />
               </div>
             </>
           ) : (

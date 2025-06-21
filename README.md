@@ -506,3 +506,7 @@ $ uv add langgraph langchain_core langchain_community langsmith langchain-google
   - Create a new file frontend/src/services/agentService.ts : This service will handle communication with your new backend agent endpoint.
   - Create a new component frontend/src/components/AIAgent.tsx: This component will provide the UI for interacting with the AI agent.
   - Add the AIAgent component to your Dashboard.tsx page
+
+## Adding Expense Tracker
+
+- Refactoring the Dashboard for new features

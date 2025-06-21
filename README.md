@@ -510,3 +510,19 @@ $ uv add langgraph langchain_core langchain_community langsmith langchain-google
 ## Adding Expense Tracker
 
 - Refactoring the Dashboard for new features
+- Build a comprehensive expense tracker feature.
+- Sticking with `MongoDB`, Its flexible, document-based structure is well-suited for the kind of data you've described, especially with custom categories, sub-categories, and varied transaction details. It can handle this complexity efficiently.
+
+  - **`Main Idea`**: `i'm wondering about about design decision here for database we want to go ahead with , i will layout the base idea of how i want the expense tracker to look on frontend : Me as a user wants to add a transaction - which could be Expense , income , transfer from one account to another , under expense we would be entering the amount ( in rupees or dollar - user preference) , category ( these will be custom created by users mostly , but we will provide some default categories for new users like Shopping (mostly dresses) , Personal care (could be face wash , sunscreens , body washes , ..etc) , Gas ( could be petrol or diesel) , Street Food ( could be Random snacks or ordered from Food delivery apps like swiggy zomato zepto blinkit) , Electronics ( Headsets , TVs , mouse , keyboard , something related to home ...etc) , Education ( buying courses on ed tech platforms or paying school fees and books ..etc) , Bills and Utilities ( like current , water .. home related bills ...) , Insurance , Rent , Taxes , Groceries ( could be from food delivery apps , from markets ..etc) , Gifts & Donation , Traveling ( could be like an event and add all those expenses on those traveling days) , Food and Dining ( could be family and friends outings ) , likewise , here user should be able to create a category (Main) and also be able to add sub category like above mentioned in (....) , and Payment mode option ( in here user can select bank account or cash or linked payment modes (phonepe , paypal , stripe , googlepay from which bank accounts like debit(visa , mastercard ..etc ) by company (ICICI , HDFC , BOFA , CHASE) or Credit card accounts ..etc , and provide user a other details(A note on what the transaction is about - max 500 characters) and we can give him the option to attach things like invoice or anything for his future references , max attachments for now would be 3 . and once user enters a expense , income or transfer , it should show up in recent transactions log with all the main info (which we will decide ) and this is what i'm thinking for starters , we should be able to expand bigger as we can in future , also be able to show current balances of whatever accounts the user added for his reference ..etc , let me know if mongodb is good for this in terms of querying and all storage or should we have postgresql for this.`
+
+- Let's start building this feature. We will begin with the backend, as it forms the foundation for everything else.
+
+### Backend - Expense Tracker
+
+- Defining the Backend Data Models : First, we need to define how we'll structure the data in our database. I will create a new file specifically for these expense-related models to keep the project organized.
+
+  - The Transaction model is flexible enough to handle expenses, income, and transfers, and the Account and ExpenseCategory models support the custom features you outlined.
+
+- Let's create the API endpoints for managing financial accounts: I've created a new file, backend/routes/expenses.py, to house all the logic for our expense tracker. This file now contains the endpoints for creating and retrieving a user's accounts.
+
+### Frontend - Expense Tracker

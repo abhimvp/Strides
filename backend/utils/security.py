@@ -6,12 +6,13 @@ from jose import JWTError, jwt
 from dotenv import load_dotenv
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
+from motor.motor_asyncio import AsyncIOMotorDatabase
 from models.user_models import TokenData
-from .database import database
+from .database import get_database
 
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/auth/login")
-user_collection = database.get_collection("users")
+# user_collection = database.get_collection("users")
 
 load_dotenv()
 
@@ -51,7 +52,10 @@ def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
 # It automatically grabs the token from the request header, decodes it,
 # verifies it, and fetches the corresponding user's email from the database.
 # This ensures only logged-in users can access the routes that use this dependency.
-async def get_current_user(token: str = Depends(oauth2_scheme)):
+async def get_current_user(
+    token: str = Depends(oauth2_scheme),
+    db: AsyncIOMotorDatabase = Depends(get_database),
+):
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Could not validate credentials",
@@ -66,7 +70,7 @@ async def get_current_user(token: str = Depends(oauth2_scheme)):
     except JWTError:
         raise credentials_exception
 
-    user = await user_collection.find_one({"email": token_data.email})
+    user = await db.users.find_one({"email": token_data.email})
     if user is None:
         raise credentials_exception
 

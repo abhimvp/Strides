@@ -573,6 +573,44 @@ $ uv add langgraph langchain_core langchain_community langsmith langchain-google
 
 ---
 
+#### Expense Tracker Development Roadmap
+
+Phase 1: Account Management (The Foundation)
+
+`Backend:`
+Create the Account data model in Python.
+Build API endpoints (/api/accounts) to create (POST) and fetch (GET) accounts.
+Implement logic to create a default "Cash" account for new users.
+`Frontend:`
+We will create the UI for users to add and view their accounts.
+
+This involves four steps:
+
+Create a service file to handle all API requests for accounts.
+Create an AddAccountForm.tsx component.
+Create an AccountList.tsx component to display the user's accounts and their balances.
+Update ExpensesView.tsx to fetch accounts and conditionally show the AddAccountForm or the main transaction interface.
+
+Phase 2: Transaction Logging (The Core)
+
+`Backend:`
+Create the Transaction data model.
+Build the API endpoint (POST /api/transactions) to save new transactions.
+Crucially, this endpoint must update the balance of the affected account(s).
+`Frontend:`
+Evolve AddExpenseForm.tsx into a comprehensive AddTransactionForm.tsx.
+It will have tabs/selectors for Expense, Income, and Transfer.
+The form fields will dynamically change based on the selected transaction type.
+The "Account" dropdowns will be populated from the accounts created in Phase 1.
+
+Phase 3: Displaying Transactions (The Feedback Loop)
+
+`Backend:`
+Build the API endpoint (GET /api/transactions) to fetch all recent transactions.
+`Frontend:`
+Create a TransactionList.tsx component.
+Each item in the list will display the key details: category icon/name, amount, note, date, and the account used.
+
 ## Git Workflow Tips
 
 ### How to Undo the Last Commit

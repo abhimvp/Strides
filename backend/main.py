@@ -2,8 +2,9 @@
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from routes import accounts
 from utils.database import client  # Import the mongodb client
-from routes import auth, tasks , agent
+from routes import auth, tasks , agent, accounts
 
 
 # --- Lifespan Manager for Database Connection ---
@@ -51,6 +52,7 @@ app.include_router(
 )  # <--- INCLUDE THE ROUTER
 app.include_router(tasks.router, prefix="/api/tasks", tags=["Tasks"])
 app.include_router(agent.router, prefix="/api/agent", tags=["Agent"])
+app.include_router(accounts.router, prefix="/api/accounts", tags=["Accounts"])
 
 
 # --- API Routes ---

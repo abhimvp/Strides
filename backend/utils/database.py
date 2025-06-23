@@ -17,6 +17,10 @@ client = AsyncIOMotorClient(MONGO_DB_URL)
 # You can name your database anything you like
 database = client.strides_db
 
+async def get_database():
+    """Dependency function to get the database instance."""
+    return database
+
 # You can also get a reference to a specific collection
 # For example, to a 'users' collection
 # user_collection = database.get_collection("users")

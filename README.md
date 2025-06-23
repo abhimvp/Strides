@@ -591,7 +591,7 @@ Create an AddAccountForm.tsx component.
 Create an AccountList.tsx component to display the user's accounts and their balances.
 Update ExpensesView.tsx to fetch accounts and conditionally show the AddAccountForm or the main transaction interface.
 
-Phase 2: Transaction Logging (The Core)
+**Phase 2:** Transaction Logging (The Core)
 
 `Backend:`
 Create the Transaction data model.
@@ -602,6 +602,19 @@ Evolve AddExpenseForm.tsx into a comprehensive AddTransactionForm.tsx.
 It will have tabs/selectors for Expense, Income, and Transfer.
 The form fields will dynamically change based on the selected transaction type.
 The "Account" dropdowns will be populated from the accounts created in Phase 1.
+
+- Let's begin Phase 2 by building the backend foundation for logging transactions.
+
+This involves three key steps:
+
+Defining the data models for a transaction.
+Creating the API route to handle transaction creation.
+Updating the main application to include the new route.
+
+- Implementing hierarchical and custom categories is a powerful feature that will make the tracker much more organized and personal. Let's build this step-by-step, starting with the backend.
+  - Let's automatically create a set of default categories for every new user when they register. This gives them a great starting point for tracking their expenses immediately.
+  - Let's build a "Category Manager" that allows users to create new main categories and add sub-categories to them. We'll integrate this into the "Manage Accounts" section.
+  - `pnpm install date-fns`
 
 Phase 3: Displaying Transactions (The Feedback Loop)
 

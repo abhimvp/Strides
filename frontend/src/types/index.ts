@@ -65,12 +65,12 @@ export interface Account {
   id: string;
   userId: string;
   provider: string; // The bank or company (e.g., "ICICI Bank", "Chase")
-  accountType: 'bank_account' | 'credit_card' | 'e_wallet' | 'cash'; // The high-level category
+  accountType: "bank_account" | "credit_card" | "e_wallet" | "cash"; // The high-level category
   accountName: string; // The user-defined name (e.g., "Salary Account", "Sapphire Card")
   balance: number;
   creditLimit?: number; // New optional field
-  country: 'IN' | 'US';
-  currency: 'INR' | 'USD';
+  country: "IN" | "US";
+  currency: "INR" | "USD";
   linkedModes: LinkedPaymentMode[]; // An array of linked payment methods
 }
 
@@ -79,12 +79,12 @@ export interface Account {
  */
 export interface CreateAccountData {
   provider: string;
-  accountType: 'bank_account' | 'credit_card' | 'e_wallet' | 'cash';
+  accountType: "bank_account" | "credit_card" | "e_wallet" | "cash";
   accountName: string;
   balance: number;
   creditLimit?: number; // New optional field
-  country: 'IN' | 'US';
-  currency: 'INR' | 'USD';
+  country: "IN" | "US";
+  currency: "INR" | "USD";
   linkedModes: LinkedPaymentMode[];
 }
 
@@ -92,3 +92,57 @@ export interface CreateAccountData {
  * Defines the data for updating an existing Account. All fields are optional.
  */
 export interface UpdateAccountData extends Partial<CreateAccountData> {}
+
+// --- NEW: Category and Transaction Interfaces ---
+
+export interface SubCategory {
+  id: string;
+  name: string;
+}
+
+export interface Category {
+  id: string;
+  userId: string;
+  name: string;
+  isDefault: boolean;
+  subcategories: SubCategory[];
+}
+
+export interface CreateCategoryData {
+  name: string;
+}
+
+export interface CreateSubCategoryData {
+  name: string;
+}
+
+export interface Transaction {
+  id: string;
+  userId: string;
+  accountId: string;
+  type: "expense" | "income" | "transfer";
+  amount: number;
+  date: string; // Comes as ISO string from backend
+  categoryId: string;
+  subCategoryId?: string;
+  notes?: string;
+  toAccountId?: string;
+}
+
+export interface CreateTransactionData {
+  accountId: string;
+  type: "expense" | "income";
+  amount: number;
+  categoryId: string;
+  subCategoryId?: string;
+  notes?: string;
+  date?: string;
+}
+
+export interface UpdateTransactionData {
+  amount?: number;
+  categoryId?: string;
+  subCategoryId?: string;
+  notes?: string;
+  date?: string;
+}

@@ -4,7 +4,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from routes import accounts
 from utils.database import client  # Import the mongodb client
-from routes import auth, tasks , agent, accounts
+from routes import auth, tasks, agent, accounts, transactions, categories
 
 
 # --- Lifespan Manager for Database Connection ---
@@ -53,6 +53,12 @@ app.include_router(
 app.include_router(tasks.router, prefix="/api/tasks", tags=["Tasks"])
 app.include_router(agent.router, prefix="/api/agent", tags=["Agent"])
 app.include_router(accounts.router, prefix="/api/accounts", tags=["Accounts"])
+app.include_router(
+    transactions.router, prefix="/api/transactions", tags=["Transactions"]
+)  # Add this line
+app.include_router(
+    categories.router, prefix="/api/categories", tags=["Categories"]
+)  # Add this line
 
 
 # --- API Routes ---

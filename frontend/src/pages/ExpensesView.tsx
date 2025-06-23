@@ -1,8 +1,16 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { getAccounts } from "../services/accountService";
+import { getCategories } from "../services/categoryService"; // Import category service
 import AccountList from "../components/expenses/AccountList";
 import { AccountForm } from "../components/expenses/AccountForm";
-import type { Account } from "../types";
+import { TransactionForm } from "../components/expenses/TransactionForm"; // Import transaction form
+import type { Account, Category, Transaction } from "../types";
+import { CategoryManager } from "../components/expenses/CategoryManager"; // Import the new component
+import {
+  getTransactions,
+  deleteTransaction,
+} from "../services/transactionService"; // Import transaction service
+import { TransactionList } from "../components/expenses/TransactionList"; // Import transaction list
 
 export const ExpensesView = () => {
   const [accounts, setAccounts] = useState<Account[]>([]);
@@ -10,25 +18,32 @@ export const ExpensesView = () => {
   const [error, setError] = useState<string | null>(null);
   const [showAccountManager, setShowAccountManager] = useState(false); // New state for visibility
   const [editingAccount, setEditingAccount] = useState<Account | null>(null); // State for the account being edited
+  const [categories, setCategories] = useState<Category[]>([]); // State for categories
+  const [transactions, setTransactions] = useState<Transaction[]>([]); // State for transactions
+  const [editingTransaction, setEditingTransaction] =
+    useState<Transaction | null>(null); // State for editing a transaction
 
-  const fetchAccounts = useCallback(async () => {
+  const fetchData = useCallback(async () => {
     try {
-      // Don't set loading to true on refetch, only on initial load
-      // setIsLoading(true);
-      const userAccounts = await getAccounts();
+      setIsLoading(true);
+      // Fetch all data in parallel for better performance
+      const [userAccounts, userCategories, userTransactions] =
+        await Promise.all([getAccounts(), getCategories(), getTransactions()]);
       setAccounts(userAccounts);
+      setCategories(userCategories);
+      setTransactions(userTransactions);
       setError(null);
     } catch (err) {
-      console.error("Failed to fetch accounts:", err);
-      setError("Could not load your accounts. Please try refreshing the page.");
+      console.error("Failed to fetch data:", err);
+      setError("Could not load your data. Please try refreshing the page.");
     } finally {
       setIsLoading(false);
     }
   }, []);
 
   useEffect(() => {
-    fetchAccounts();
-  }, [fetchAccounts]);
+    fetchData();
+  }, [fetchData]);
 
   const handleEdit = (account: Account) => {
     setEditingAccount(account);
@@ -37,11 +52,34 @@ export const ExpensesView = () => {
 
   const handleSave = () => {
     setEditingAccount(null); // Exit editing mode
-    fetchAccounts(); // Refresh the list
+    fetchData(); // Refresh the list
   };
 
   const handleCancelEdit = () => {
     setEditingAccount(null); // Exit editing mode
+  };
+
+  const handleEditTransaction = (transaction: Transaction) => {
+    setEditingTransaction(transaction);
+    window.scrollTo({ top: 0, behavior: "smooth" }); // Scroll to top to see the form
+  };
+
+  const handleCancelEditTransaction = () => {
+    setEditingTransaction(null);
+  };
+
+  const handleDeleteTransaction = async (transactionId: string) => {
+    try {
+      await deleteTransaction(transactionId);
+      fetchData(); // Refresh data after delete
+    } catch (error) {
+      alert("Failed to delete transaction.");
+    }
+  };
+
+  const handleSaveTransaction = () => {
+    setEditingTransaction(null); // Exit edit mode
+    fetchData(); // Refresh all data
   };
 
   return (
@@ -73,20 +111,31 @@ export const ExpensesView = () => {
             <>
               <AccountList accounts={accounts} onEdit={handleEdit} />
               <AccountForm onSave={handleSave} />
+              {/* Add the Category Manager here */}
+              <CategoryManager categories={categories} onUpdate={fetchData} />
             </>
           )}
         </div>
       )}
 
-      {/* This section will be for transactions later */}
-      <div className="mt-8 p-4 bg-gray-900 rounded-lg shadow-md">
-        <h2 className="text-xl font-semibold mb-4">Recent Transactions</h2>
-        <p className="text-gray-400">
-          {accounts.length > 0
-            ? "Your transactions will appear here once you add them."
-            : "Please add an account above to start tracking transactions."}
-        </p>
-      </div>
+      {!isLoading && !error && (
+        <div className="mt-8">
+          <TransactionForm
+            accounts={accounts}
+            categories={categories}
+            onSave={handleSaveTransaction}
+            transactionToEdit={editingTransaction}
+            onCancelEdit={handleCancelEditTransaction}
+          />
+          <TransactionList
+            transactions={transactions}
+            accounts={accounts}
+            categories={categories}
+            onEdit={handleEditTransaction}
+            onDelete={handleDeleteTransaction}
+          />
+        </div>
+      )}
     </div>
   );
 };

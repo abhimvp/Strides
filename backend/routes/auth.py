@@ -1,7 +1,7 @@
 from datetime import timedelta
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordRequestForm
-
+from models.category_models import SubCategory  # Import the SubCategory model
 from models.user_models import UserCreate, UserInDB, Token
 from utils.database import database
 from utils.security import (
@@ -13,6 +13,49 @@ from utils.security import (
 
 router = APIRouter()
 user_collection = database.get_collection("users")
+category_collection = database.get_collection(
+    "categories"
+)  # Add collection for categories
+
+# Define the default categories and sub-categories for new users
+DEFAULT_CATEGORIES = [
+    {
+        "name": "Food & Dining",
+        "subcategories": [
+            SubCategory(name="Groceries").model_dump(by_alias=True),
+            SubCategory(name="Restaurants").model_dump(by_alias=True),
+            SubCategory(name="Street Food").model_dump(by_alias=True),
+        ],
+    },
+    {
+        "name": "Shopping",
+        "subcategories": [
+            SubCategory(name="Clothing").model_dump(by_alias=True),
+            SubCategory(name="Electronics").model_dump(by_alias=True),
+            SubCategory(name="Personal Care").model_dump(by_alias=True),
+        ],
+    },
+    {
+        "name": "Bills & Utilities",
+        "subcategories": [
+            SubCategory(name="Electricity").model_dump(by_alias=True),
+            SubCategory(name="Water").model_dump(by_alias=True),
+            SubCategory(name="Internet").model_dump(by_alias=True),
+            SubCategory(name="Rent").model_dump(by_alias=True),
+        ],
+    },
+    {
+        "name": "Transportation",
+        "subcategories": [
+            SubCategory(name="Gas/Fuel").model_dump(by_alias=True),
+            SubCategory(name="Public Transit").model_dump(by_alias=True),
+        ],
+    },
+    {"name": "Gifts & Donations", "subcategories": []},
+    {"name": "Travel", "subcategories": []},
+    {"name": "Entertainment", "subcategories": []},
+    {"name": "Education", "subcategories": []},
+]
 
 
 @router.post("/signup", response_model=UserInDB)
@@ -32,6 +75,21 @@ async def signup(user: UserCreate):
     del user_dict["password"]
 
     new_user = await user_collection.insert_one(user_dict)
+    # --- Create default categories for the new user ---
+    new_user_id = str(new_user.inserted_id)
+    categories_to_insert = []
+    for cat in DEFAULT_CATEGORIES:
+        category_doc = {
+            "userId": new_user_id,
+            "name": cat["name"],
+            "isDefault": True,
+            "subcategories": cat["subcategories"],
+        }
+        categories_to_insert.append(category_doc)
+
+    if categories_to_insert:
+        await category_collection.insert_many(categories_to_insert)
+
     created_user = await user_collection.find_one({"_id": new_user.inserted_id})
 
     return created_user

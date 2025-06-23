@@ -511,6 +511,68 @@ $ uv add langgraph langchain_core langchain_community langsmith langchain-google
 
 - Refactoring the Dashboard for new features
 
+- Feature Roadmap: A comprehensive expense, income, and transfer tracking system designed for personal financial management.
+
+### Key Features
+
+- **Transaction Management:** Log expenses, income, and transfers between accounts.
+- **Customizable Categories:** Pre-defined default categories with the ability for users to create their own main and sub-categories.
+- **Account Management:** Track balances across various payment methods (bank accounts, credit cards, cash, e-wallets).
+- **Detailed Records:** Add notes and attach receipts or invoices to each transaction.
+- **Currency Support:** User-selectable currency for financial tracking.
+
+### 2. Data Models (Backend & Frontend)
+
+#### `Transaction` Model
+
+- `id`: string (unique identifier)
+- `userId`: string
+- `type`: 'expense' | 'income' | 'transfer'
+- `amount`: number
+- `currency`: string (e.g., 'INR', 'USD')
+- `date`: Date
+- `description`: string (brief title)
+- `categoryId`: string (links to Category model)
+- `subCategoryId`: string (optional)
+- `accountId`: string (links to Account model, source of funds)
+- `destinationAccountId`: string (for 'transfer' type)
+- `notes`: string (max 500 chars)
+- `attachments`: string[] (URLs to stored files, max 3)
+
+#### `Category` Model
+
+- `id`: string
+- `userId`: string
+- `name`: string (e.g., "Food and Dining")
+- `isDefault`: boolean
+- `subcategories`: { id: string, name: string }[]
+
+#### `Account` Model
+
+- `id`: string
+- `userId`: string
+- `name`: string (e.g., "ICICI Debit Card", "Cash")
+- `type`: 'bank_account' | 'credit_card' | 'cash' | 'e_wallet'
+- `balance`: number
+- `provider`: string (e.g., "HDFC", "PayPal", "Visa")
+
+### 3. Frontend Component Plan
+
+1. **`AddTransactionForm.tsx`**: A comprehensive form to add expenses, income, or transfers.
+2. **`TransactionList.tsx`**: Displays a list of recent transactions.
+3. **`AccountList.tsx`**: Shows all user-created accounts and their current balances.
+4. **`CategoryManager.tsx`**: A view where users can add, edit, or delete their custom categories.
+5. **`ExpensesDashboard.tsx`**: A high-level view with charts and summaries (e.g., spending by category).
+
+### 4. Backend API Endpoints
+
+- `/api/transactions` (POST, GET, PUT, DELETE)
+- `/api/accounts` (POST, GET, PUT, DELETE)
+- `/api/categories` (POST, GET, PUT, DELETE)
+- `/api/uploads` (POST for handling attachments)
+
+---
+
 ## Git Workflow Tips
 
 ### How to Undo the Last Commit

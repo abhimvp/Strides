@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Modal } from "./Modal";
-import type { Task, DailyLog } from "../types";
+import type { Task } from "../types";
 import { toISODateString } from "../utils/date";
 
 interface DailyLogModalProps {

@@ -510,3 +510,41 @@ $ uv add langgraph langchain_core langchain_community langsmith langchain-google
 ## Adding Expense Tracker
 
 - Refactoring the Dashboard for new features
+
+## Git Workflow Tips
+
+### How to Undo the Last Commit
+
+This guide explains how to remove the most recent commit from both your local and remote repositories.
+
+**🚨 Important Warning:** This action rewrites the history of your remote branch. If other people have pulled the commit you are about to delete, this can cause significant problems for them. Proceed with caution, especially on a shared branch like `main`.
+
+#### Step 1: Undo the Last Commit Locally
+
+You have two options for resetting your local branch:
+
+- **To discard the commit AND all its changes (destructive):**
+  This will permanently delete the changes from that commit.
+
+  ```bash
+  git reset --hard HEAD~1
+  ```
+
+- **To discard the commit BUT keep the changes (safe):**
+  This is useful if you want to re-apply the changes later. The changes will be moved to your working directory as unstaged files.
+
+  ```bash
+  git reset --soft HEAD~1
+  ```
+
+#### Step 2: Push the Change to the Remote Repository
+
+After resetting your local branch, you must update the remote branch. Because you've changed the history, a normal push will be rejected, so you must force push.
+
+Replace `<branch-name>` with the name of your branch (e.g., `main`).
+
+```bash
+git push origin <branch-name> --force-with-lease
+```
+
+**Note:** Using `--force-with-lease` is strongly recommended over a plain `git push --force`. It's a safer command that checks if another developer has pushed new commits to the remote branch since you last fetched. If new commits are found, the push will fail, preventing you from accidentally

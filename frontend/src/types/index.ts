@@ -68,6 +68,7 @@ export interface Account {
   accountType: 'bank_account' | 'credit_card' | 'e_wallet' | 'cash'; // The high-level category
   accountName: string; // The user-defined name (e.g., "Salary Account", "Sapphire Card")
   balance: number;
+  creditLimit?: number; // New optional field
   country: 'IN' | 'US';
   currency: 'INR' | 'USD';
   linkedModes: LinkedPaymentMode[]; // An array of linked payment methods
@@ -81,7 +82,13 @@ export interface CreateAccountData {
   accountType: 'bank_account' | 'credit_card' | 'e_wallet' | 'cash';
   accountName: string;
   balance: number;
+  creditLimit?: number; // New optional field
   country: 'IN' | 'US';
   currency: 'INR' | 'USD';
   linkedModes: LinkedPaymentMode[];
 }
+
+/**
+ * Defines the data for updating an existing Account. All fields are optional.
+ */
+export interface UpdateAccountData extends Partial<CreateAccountData> {}

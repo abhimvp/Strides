@@ -1,9 +1,17 @@
-import React, { useState } from "react";
-import { createAccount } from "../../services/accountService";
-import type { LinkedPaymentMode, CreateAccountData } from "../../types";
+import React, { useState, useEffect } from "react";
+import { createAccount, updateAccount } from "../../services/accountService";
+import type {
+  LinkedPaymentMode,
+  CreateAccountData,
+  Account,
+  UpdateAccountData,
+} from "../../types";
 
-interface AddAccountFormProps {
-  onAccountAdded: () => void;
+interface AccountFormProps {
+  onSave: () => void; // Generic save handler
+  onCancel?: () => void; // To cancel editing
+  // onAccountAdded: () => void;
+  accountToEdit?: Account | null;
 }
 
 const providers = [
@@ -11,23 +19,52 @@ const providers = [
   "HDFC Bank",
   "State Bank of India",
   "Chase",
+  "BOFA",
   "American Express",
   "Discover",
   "PayPal",
   "Cash",
 ];
 
-export const AddAccountForm = ({ onAccountAdded }: AddAccountFormProps) => {
+export const AccountForm = ({
+  onSave,
+  onCancel,
+  accountToEdit,
+}: AccountFormProps) => {
   const [provider, setProvider] = useState(providers[0]);
   const [accountType, setAccountType] = useState<
     "bank_account" | "credit_card" | "e_wallet" | "cash"
   >("bank_account");
   const [accountName, setAccountName] = useState("");
   const [balance, setBalance] = useState("");
+  const [creditLimit, setCreditLimit] = useState(""); // New state for credit limit
   const [country, setCountry] = useState<"IN" | "US">("IN"); // New state for country
   const [linkedModes, setLinkedModes] = useState<LinkedPaymentMode[]>([]);
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const isEditMode = !!accountToEdit;
+
+  useEffect(() => {
+    if (isEditMode && accountToEdit) {
+      setProvider(accountToEdit.provider);
+      setAccountType(accountToEdit.accountType);
+      setAccountName(accountToEdit.accountName);
+      setBalance(String(accountToEdit.balance));
+      setCreditLimit(String(accountToEdit.creditLimit || ""));
+      setCountry(accountToEdit.country);
+      setLinkedModes(accountToEdit.linkedModes || []);
+    }
+  }, [accountToEdit, isEditMode]);
+
+  const resetForm = () => {
+    setProvider(providers[0]);
+    setAccountType("bank_account");
+    setAccountName("");
+    setBalance("");
+    setCreditLimit("");
+    setCountry("IN");
+    setLinkedModes([]);
+  };
 
   const handleAddLinkedMode = () => {
     setLinkedModes([...linkedModes, { name: "", type: "UPI" }]);
@@ -49,38 +86,49 @@ export const AddAccountForm = ({ onAccountAdded }: AddAccountFormProps) => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!accountName) {
-      setError("Please provide a name for the account.");
-      return;
-    }
+    // if (!accountName) {
+    //   setError("Please provide a name for the account.");
+    //   return;
+    // }
     setError("");
     setIsSubmitting(true);
 
     const currency = country === "IN" ? "INR" : "USD"; // Derive currency from country
 
-    const accountData: CreateAccountData = {
+    const dataPayload: CreateAccountData | UpdateAccountData = {
       provider,
       accountType,
       accountName,
       balance: parseFloat(balance) || 0,
+      creditLimit:
+        accountType === "credit_card"
+          ? parseFloat(creditLimit) || undefined
+          : undefined,
       country,
       currency,
-      linkedModes: linkedModes.filter((mode) => mode.name), // Only include non-empty modes
+      linkedModes: linkedModes.filter((mode) => mode.name),
     };
 
     try {
-      await createAccount(accountData);
-      onAccountAdded();
-      // Reset form
-      setProvider(providers[0]);
-      setAccountType("bank_account");
-      setAccountName("");
-      setBalance("");
-      setCountry('IN');
-      setLinkedModes([]);
+      if (isEditMode && accountToEdit) {
+        // Add a check to ensure the ID exists before making the API call.
+        if (!accountToEdit.id) {
+          setError("Could not update account: Missing account ID.");
+          setIsSubmitting(false);
+          return;
+        }
+        await updateAccount(accountToEdit.id, dataPayload);
+      } else {
+        await createAccount(dataPayload as CreateAccountData);
+        resetForm();
+      }
+      onSave(); // Notify parent to refresh list and close form
     } catch (err) {
-      setError("Failed to create account. Please try again.");
-      console.error(err);
+      setError(
+        `Failed to ${
+          isEditMode ? "update" : "create"
+        } account. Please try again.`
+      );
     } finally {
       setIsSubmitting(false);
     }
@@ -91,7 +139,9 @@ export const AddAccountForm = ({ onAccountAdded }: AddAccountFormProps) => {
       onSubmit={handleSubmit}
       className="p-4 bg-gray-800 rounded-lg shadow-md mb-6 space-y-4"
     >
-      <h3 className="text-lg font-semibold text-white">Add New Account</h3>
+      <h3 className="text-lg font-semibold text-white">
+        {isEditMode ? "Edit Account" : "Add New Account"}
+      </h3>
       {error && <p className="text-red-500">{error}</p>}
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -120,7 +170,7 @@ export const AddAccountForm = ({ onAccountAdded }: AddAccountFormProps) => {
 
         <select
           value={country}
-          onChange={(e) => setCountry(e.target.value as 'IN' | 'US')}
+          onChange={(e) => setCountry(e.target.value as "IN" | "US")}
           className="p-2 rounded bg-gray-700 text-white border border-gray-600"
         >
           <option value="IN">India (INR)</option>
@@ -143,6 +193,16 @@ export const AddAccountForm = ({ onAccountAdded }: AddAccountFormProps) => {
           className="p-2 rounded bg-gray-700 text-white border border-gray-600"
         />
       </div>
+      {/* Conditionally render Credit Limit field */}
+      {accountType === "credit_card" && (
+        <input
+          type="number"
+          placeholder="Credit Limit"
+          value={creditLimit}
+          onChange={(e) => setCreditLimit(e.target.value)}
+          className="p-2 rounded bg-gray-700 text-white border border-gray-600"
+        />
+      )}
 
       <div>
         <h4 className="text-md font-semibold text-white mb-2">
@@ -186,13 +246,28 @@ export const AddAccountForm = ({ onAccountAdded }: AddAccountFormProps) => {
         </button>
       </div>
 
-      <button
-        type="submit"
-        disabled={isSubmitting}
-        className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded transition duration-300 disabled:bg-gray-500"
-      >
-        {isSubmitting ? "Adding..." : "Add Account"}
-      </button>
+      <div className="flex gap-4">
+        {isEditMode && onCancel && (
+          <button
+            type="button"
+            onClick={onCancel}
+            className="w-full bg-gray-600 hover:bg-gray-500 text-white font-bold py-2 px-4 rounded"
+          >
+            Cancel
+          </button>
+        )}
+        <button
+          type="submit"
+          disabled={isSubmitting}
+          className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded disabled:bg-gray-500"
+        >
+          {isSubmitting
+            ? "Saving..."
+            : isEditMode
+            ? "Update Account"
+            : "Add Account"}
+        </button>
+      </div>
     </form>
   );
 };

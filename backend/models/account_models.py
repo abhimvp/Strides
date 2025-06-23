@@ -15,6 +15,7 @@ class Account(BaseModel):
     accountType: Literal["bank_account", "credit_card", "e_wallet", "cash"]
     accountName: str  # The user-defined name (e.g., "Salary Account", "Sapphire Card")
     balance: float = 0.0
+    creditLimit: Optional[float] = None  # New field for credit card limit
     country: Literal["IN", "US"]
     currency: str  # "INR" or "USD"
     linkedModes: List[LinkedPaymentMode] = []
@@ -25,6 +26,7 @@ class CreateAccount(BaseModel):
     accountType: Literal["bank_account", "credit_card", "e_wallet", "cash"]
     accountName: str
     balance: float = 0.0
+    creditLimit: Optional[float] = None  # New field
     country: Literal["IN", "US"]
     currency: str
     linkedModes: List[LinkedPaymentMode] = []
@@ -37,6 +39,7 @@ class UpdateAccount(BaseModel):
     ] = None
     accountName: Optional[str] = None
     balance: Optional[float] = None
+    creditLimit: Optional[float] = None  # New field
     country: Optional[Literal["IN", "US"]] = None
     currency: Optional[str] = None
     linkedModes: Optional[List[LinkedPaymentMode]] = None

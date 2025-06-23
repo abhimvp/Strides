@@ -1,13 +1,15 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { getAccounts } from "../services/accountService";
 import AccountList from "../components/expenses/AccountList";
-import {AddAccountForm} from "../components/expenses/AddAccountForm";
+import { AccountForm } from "../components/expenses/AccountForm";
 import type { Account } from "../types";
 
 export const ExpensesView = () => {
   const [accounts, setAccounts] = useState<Account[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [showAccountManager, setShowAccountManager] = useState(false); // New state for visibility
+  const [editingAccount, setEditingAccount] = useState<Account | null>(null); // State for the account being edited
 
   const fetchAccounts = useCallback(async () => {
     try {
@@ -28,18 +30,52 @@ export const ExpensesView = () => {
     fetchAccounts();
   }, [fetchAccounts]);
 
+  const handleEdit = (account: Account) => {
+    setEditingAccount(account);
+    setShowAccountManager(true); // Ensure the manager is visible for editing
+  };
+
+  const handleSave = () => {
+    setEditingAccount(null); // Exit editing mode
+    fetchAccounts(); // Refresh the list
+  };
+
+  const handleCancelEdit = () => {
+    setEditingAccount(null); // Exit editing mode
+  };
+
   return (
     <div className="p-4 md:p-6 lg:p-8 h-full text-white bg-gray-800">
-      <h1 className="text-3xl font-bold mb-6">Expense Tracker</h1>
+      <div className="flex justify-between items-center mb-6">
+        <h1 className="text-3xl font-bold">Expense Tracker</h1>
+        <button
+          onClick={() => setShowAccountManager(!showAccountManager)}
+          className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded transition duration-300"
+        >
+          {showAccountManager ? "Hide Accounts" : "Manage Accounts"}
+        </button>
+      </div>
 
       {isLoading && <p>Loading accounts...</p>}
       {error && <p className="text-red-500">{error}</p>}
 
-      {!isLoading && !error && (
-        <>
-          <AccountList accounts={accounts} />
-          <AddAccountForm onAccountAdded={fetchAccounts} />
-        </>
+      {/* Conditionally render the account management section */}
+      {showAccountManager && !isLoading && !error && (
+        <div className="mb-8">
+          {/* If we are editing, show only the form. Otherwise, show the list and the add form. */}
+          {editingAccount ? (
+            <AccountForm
+              accountToEdit={editingAccount}
+              onSave={handleSave}
+              onCancel={handleCancelEdit}
+            />
+          ) : (
+            <>
+              <AccountList accounts={accounts} onEdit={handleEdit} />
+              <AccountForm onSave={handleSave} />
+            </>
+          )}
+        </div>
       )}
 
       {/* This section will be for transactions later */}

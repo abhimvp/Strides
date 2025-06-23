@@ -19,14 +19,14 @@ async def create_account(
     Create a new bank account for the logged-in user.
     """
     account_dict = account_data.model_dump()
-    print("Creating account with data:", account_dict)
+    # print("Creating account with data:", account_dict)
     account_dict["userId"] = user_id
-    print("Account data with userId:", account_dict)
+    # print("Account data with userId:", account_dict)
 
     result = await db.accounts.insert_one(account_dict)
-    print("Inserted account with ID:", result.inserted_id)
+    # print("Inserted account with ID:", result.inserted_id)
     created_account = await db.accounts.find_one({"_id": result.inserted_id})
-    print("Created account:", created_account)
+    # print("Created account:", created_account)
 
     return Account(**created_account)
 
@@ -40,9 +40,9 @@ async def get_user_accounts(
     Retrieve all accounts for the logged-in user.
     """
     accounts_cursor = db.accounts.find({"userId": user_id})
-    print("Fetching accounts for user:", user_id)
+    # print("Fetching accounts for user:", user_id)
     accounts = await accounts_cursor.to_list(length=10)
-    print("Fetched accounts:", accounts)
+    # print("Fetched accounts:", accounts)
     return [Account(**account) for account in accounts]
 
 

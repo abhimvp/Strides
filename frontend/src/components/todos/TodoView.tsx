@@ -31,7 +31,6 @@ import { ConfirmationDialog } from "../ConfirmationDialog";
 // We can reuse the DailyLogModal if it's generic enough, or create a new one.
 // For now, let's assume we can reuse it with minor adaptations if needed.
 import { DailyLogModal } from "../DailyLogModal";
-import type { Task } from "../../types"; // Assuming DailyLogModal needs this type
 
 const columns: TodoStatus[] = ["Not Started", "In Progress", "Done"];
 
@@ -202,20 +201,20 @@ export const TodoView: React.FC = () => {
       <DailyLogModal
         isOpen={!!loggingTodo}
         onClose={() => setLoggingTodo(null)}
-        // Adapt the `loggingTodo` to fit the `Task` type expected by the modal, or update the modal to be more generic
-        task={
+        // Adapt the `loggingTodo` to the new `LoggableItem` structure
+        item={
           loggingTodo
-            ? ({
-                ...loggingTodo,
-                text: loggingTodo.title,
-                daily_logs: loggingTodo.logs.map((l) => ({
+            ? {
+                id: loggingTodo.id,
+                title: loggingTodo.title,
+                logs: loggingTodo.logs.map((l) => ({
                   date: l.timestamp,
                   note: l.notes,
                 })),
-              } as unknown as Task)
+              }
             : null
         }
-        onSaveLog={(id, note) => handleSaveLog(String(id), note)}
+        onSaveLog={handleSaveLog}
       />
     </DndContext>
   );

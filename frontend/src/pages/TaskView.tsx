@@ -28,6 +28,7 @@ import type {
   Task,
   TaskHistory,
   DailyLog,
+  LoggableItem,
 } from "../types";
 import { getWeekDays, toISODateString } from "../utils/date";
 import {
@@ -609,8 +610,16 @@ export const TaskView = () => {
       <DailyLogModal
         isOpen={!!loggingTask}
         onClose={() => setLoggingTask(null)}
-        task={loggingTask}
-        onSaveLog={handleSaveLog}
+        item={
+          loggingTask
+            ? {
+                id: String(loggingTask.id),
+                title: loggingTask.text,
+                logs: loggingTask.daily_logs || [],
+              }
+            : null
+        }
+        onSaveLog={(itemId, note) => handleSaveLog(Number(itemId), note)}
       />
       <ConfirmationDialog
         isOpen={!!deletionInfo}

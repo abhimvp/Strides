@@ -181,3 +181,16 @@ export interface UpdateTodoData {
 export interface CreateTodoLogData {
   notes: string;
 }
+
+// --- Add the new generic types below ---
+
+export interface LogEntry {
+  date: string;
+  note: string;
+}
+
+export interface LoggableItem {
+  id: string;
+  title: string;
+  logs: LogEntry[];
+}

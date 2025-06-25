@@ -146,3 +146,38 @@ export interface UpdateTransactionData {
   notes?: string;
   date?: string;
 }
+
+// --- Add the new To-Do types below ---
+
+export type TodoStatus = "Not Started" | "In Progress" | "Done";
+
+export interface TodoLog {
+  id: string;
+  timestamp: string;
+  notes: string;
+}
+
+export interface TodoItem {
+  id: string;
+  userId: string;
+  title: string;
+  notes?: string;
+  status: TodoStatus;
+  createdAt: string;
+  logs: TodoLog[];
+}
+
+export interface CreateTodoData {
+  title: string;
+  notes?: string;
+}
+
+export interface UpdateTodoData {
+  title?: string;
+  notes?: string;
+  status?: TodoStatus;
+}
+
+export interface CreateTodoLogData {
+  notes: string;
+}

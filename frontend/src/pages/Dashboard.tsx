@@ -4,9 +4,9 @@ import { Header } from "../components/Header";
 import { useAuth } from "../hooks/useAuth";
 import { TaskView } from "./TaskView";
 import { ExpensesView } from "./ExpensesView";
-// import { Plus } from "lucide-react";
+import { TodoView } from "../components/todos/TodoView"; // 1. Import the new view
 
-type MainView = "tasks" | "expenses";
+type MainView = "tasks" | "expenses" | "todos"; // 2. Add 'todos' to the view type
 
 export const Dashboard = () => {
   const { logout } = useAuth();
@@ -52,12 +52,25 @@ export const Dashboard = () => {
             >
               Expenses
             </button>
+            {/* 3. Add the new To-Do Board button */}
+            <button
+              onClick={() => setCurrentView("todos")}
+              className={`py-4 px-1 border-b-4 font-semibold text-xl transition-colors ${
+                currentView === "todos"
+                  ? "border-blue-500 text-blue-600"
+                  : "border-transparent text-slate-500 hover:text-slate-700"
+              }`}
+            >
+              To-Do Board
+            </button>
           </nav>
         </div>
         {/* Conditionally Render the Active View */}
         <div>
           {currentView === "tasks" && <TaskView />}
           {currentView === "expenses" && <ExpensesView />}
+          {/* 4. Add the new conditional render for the To-Do View */}
+          {currentView === "todos" && <TodoView />}
         </div>
       </div>
     </div>

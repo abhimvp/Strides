@@ -4,7 +4,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from routes import accounts
 from utils.database import client  # Import the mongodb client
-from routes import auth, tasks, agent, accounts, transactions, categories
+from routes import auth, tasks, agent, accounts, transactions, categories, todos
 
 
 # --- Lifespan Manager for Database Connection ---
@@ -59,6 +59,8 @@ app.include_router(
 app.include_router(
     categories.router, prefix="/api/categories", tags=["Categories"]
 )  # Add this line
+# Add the new To-Do router
+app.include_router(todos.router, prefix="/api/todos", tags=["Todos"])
 
 
 # --- API Routes ---
@@ -66,9 +68,3 @@ app.include_router(
 @app.get("/")
 async def root():
     return {"message": "Strides backend is running!"}
-
-
-# In the future, we will include our routes from the /routes folder here
-# from routes import auth, tasks
-# app.include_router(auth.router)
-# app.include_router(tasks.router)

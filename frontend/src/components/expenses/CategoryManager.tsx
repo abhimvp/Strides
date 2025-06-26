@@ -1,12 +1,12 @@
 import React, { useState } from "react";
-import type { Category } from "../../types";
+import type { ExpenseCategory } from "../../types";
 import {
   createCategory,
   createSubCategory,
 } from "../../services/categoryService";
 
 interface CategoryManagerProps {
-  categories: Category[];
+  categories: ExpenseCategory[];
   onUpdate: () => void;
 }
 

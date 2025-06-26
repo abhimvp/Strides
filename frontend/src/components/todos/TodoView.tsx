@@ -6,7 +6,7 @@ import {
   useSensors,
 } from "@dnd-kit/core";
 import type { DragEndEvent } from "@dnd-kit/core";
-import { Plus } from "lucide-react";
+import { Plus } from "phosphor-react";
 import toast from "react-hot-toast";
 
 import {
@@ -131,12 +131,11 @@ export const TodoView: React.FC = () => {
     try {
       const data: CreateTodoLogData = { notes: logNote };
       const updatedTodo = await addTodoLog(taskId, data);
-      setTodos(todos.map(t => t.id === updatedTodo.id ? updatedTodo : t));
-        
-        // This is the fix: Update the todo being viewed in the modal
-        setLoggingTodo(updatedTodo);
+      setTodos(todos.map((t) => (t.id === updatedTodo.id ? updatedTodo : t)));
+
+      // This is the fix: Update the todo being viewed in the modal
+      setLoggingTodo(updatedTodo);
       toast.success("Log saved!", { id: toastId });
-      
     } catch (error) {
       toast.error("Failed to save log.", { id: toastId });
     }

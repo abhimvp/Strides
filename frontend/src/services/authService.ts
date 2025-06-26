@@ -1,5 +1,5 @@
 import axios from "axios";
-import { UserCreate } from "../types";
+import type { UserCreate } from "../types";
 
 const API_URL = "http://localhost:8000/api/auth";
 

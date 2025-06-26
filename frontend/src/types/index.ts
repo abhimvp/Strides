@@ -100,7 +100,7 @@ export interface SubCategory {
   name: string;
 }
 
-export interface Category {
+export interface ExpenseCategory {
   id: string;
   userId: string;
   name: string;

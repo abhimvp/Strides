@@ -27,9 +27,13 @@ export const AuthPage = () => {
         // Automatically switch to login view after successful signup
         setIsLogin(true);
       }
-    } catch (err: any) {
-      const errorMessage =
-        err.response?.data?.detail || "An unexpected error occurred.";
+    } catch (err: unknown) {
+      let errorMessage = "An unexpected error occurred.";
+      if (err && typeof err === "object" && "response" in err) {
+        const response = (err as { response?: { data?: { detail?: string } } })
+          .response;
+        errorMessage = response?.data?.detail || errorMessage;
+      }
       toast.error(errorMessage);
     } finally {
       toast.dismiss(loadingToast); // Dismiss the loading indicator
@@ -37,53 +41,53 @@ export const AuthPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 flex flex-col justify-center items-center">
+    <div className="min-h-screen theme-bg-secondary flex flex-col justify-center items-center transition-colors duration-300">
       <div className="max-w-md w-full mx-auto">
-        <h1 className="text-4xl font-bold text-center text-slate-800 mb-2">
+        <h1 className="text-4xl font-bold text-center theme-text-primary mb-2">
           Strides
         </h1>
-        <p className="text-center text-slate-500 mb-8">
+        <p className="text-center theme-text-muted mb-8">
           Your daily checkpoint for growth.
         </p>
-        <div className="bg-white p-8 rounded-xl shadow-lg">
-          <h2 className="text-2xl font-bold text-center mb-6">
+        <div className="theme-bg-card p-8 rounded-xl shadow-lg">
+          <h2 className="text-2xl font-bold text-center theme-text-primary mb-6">
             {isLogin ? "Log In" : "Sign Up"}
           </h2>
           <form onSubmit={handleSubmit} className="space-y-6">
             <div>
-              <label className="text-sm font-bold text-gray-600 block">
+              <label className="text-sm font-bold theme-text-secondary block">
                 Email
               </label>
               <input
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full p-2 border border-gray-300 rounded-md mt-1 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                className="w-full p-2 border theme-border rounded-md mt-1 theme-bg-card theme-text-primary focus:outline-none focus:ring-2 focus:ring-blue-400"
                 required
               />
             </div>
             <div>
-              <label className="text-sm font-bold text-gray-600 block">
+              <label className="text-sm font-bold theme-text-secondary block">
                 Password
               </label>
               <input
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full p-2 border border-gray-300 rounded-md mt-1 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                className="w-full p-2 border theme-border rounded-md mt-1 theme-bg-card theme-text-primary focus:outline-none focus:ring-2 focus:ring-blue-400"
                 required
               />
             </div>
             <div>
               <button
                 type="submit"
-                className="w-full py-2 px-4 bg-blue-500 text-white rounded-md hover:bg-blue-600 font-semibold"
+                className="w-full py-2 px-4 bg-blue-500 text-white rounded-md hover:bg-blue-600 font-semibold transition-colors"
               >
                 {isLogin ? "Log In" : "Create Account"}
               </button>
             </div>
           </form>
-          <p className="text-center text-sm mt-6">
+          <p className="text-center text-sm mt-6 theme-text-secondary">
             {isLogin ? "Don't have an account?" : "Already have an account?"}
             <button
               onClick={() => setIsLogin(!isLogin)}

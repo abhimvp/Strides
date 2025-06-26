@@ -1,11 +1,11 @@
 import api from "./api";
 import type {
-  Category,
+  ExpenseCategory,
   CreateCategoryData,
   CreateSubCategoryData,
 } from "../types";
 
-export const getCategories = async (): Promise<Category[]> => {
+export const getCategories = async (): Promise<ExpenseCategory[]> => {
   const response = await api.get("/categories");
   // Normalize the data to match frontend conventions (_id -> id)
   return response.data.map((category: any) => {
@@ -29,7 +29,7 @@ export const getCategories = async (): Promise<Category[]> => {
  */
 export const createCategory = async (
   categoryData: CreateCategoryData
-): Promise<Category> => {
+): Promise<ExpenseCategory> => {
   const response = await api.post("/categories", categoryData);
   const { _id, ...rest } = response.data;
   return { id: _id, ...rest };
@@ -41,7 +41,7 @@ export const createCategory = async (
 export const createSubCategory = async (
   categoryId: string,
   subCategoryData: CreateSubCategoryData
-): Promise<Category> => {
+): Promise<ExpenseCategory> => {
   const response = await api.post(
     `/categories/${categoryId}/subcategories`,
     subCategoryData

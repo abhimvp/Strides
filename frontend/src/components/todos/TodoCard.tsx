@@ -1,7 +1,12 @@
 import React from "react";
 import { useDraggable } from "@dnd-kit/core";
 import { CSS } from "@dnd-kit/utilities";
-import { GripVertical, Pencil, Trash2, MessageSquare } from "lucide-react";
+import {
+  DotsSixVertical,
+  PencilSimple,
+  Trash,
+  ChatCircle,
+} from "phosphor-react";
 import type { TodoItem } from "../../types";
 import { format } from "date-fns";
 
@@ -42,7 +47,7 @@ export const TodoCard: React.FC<TodoCardProps> = ({
           {...attributes}
           className="cursor-grab touch-none text-gray-500 hover:text-white"
         >
-          <GripVertical size={20} />
+          <DotsSixVertical size={20} />
         </div>
       </div>
       {todo.notes && <p className="text-sm text-gray-400 mt-2">{todo.notes}</p>}
@@ -55,19 +60,19 @@ export const TodoCard: React.FC<TodoCardProps> = ({
             onClick={() => onEdit(todo)}
             className="text-gray-400 hover:text-blue-400"
           >
-            <Pencil size={16} />
+            <PencilSimple size={16} />
           </button>
           <button
             onClick={() => onLog(todo)}
             className="text-gray-400 hover:text-green-400"
           >
-            <MessageSquare size={16} />
+            <ChatCircle size={16} />
           </button>
           <button
             onClick={() => onDelete(todo)}
             className="text-gray-400 hover:text-red-400"
           >
-            <Trash2 size={16} />
+            <Trash size={16} />
           </button>
         </div>
       </div>

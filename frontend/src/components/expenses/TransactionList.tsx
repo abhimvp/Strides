@@ -1,10 +1,10 @@
-import type { Transaction, Account, Category } from "../../types";
+import type { Transaction, Account, ExpenseCategory } from "../../types";
 import { format } from "date-fns";
 
 interface TransactionListProps {
   transactions: Transaction[];
   accounts: Account[];
-  categories: Category[];
+  categories: ExpenseCategory[];
   onEdit: (transaction: Transaction) => void;
   onDelete: (transactionId: string) => void;
 }

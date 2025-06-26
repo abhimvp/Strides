@@ -51,7 +51,7 @@ export const AddTaskForm = ({
         <div>
           <label
             htmlFor="taskText"
-            className="block text-sm font-medium text-gray-700"
+            className="block text-sm font-medium text-gray-700 dark:text-slate-300"
           >
             Task Name
           </label>
@@ -60,7 +60,7 @@ export const AddTaskForm = ({
             id="taskText"
             value={taskText}
             onChange={(e) => setTaskText(e.target.value)}
-            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+            className="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-slate-600 rounded-md shadow-sm bg-white dark:bg-slate-700 text-gray-900 dark:text-slate-200 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
             required
             autoFocus
           />
@@ -71,7 +71,7 @@ export const AddTaskForm = ({
           <div>
             <label
               htmlFor="categorySelect"
-              className="block text-sm font-medium text-gray-700"
+              className="block text-sm font-medium text-gray-700 dark:text-slate-300"
             >
               Add to Category
             </label>
@@ -79,7 +79,7 @@ export const AddTaskForm = ({
               id="categorySelect"
               value={selectedCategory}
               onChange={(e) => setSelectedCategory(e.target.value)}
-              className="mt-1 block w-full px-3 py-2 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+              className="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-gray-900 dark:text-slate-200 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
               required
             >
               <option value="" disabled>
@@ -97,7 +97,7 @@ export const AddTaskForm = ({
         <div>
           <label
             htmlFor="notes"
-            className="block text-sm font-medium text-gray-700"
+            className="block text-sm font-medium text-gray-700 dark:text-slate-300"
           >
             Notes (Optional)
           </label>
@@ -106,7 +106,7 @@ export const AddTaskForm = ({
             value={notes}
             onChange={(e) => setNotes(e.target.value)}
             rows={3}
-            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+            className="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-slate-600 rounded-md shadow-sm bg-white dark:bg-slate-700 text-gray-900 dark:text-slate-200 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
             placeholder="Add a short description or reference..."
           />
         </div>
@@ -115,13 +115,13 @@ export const AddTaskForm = ({
         <button
           type="button"
           onClick={onClose}
-          className="px-4 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300"
+          className="px-4 py-2 bg-gray-200 dark:bg-slate-600 text-gray-800 dark:text-slate-200 rounded-md hover:bg-gray-300 dark:hover:bg-slate-500 transition-colors"
         >
           Cancel
         </button>
         <button
           type="submit"
-          className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600"
+          className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors"
         >
           Add Task
         </button>

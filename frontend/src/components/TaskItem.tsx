@@ -1,15 +1,15 @@
-import React from "react";
 import {
   Bell,
   Paperclip,
   CheckCircle,
   Circle,
-  Trash2,
-  Pencil,
+  Trash,
+  PencilSimple,
   Info,
-  GripVertical,
-  MessageSquare,
-} from "lucide-react";
+  DotsSixVertical,
+  ChatCircle,
+} from "phosphor-react";
+import { motion } from "framer-motion";
 import type { Task } from "../types";
 // This interface defines the props that the TaskItem component will receive.
 // It includes the task object, the category it belongs to, and a function to handle toggling the task's completion state.
@@ -66,16 +66,33 @@ export const TaskItem = ({
   const historyMap = new Map(task.history.map((h) => [h.date, h.completed]));
 
   return (
-    <div
+    <motion.div
+      layout
+      initial={{ opacity: 0, y: 10 }}
+      animate={{
+        opacity: isDragging ? 0.5 : 1,
+        y: 0,
+        scale: isDragging ? 1.02 : 1,
+      }}
+      exit={{ opacity: 0, y: -10 }}
+      whileHover={{
+        scale: 1.01,
+        boxShadow: "0 4px 20px rgba(0,0,0,0.1)",
+      }}
       ref={setNodeRef}
       style={style}
       {...attributes}
-      className="flex justify-between items-center py-3 bg-white rounded-lg -mx-2 px-2 group mb-2 shadow-sm touch-none"
+      className="flex justify-between items-center py-3 bg-white rounded-lg px-3 group mb-2 shadow-sm border border-slate-100 hover:border-slate-200 transition-all"
     >
-      {/* Drag Handle */}
-      <div {...listeners} className="cursor-grab text-slate-400 p-2">
-        <GripVertical size={20} />
-      </div>
+      {/* Enhanced Drag Handle */}
+      <motion.div
+        {...listeners}
+        className="cursor-grab active:cursor-grabbing text-slate-400 p-2 hover:text-slate-600 transition-colors"
+        whileHover={{ scale: 1.1 }}
+        whileTap={{ scale: 0.95 }}
+      >
+        <DotsSixVertical size={20} />
+      </motion.div>
       {/* Left Side: Task Info */}
       <div className="flex-grow pr-4">
         <div className="flex items-center gap-2 mb-1">
@@ -89,20 +106,24 @@ export const TaskItem = ({
               </div>
             </div>
           )}
-          <button
+          <motion.button
+            whileHover={{ scale: 1.1 }}
+            whileTap={{ scale: 0.95 }}
             onClick={() => onOpenLog(task)}
             className="text-gray-400 hover:text-blue-500 opacity-0 group-hover:opacity-100 transition-opacity"
             aria-label={`View logs for ${task.text}`}
           >
-            <MessageSquare size={16} />
-          </button>
-          <button
+            <ChatCircle size={16} />
+          </motion.button>
+          <motion.button
+            whileHover={{ scale: 1.1 }}
+            whileTap={{ scale: 0.95 }}
             onClick={() => onEdit(categoryName, task.id, task.text)}
             className="text-gray-400 hover:text-blue-500 opacity-0 group-hover:opacity-100 transition-opacity"
             aria-label={`Edit task ${task.text}`}
           >
-            <Pencil size={16} />
-          </button>
+            <PencilSimple size={16} />
+          </motion.button>
         </div>
         <div className="flex items-center gap-4 text-xs text-slate-400">
           {task.frequency && (
@@ -124,8 +145,10 @@ export const TaskItem = ({
           {weekDates.map(({ fullDate, isPast }) => {
             const isCompleted = historyMap.get(fullDate) || false;
             return (
-              <button
+              <motion.button
                 key={fullDate}
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.9 }}
                 onClick={() =>
                   onToggle(categoryName, task.id, fullDate, isCompleted)
                 }
@@ -137,25 +160,31 @@ export const TaskItem = ({
                 }`}
               >
                 {isCompleted ? (
-                  <CheckCircle className="text-green-500" size={22} />
+                  <CheckCircle
+                    className="text-green-500"
+                    size={22}
+                    weight="fill"
+                  />
                 ) : (
                   <Circle
                     className="text-slate-300 hover:text-slate-400"
                     size={22}
                   />
                 )}
-              </button>
+              </motion.button>
             );
           })}
         </div>
-        <button
+        <motion.button
+          whileHover={{ scale: 1.1 }}
+          whileTap={{ scale: 0.95 }}
           onClick={() => onDelete(categoryName, task.id)}
           className="p-1 text-gray-400 hover:text-red-500 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
           aria-label={`Delete task ${task.text}`}
         >
-          <Trash2 size={18} />
-        </button>
+          <Trash size={18} />
+        </motion.button>
       </div>
-    </div>
+    </motion.div>
   );
 };

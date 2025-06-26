@@ -1,5 +1,5 @@
 // src/pages/Dashboard.tsx
-import React, { useState } from "react";
+import { useState } from "react";
 import { Header } from "../components/Header";
 import { useAuth } from "../hooks/useAuth";
 import { TaskView } from "./TaskView";
@@ -13,7 +13,7 @@ export const Dashboard = () => {
   const [currentView, setCurrentView] = useState<MainView>("tasks");
 
   return (
-    <div className="bg-slate-50 min-h-screen font-sans text-gray-800">
+    <div className="theme-bg-secondary min-h-screen font-sans theme-text-primary transition-colors duration-300">
       <div className="container mx-auto p-4 sm:p-6 md:p-8 max-w-6xl">
         {" "}
         {/* Increased max-width for new layout */}
@@ -30,14 +30,14 @@ export const Dashboard = () => {
           </div>
         </div>
         {/* Top-Level Navigation Tabs */}
-        <div className="mb-8 border-b-2 border-slate-200">
+        <div className="mb-8 border-b-2 theme-border">
           <nav className="-mb-0.5 flex space-x-8">
             <button
               onClick={() => setCurrentView("tasks")}
               className={`py-4 px-1 border-b-4 font-semibold text-xl transition-colors ${
                 currentView === "tasks"
                   ? "border-blue-500 text-blue-600"
-                  : "border-transparent text-slate-500 hover:text-slate-700"
+                  : "border-transparent theme-text-muted hover:theme-text-secondary"
               }`}
             >
               Tasks
@@ -47,7 +47,7 @@ export const Dashboard = () => {
               className={`py-4 px-1 border-b-4 font-semibold text-xl transition-colors ${
                 currentView === "expenses"
                   ? "border-blue-500 text-blue-600"
-                  : "border-transparent text-slate-500 hover:text-slate-700"
+                  : "border-transparent theme-text-muted hover:theme-text-secondary"
               }`}
             >
               Expenses
@@ -58,7 +58,7 @@ export const Dashboard = () => {
               className={`py-4 px-1 border-b-4 font-semibold text-xl transition-colors ${
                 currentView === "todos"
                   ? "border-blue-500 text-blue-600"
-                  : "border-transparent text-slate-500 hover:text-slate-700"
+                  : "border-transparent theme-text-muted hover:theme-text-secondary"
               }`}
             >
               To-Do Board

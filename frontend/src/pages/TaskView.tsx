@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 // import AIAgent from "../components/AIAgent";
 import {
   DndContext,
@@ -12,6 +12,7 @@ import type {
   DragOverEvent,
   DragStartEvent,
 } from "@dnd-kit/core";
+import { motion, AnimatePresence } from "framer-motion";
 import toast from "react-hot-toast";
 import { TaskList } from "../components/TaskList";
 import { DailyLogModal } from "../components/DailyLogModal";
@@ -22,22 +23,24 @@ import { AddCategoryForm } from "../components/AddCategoryForm";
 import { ConfirmationDialog } from "../components/ConfirmationDialog";
 import { EditForm } from "../components/EditForm";
 import { initialTasks } from "../data/mockTasks";
-import type {
-  UserTasks,
-  Category,
-  Task,
-  TaskHistory,
-  DailyLog,
-  LoggableItem,
-} from "../types";
-import { getWeekDays, toISODateString } from "../utils/date";
+import type { UserTasks, Category, Task, TaskHistory } from "../types";
+import { getWeekDays } from "../utils/date";
 import {
   getTasks,
   createInitialTasks,
   updateTasks,
 } from "../services/taskService";
-import { Plus } from "lucide-react";
+import { Plus, Calendar, SquaresFour } from "phosphor-react";
 import { MonthlyView } from "./MonthlyView";
+import { Button } from "../components/ui/Button";
+import { CategorySkeleton } from "../components/ui/Skeleton";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "../components/ui/Dialog";
 
 type DeletionInfo = {
   type: "task" | "category";
@@ -265,7 +268,7 @@ export const TaskView = () => {
     if (!userTasks || !editingInfo) return;
 
     const { newText, newCategory, newNotes } = data;
-    let newCategories = JSON.parse(JSON.stringify(userTasks.categories));
+    const newCategories = JSON.parse(JSON.stringify(userTasks.categories));
     const originalCategoryName = editingInfo.categoryName;
 
     if (editingInfo.type === "category") {
@@ -442,8 +445,18 @@ export const TaskView = () => {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        Loading...
+      <div className="bg-slate-50 dark:bg-slate-900 min-h-screen font-sans text-gray-800 dark:text-gray-200 transition-colors">
+        <div className="container mx-auto p-4 sm:p-6 md:p-8 max-w-4xl">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="space-y-4"
+          >
+            <CategorySkeleton />
+            <CategorySkeleton />
+            <CategorySkeleton />
+          </motion.div>
+        </div>
       </div>
     );
   }
@@ -456,106 +469,168 @@ export const TaskView = () => {
       onDragOver={handleDragOver}
       onDragEnd={handleDragEnd}
     >
-      <div className="bg-slate-50 min-h-screen font-sans text-gray-800">
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        className="bg-slate-50 dark:bg-slate-900 min-h-screen font-sans text-gray-800 dark:text-gray-200 transition-colors"
+      >
         <div className="container mx-auto p-4 sm:p-6 md:p-8 max-w-4xl">
-          <div className="flex justify-between items-start mb-4">
+          <motion.div
+            initial={{ y: -20, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            className="flex justify-between items-start mb-4"
+          >
             {/* <Header /> */}
             <div className="flex items-center gap-4 mt-4">
-              {/* New Global Add Task Button */}
-              <button
-                onClick={() => setIsGlobalTaskModalOpen(true)}
-                className="flex items-center gap-2 text-sm bg-blue-500 text-white py-2 px-4 rounded-lg shadow-md hover:bg-blue-600 font-semibold"
-              >
-                <Plus size={16} />
-                Add Task
-              </button>
-              <button
-                onClick={() => setIsCategoryModalOpen(true)}
-                className="flex items-center gap-2 text-sm bg-blue-500 text-white py-2 px-4 rounded-lg shadow-md hover:bg-blue-600 font-semibold"
-              >
-                <Plus size={16} />
-                Create a New Category
-              </button>
+              {/* Enhanced Add Task Button */}
+              <Dialog>
+                <DialogTrigger asChild>
+                  <Button>
+                    <Plus size={16} className="mr-2" />
+                    Add Task
+                  </Button>
+                </DialogTrigger>
+                <DialogContent>
+                  <DialogHeader>
+                    <DialogTitle>Add a New Task</DialogTitle>
+                  </DialogHeader>
+                  <AddTaskForm
+                    categories={[
+                      DEFAULT_CATEGORY,
+                      ...(userTasks?.categories.map((c) => c.name) || []),
+                    ]}
+                    defaultCategory={DEFAULT_CATEGORY}
+                    onAddTask={(taskData, categoryName) => {
+                      handleAddTask(categoryName, taskData);
+                      toast.success(`Task added to ${categoryName}!`);
+                    }}
+                    onClose={() => {}}
+                  />
+                </DialogContent>
+              </Dialog>
+
+              <Dialog>
+                <DialogTrigger asChild>
+                  <Button variant="outline">
+                    <Plus size={16} className="mr-2" />
+                    Create Category
+                  </Button>
+                </DialogTrigger>
+                <DialogContent>
+                  <DialogHeader>
+                    <DialogTitle>Create New Category</DialogTitle>
+                  </DialogHeader>
+                  <AddCategoryForm
+                    onAddCategory={handleAddCategory}
+                    onClose={() => {}}
+                  />
+                </DialogContent>
+              </Dialog>
+
               {isNewUser && (
-                <button
+                <Button
+                  variant="success"
                   onClick={handleSaveInitialTasks}
-                  className="bg-green-500 text-white py-2 px-4 rounded-lg shadow-md hover:bg-green-600 font-semibold"
+                  loading={false}
                 >
                   Save My Strides
-                </button>
+                </Button>
               )}
             </div>
-          </div>
-          {/* View Switcher Tabs */}
-          <div className="mb-6 border-b-2 border-slate-200">
+          </motion.div>
+
+          {/* Enhanced View Switcher Tabs */}
+          <motion.div
+            initial={{ y: 10, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ delay: 0.1 }}
+            className="mb-6 border-b-2 border-slate-200 dark:border-slate-700 transition-colors"
+          >
             <nav className="-mb-0.5 flex space-x-6">
-              <button
-                onClick={() => setCurrentView("weekly")}
-                className={`py-2 px-1 border-b-4 font-medium text-lg transition-colors ${
-                  currentView === "weekly"
-                    ? "border-blue-500 text-blue-600"
-                    : "border-transparent text-slate-500 hover:text-slate-700"
-                }`}
-              >
-                Weekly View
-              </button>
-              <button
-                onClick={() => setCurrentView("monthly")}
-                className={`py-2 px-1 border-b-4 font-medium text-lg transition-colors ${
-                  currentView === "monthly"
-                    ? "border-blue-500 text-blue-600"
-                    : "border-transparent text-slate-500 hover:text-slate-700"
-                }`}
-              >
-                Monthly View
-              </button>
-            </nav>
-          </div>
-
-          {currentView === "weekly" ? (
-            <>
-              {isNewUser && (
-                <div
-                  className="bg-blue-100 border-l-4 border-blue-500 text-blue-700 p-4 mb-6 rounded-md"
-                  role="alert"
+              {[
+                { key: "weekly", label: "Weekly View", icon: Calendar },
+                { key: "monthly", label: "Monthly View", icon: SquaresFour },
+              ].map(({ key, label, icon: Icon }) => (
+                <motion.button
+                  key={key}
+                  whileHover={{ y: -2 }}
+                  whileTap={{ y: 0 }}
+                  onClick={() => setCurrentView(key as "weekly" | "monthly")}
+                  className={`py-2 px-4 border-b-4 font-medium text-lg transition-all rounded-t-lg flex items-center gap-2 ${
+                    currentView === key
+                      ? "border-blue-500 text-blue-600 bg-blue-50 dark:bg-blue-900/30 dark:text-blue-400"
+                      : "border-transparent text-slate-500 hover:text-slate-700 hover:bg-slate-50 dark:text-slate-400 dark:hover:text-slate-300 dark:hover:bg-slate-800"
+                  }`}
                 >
-                  <p className="font-bold">Welcome to Strides!</p>
-                  <p>
-                    We've started you off with some example tasks. Feel free to
-                    edit, add, or delete them, then click "Save My Strides" to
-                    begin!
-                  </p>
-                </div>
-              )}
-              {userTasks?.categories.map((category) => (
-                <TaskList
-                  key={category.name}
-                  isNewUser={isNewUser}
-                  category={category.name}
-                  tasks={category.tasks}
-                  weekDays={weekData}
-                  weekDates={weekData}
-                  isOpen={openCategory === category.name}
-                  onHeaderClick={() => handleCategoryHeaderClick(category.name)}
-                  onToggleTask={handleToggleTask}
-                  onAddTask={handleAddTask}
-                  onEditCategory={handleEditCategory}
-                  onEditTask={handleEditTask}
-                  onDeleteTask={handleDeleteTask}
-                  onDeleteCategory={handleDeleteCategory}
-                  onOpenLog={(task) => setLoggingTask(task)}
-                />
+                  <Icon size={20} />
+                  {label}
+                </motion.button>
               ))}
+            </nav>
+          </motion.div>
 
-              {/* <div>
+          <AnimatePresence mode="wait">
+            {currentView === "weekly" ? (
+              <motion.div
+                key="weekly"
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: 20 }}
+                transition={{ duration: 0.2 }}
+              >
+                {isNewUser && (
+                  <div
+                    className="bg-blue-100 border-l-4 border-blue-500 text-blue-700 p-4 mb-6 rounded-md"
+                    role="alert"
+                  >
+                    <p className="font-bold">Welcome to Strides!</p>
+                    <p>
+                      We've started you off with some example tasks. Feel free
+                      to edit, add, or delete them, then click "Save My Strides"
+                      to begin!
+                    </p>
+                  </div>
+                )}
+                {userTasks?.categories.map((category) => (
+                  <TaskList
+                    key={category.name}
+                    isNewUser={isNewUser}
+                    category={category.name}
+                    tasks={category.tasks}
+                    weekDays={weekData}
+                    weekDates={weekData}
+                    isOpen={openCategory === category.name}
+                    onHeaderClick={() =>
+                      handleCategoryHeaderClick(category.name)
+                    }
+                    onToggleTask={handleToggleTask}
+                    onAddTask={handleAddTask}
+                    onEditCategory={handleEditCategory}
+                    onEditTask={handleEditTask}
+                    onDeleteTask={handleDeleteTask}
+                    onDeleteCategory={handleDeleteCategory}
+                    onOpenLog={(task) => setLoggingTask(task)}
+                  />
+                ))}
+
+                {/* <div>
                 <AIAgent />
               </div> */}
-            </>
-          ) : (
-            <MonthlyView userTasks={userTasks} />
-          )}
+              </motion.div>
+            ) : (
+              <motion.div
+                key="monthly"
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -20 }}
+                transition={{ duration: 0.2 }}
+              >
+                <MonthlyView userTasks={userTasks} />
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
-      </div>
+      </motion.div>
       {/* Updated Modal rendering for Global Add Task */}
       <Modal
         isOpen={isGlobalTaskModalOpen}

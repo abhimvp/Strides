@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import { Plus, Trash2, Pencil, ChevronDown } from "lucide-react";
+import { useState } from "react";
+import { Plus, Trash, PencilSimple, CaretDown } from "phosphor-react";
 import type { Task } from "../types";
 import { TaskItem } from "./TaskItem";
 import { Modal } from "./Modal";
@@ -94,7 +94,7 @@ export const TaskList = ({
         aria-expanded={isOpen}
       >
         <div className="flex items-center gap-3">
-          <ChevronDown
+          <CaretDown
             size={24}
             className={`text-slate-500 transition-transform ${
               isOpen ? "rotate-180" : ""
@@ -111,14 +111,14 @@ export const TaskList = ({
             className="p-2 text-gray-400 hover:text-blue-500 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity"
             aria-label={`Edit category ${category}`}
           >
-            <Pencil size={18} />
+            <PencilSimple size={18} />
           </button>
           <button
             onClick={() => onDeleteCategory(category)}
             className="p-2 text-gray-400 hover:text-red-500 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity"
             aria-label={`Delete category ${category}`}
           >
-            <Trash2 size={18} />
+            <Trash size={18} />
           </button>
           <button
             onClick={() => setIsModalOpen(true)}

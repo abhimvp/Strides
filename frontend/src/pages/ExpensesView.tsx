@@ -1,11 +1,11 @@
-import React, { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { getAccounts } from "../services/accountService";
 import { getCategories } from "../services/categoryService";
 import AccountList from "../components/expenses/AccountList";
 import { AccountForm } from "../components/expenses/AccountForm";
 import { TransactionForm } from "../components/expenses/TransactionForm";
 import { TransferForm } from "../components/expenses/TransferForm";
-import type { Account, Category, Transaction } from "../types";
+import type { Account, ExpenseCategory, Transaction } from "../types";
 import { CategoryManager } from "../components/expenses/CategoryManager";
 import {
   getTransactions,
@@ -17,7 +17,7 @@ import { BalanceSummary } from "../components/expenses/BalanceSummary";
 
 export const ExpensesView = () => {
   const [accounts, setAccounts] = useState<Account[]>([]);
-  const [categories, setCategories] = useState<Category[]>([]);
+  const [categories, setCategories] = useState<ExpenseCategory[]>([]);
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);

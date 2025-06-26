@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import type {
-  Category,
+  ExpenseCategory,
   SubCategory,
   Transaction,
   CreateTransactionData,
@@ -15,7 +15,7 @@ import { format } from "date-fns";
 
 interface TransactionFormProps {
   accounts: Account[];
-  categories: Category[];
+  categories: ExpenseCategory[];
   transactionToEdit?: Transaction | null;
   onSave: () => void; // Generic save handler
   onCancelEdit?: () => void;
@@ -111,11 +111,20 @@ export const TransactionForm = ({
       if (isEditMode && transactionToEdit) {
         await updateTransaction(transactionToEdit.id, dataPayload);
       } else {
-        await createTransaction({ ...dataPayload, type, accountId });
+        const createPayload: CreateTransactionData = {
+          type,
+          accountId,
+          amount: parseFloat(amount),
+          categoryId: categoryId || "",
+          subCategoryId: subCategoryId || undefined,
+          notes: notes || undefined,
+          date: new Date(date).toISOString(),
+        };
+        await createTransaction(createPayload);
         resetForm();
       }
       onSave();
-    } catch (err) {
+    } catch {
       setError(`Failed to ${isEditMode ? "update" : "add"} transaction.`);
     } finally {
       setIsSubmitting(false);

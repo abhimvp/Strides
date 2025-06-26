@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from "react";
-import { ChevronLeft, ChevronRight, ChevronDown } from "lucide-react";
+import { useState, useEffect } from "react";
+import { CaretLeft, CaretRight, CaretDown } from "phosphor-react";
 import { getMonthlyHistory } from "../services/taskService";
 import type { UserTasks } from "../types";
 
@@ -64,7 +64,7 @@ export const MonthlyView = ({ userTasks }: MonthlyViewProps) => {
           onClick={() => changeMonth(-1)}
           className="p-2 rounded-full hover:bg-slate-200 transition-colors"
         >
-          <ChevronLeft />
+          <CaretLeft />
         </button>
         <h2 className="text-2xl font-bold text-slate-800">
           {currentDate.toLocaleString("default", {
@@ -76,7 +76,7 @@ export const MonthlyView = ({ userTasks }: MonthlyViewProps) => {
           onClick={() => changeMonth(1)}
           className="p-2 rounded-full hover:bg-slate-200 transition-colors"
         >
-          <ChevronRight />
+          <CaretRight />
         </button>
       </div>
 
@@ -95,7 +95,7 @@ export const MonthlyView = ({ userTasks }: MonthlyViewProps) => {
                 <span className="text-xl font-semibold text-slate-700">
                   {category.name}
                 </span>
-                <ChevronDown
+                <CaretDown
                   size={24}
                   className={`text-slate-500 transition-transform ${
                     openCategory === category.name ? "rotate-180" : ""

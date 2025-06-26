@@ -23,6 +23,8 @@ class Transaction(BaseModel):
     transferredAmount: Optional[float] = (
         None  # Final amount received after conversion and fees
     )
+    # New field to clearly distinguish transfer direction
+    transferDirection: Optional[Literal["out", "in"]] = None
 
 
 class CreateTransaction(BaseModel):

@@ -71,11 +71,40 @@ export const TransactionList = ({
 
             // Handle display for transfers
             let displayName: string;
+            let isTransferOut = false;
+
             if (isTransfer) {
-              const toAccountName = tx.toAccountId
-                ? accountMap.get(tx.toAccountId)
-                : "Unknown Account";
-              displayName = `Transfer to ${toAccountName}`;
+              // Use the new transferDirection field for reliable direction detection
+              if (tx.transferDirection === "out") {
+                // Money going OUT of this account (negative)
+                isTransferOut = true;
+                const toAccountName = tx.toAccountId
+                  ? accountMap.get(tx.toAccountId)
+                  : "Unknown Account";
+                displayName = `Transfer to ${toAccountName}`;
+              } else if (tx.transferDirection === "in") {
+                // Money coming INTO this account (positive)
+                isTransferOut = false;
+                const fromAccountName = tx.toAccountId
+                  ? accountMap.get(tx.toAccountId)
+                  : "Unknown Account";
+                displayName = `Transfer from ${fromAccountName}`;
+              } else {
+                // Fallback for old transfers without transferDirection
+                if (tx.notes && tx.notes.includes("Transfer from")) {
+                  isTransferOut = false;
+                  const fromAccountName = tx.toAccountId
+                    ? accountMap.get(tx.toAccountId)
+                    : "Unknown Account";
+                  displayName = `Transfer from ${fromAccountName}`;
+                } else {
+                  isTransferOut = true;
+                  const toAccountName = tx.toAccountId
+                    ? accountMap.get(tx.toAccountId)
+                    : "Unknown Account";
+                  displayName = `Transfer to ${toAccountName}`;
+                }
+              }
             } else {
               displayName = subCategoryName
                 ? `${categoryInfo?.name}: ${subCategoryName}`
@@ -92,7 +121,9 @@ export const TransactionList = ({
                     <div
                       className={`w-10 h-10 rounded-full flex items-center justify-center mr-4 ${
                         isTransfer
-                          ? "bg-blue-900/50"
+                          ? isTransferOut
+                            ? "bg-red-900/50"
+                            : "bg-green-900/50"
                           : isExpense
                           ? "bg-red-900/50"
                           : "bg-green-900/50"
@@ -101,13 +132,21 @@ export const TransactionList = ({
                       <span
                         className={`text-xl font-bold ${
                           isTransfer
-                            ? "text-blue-400"
+                            ? isTransferOut
+                              ? "text-red-400"
+                              : "text-green-400"
                             : isExpense
                             ? "text-red-400"
                             : "text-green-400"
                         }`}
                       >
-                        {isTransfer ? "↔" : isExpense ? "▼" : "▲"}
+                        {isTransfer
+                          ? isTransferOut
+                            ? "↗"
+                            : "↙"
+                          : isExpense
+                          ? "▼"
+                          : "▲"}
                       </span>
                     </div>
                   </div>
@@ -146,13 +185,21 @@ export const TransactionList = ({
                   <p
                     className={`font-bold text-lg ${
                       isTransfer
-                        ? "text-blue-400"
+                        ? isTransferOut
+                          ? "text-red-400"
+                          : "text-green-400"
                         : isExpense
                         ? "text-red-400"
                         : "text-green-400"
                     }`}
                   >
-                    {isTransfer ? "" : isExpense ? "-" : "+"}
+                    {isTransfer
+                      ? isTransferOut
+                        ? "-"
+                        : "+"
+                      : isExpense
+                      ? "-"
+                      : "+"}
                     {currencySymbol}
                     {tx.amount.toFixed(2)}
                   </p>

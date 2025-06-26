@@ -132,6 +132,7 @@ export interface Transaction {
   commission?: number; // Commission/fee amount
   serviceName?: string; // Third-party service provider name
   transferredAmount?: number; // Final amount received after conversion and fees
+  transferDirection?: "out" | "in"; // New field to distinguish transfer direction
 }
 
 export interface CreateTransactionData {

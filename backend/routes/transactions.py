@@ -84,7 +84,8 @@ async def delete_transaction(
     db: AsyncIOMotorDatabase = Depends(get_database),
     user_id: str = Depends(get_current_user),
 ):
-    """Deletes a transaction and reverts the balance change on the account."""
+    """Deletes a transaction and reverts the balance change on the account.
+    For transfers, deletes both transactions and reverts both account balances."""
     if not ObjectId.is_valid(transaction_id):
         raise HTTPException(status_code=400, detail="Invalid transaction ID.")
 
@@ -95,22 +96,121 @@ async def delete_transaction(
     if not transaction:
         raise HTTPException(status_code=404, detail="Transaction not found.")
 
-    account = await db.accounts.find_one(
-        {"_id": ObjectId(transaction["accountId"]), "userId": user_id}
-    )
-    if account:
-        # Revert the balance change
-        if transaction["type"] == "expense":
-            new_balance = account["balance"] + transaction["amount"]
-        else:  # income
-            new_balance = account["balance"] - transaction["amount"]
-        await db.accounts.update_one(
-            {"_id": ObjectId(account["_id"])}, {"$set": {"balance": new_balance}}
+    if transaction["type"] == "transfer":
+        # Handle transfer deletion - need to delete both transactions and revert both balances
+        await delete_transfer_transactions(db, transaction, user_id)
+    else:
+        # Handle regular transaction deletion
+        account = await db.accounts.find_one(
+            {"_id": ObjectId(transaction["accountId"]), "userId": user_id}
         )
+        if account:
+            # Revert the balance change
+            if transaction["type"] == "expense":
+                new_balance = account["balance"] + transaction["amount"]
+            else:  # income
+                new_balance = account["balance"] - transaction["amount"]
+            await db.accounts.update_one(
+                {"_id": ObjectId(account["_id"])}, {"$set": {"balance": new_balance}}
+            )
 
-    # Delete the transaction
-    await db.transactions.delete_one({"_id": transaction_obj_id})
+        # Delete the transaction
+        await db.transactions.delete_one({"_id": transaction_obj_id})
+
     return
+
+
+async def delete_transfer_transactions(
+    db: AsyncIOMotorDatabase, transaction: dict, user_id: str
+):
+    """Helper function to delete both transfer transactions and revert account balances."""
+
+    # Find the companion transfer transaction
+    # If this is a transfer out, find the transfer in, and vice versa
+    if transaction.get("transferDirection") == "out":
+        # This is the source transaction, find the destination transaction
+        companion_tx = await db.transactions.find_one(
+            {
+                "userId": user_id,
+                "type": "transfer",
+                "transferDirection": "in",
+                "toAccountId": transaction[
+                    "accountId"
+                ],  # The companion's toAccountId points back to this account
+                "date": transaction["date"],  # Same transfer should have same date
+            }
+        )
+        source_tx = transaction
+        dest_tx = companion_tx
+    else:
+        # This is the destination transaction, find the source transaction
+        companion_tx = await db.transactions.find_one(
+            {
+                "userId": user_id,
+                "type": "transfer",
+                "transferDirection": "out",
+                "toAccountId": transaction[
+                    "accountId"
+                ],  # The companion's toAccountId points to this account
+                "date": transaction["date"],  # Same transfer should have same date
+            }
+        )
+        source_tx = companion_tx
+        dest_tx = transaction
+
+    if not companion_tx:
+        # If we can't find the companion transaction, just handle this one as a regular transaction
+        # This could happen for old transfers or corrupted data
+        account = await db.accounts.find_one(
+            {"_id": ObjectId(transaction["accountId"]), "userId": user_id}
+        )
+        if account:
+            # Revert based on transfer direction
+            if transaction.get("transferDirection") == "out":
+                # Add money back to source account
+                new_balance = account["balance"] + transaction["amount"]
+            else:
+                # Remove money from destination account
+                new_balance = account["balance"] - transaction["amount"]
+
+            await db.accounts.update_one(
+                {"_id": ObjectId(account["_id"])}, {"$set": {"balance": new_balance}}
+            )
+
+        # Delete just this transaction
+        await db.transactions.delete_one({"_id": ObjectId(transaction["_id"])})
+        return
+
+    # Revert balances for both accounts
+    # Source account: add back the original amount
+    if source_tx:
+        source_account = await db.accounts.find_one(
+            {"_id": ObjectId(source_tx["accountId"]), "userId": user_id}
+        )
+        if source_account:
+            new_source_balance = source_account["balance"] + source_tx["amount"]
+            await db.accounts.update_one(
+                {"_id": ObjectId(source_account["_id"])},
+                {"$set": {"balance": new_source_balance}},
+            )
+
+    # Destination account: subtract the received amount
+    if dest_tx:
+        dest_account = await db.accounts.find_one(
+            {"_id": ObjectId(dest_tx["accountId"]), "userId": user_id}
+        )
+        if dest_account:
+            new_dest_balance = dest_account["balance"] - dest_tx["amount"]
+            await db.accounts.update_one(
+                {"_id": ObjectId(dest_account["_id"])},
+                {"$set": {"balance": new_dest_balance}},
+            )
+
+    # Delete both transactions
+    if source_tx:
+        await db.transactions.delete_one({"_id": ObjectId(source_tx["_id"])})
+    if dest_tx:
+        await db.transactions.delete_one({"_id": ObjectId(dest_tx["_id"])})
 
 
 @router.put("/{transaction_id}", response_model=Transaction)
@@ -239,37 +339,44 @@ async def create_transfer(
         result = await db.categories.insert_one(transfer_category_doc)
         transfer_category = await db.categories.find_one({"_id": result.inserted_id})
 
-    transfer_category_id = str(transfer_category["_id"])
+    if transfer_category:
+        transfer_category_id = str(transfer_category["_id"])
+    else:
+        raise HTTPException(
+            status_code=500, detail="Failed to create transfer category"
+        )
 
     # 7. Create transaction records
     transfer_date = transfer_data.date if transfer_data.date else datetime.now()
 
-    # Create "transfer out" transaction for source account
+    # Create "transfer out" transaction for source account (negative amount)
     from_transaction_doc = {
         "userId": user_id,
         "accountId": transfer_data.fromAccountId,
         "type": "transfer",
-        "amount": transfer_data.amount,
+        "amount": transfer_data.amount,  # Original amount sent
         "date": transfer_date,
         "categoryId": transfer_category_id,
         "notes": transfer_data.notes or f"Transfer to {to_account['accountName']}",
         "toAccountId": transfer_data.toAccountId,
+        "transferDirection": "out",
         "exchangeRate": transfer_data.exchangeRate,
         "commission": transfer_data.commission,
         "serviceName": transfer_data.serviceName,
         "transferredAmount": transferred_amount,
     }
 
-    # Create "transfer in" transaction for destination account
+    # Create "transfer in" transaction for destination account (positive amount)
     to_transaction_doc = {
         "userId": user_id,
         "accountId": transfer_data.toAccountId,
         "type": "transfer",
-        "amount": transferred_amount,
+        "amount": transferred_amount,  # Amount received after conversion/fees
         "date": transfer_date,
         "categoryId": transfer_category_id,
         "notes": transfer_data.notes or f"Transfer from {from_account['accountName']}",
         "toAccountId": transfer_data.fromAccountId,  # Reference back to source
+        "transferDirection": "in",
         "exchangeRate": transfer_data.exchangeRate,
         "commission": transfer_data.commission,
         "serviceName": transfer_data.serviceName,
@@ -283,5 +390,14 @@ async def create_transfer(
     # Fetch and return both created transactions
     from_transaction = await db.transactions.find_one({"_id": from_result.inserted_id})
     to_transaction = await db.transactions.find_one({"_id": to_result.inserted_id})
+
+    # Convert ObjectId to string for Pydantic and validate
+    if not from_transaction or not to_transaction:
+        raise HTTPException(
+            status_code=500, detail="Failed to create transfer transactions"
+        )
+
+    from_transaction["_id"] = str(from_transaction["_id"])
+    to_transaction["_id"] = str(to_transaction["_id"])
 
     return [Transaction(**from_transaction), Transaction(**to_transaction)]

@@ -16,6 +16,13 @@ class Transaction(BaseModel):
     notes: Optional[str] = None
     # For transfers, this will point to the destination account
     toAccountId: Optional[str] = None
+    # Transfer-specific fields
+    exchangeRate: Optional[float] = None  # For international transfers
+    commission: Optional[float] = None  # Commission/fee amount
+    serviceName: Optional[str] = None  # Third-party service provider name
+    transferredAmount: Optional[float] = (
+        None  # Final amount received after conversion and fees
+    )
 
 
 class CreateTransaction(BaseModel):
@@ -26,6 +33,18 @@ class CreateTransaction(BaseModel):
     subCategoryId: Optional[str] = None
     notes: Optional[str] = None
     date: Optional[datetime] = None
+
+
+class CreateTransfer(BaseModel):
+    fromAccountId: str
+    toAccountId: str
+    amount: float
+    exchangeRate: Optional[float] = None  # For international transfers
+    commission: Optional[float] = None  # Commission/fee amount
+    serviceName: Optional[str] = None  # Third-party service provider name
+    notes: Optional[str] = None
+    date: Optional[datetime] = None
+
 
 class UpdateTransaction(BaseModel):
     # All fields are optional for an update

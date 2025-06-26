@@ -331,7 +331,7 @@ export default {
 
 #### #### Feature Implementation: Weekly Calendar View - Update Backend Models
 
-- To support the new frontend structure, your backend models must also be updated.
+- To support the new frontend models must also be updated.
 - In backend/models/task_models.py.Add a `TaskHistory` model and update the `Task` model to use it.
 
 #### Include the optional notes field in our Pydantic models
@@ -515,7 +515,7 @@ $ uv add langgraph langchain_core langchain_community langsmith langchain-google
 
 ### Key Features
 
-- **Transaction Management:** Log expenses, income, and transfers between accounts.
+- **Transaction Management:** Log expenses, income, and transfers.
 - **Customizable Categories:** Pre-defined default categories with the ability for users to create their own main and sub-categories.
 - **Account Management:** Track balances across various payment methods (bank accounts, credit cards, cash, e-wallets).
 - **Detailed Records:** Add notes and attach receipts or invoices to each transaction.

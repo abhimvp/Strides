@@ -127,6 +127,11 @@ export interface Transaction {
   subCategoryId?: string;
   notes?: string;
   toAccountId?: string;
+  // Transfer-specific fields
+  exchangeRate?: number; // For international transfers
+  commission?: number; // Commission/fee amount
+  serviceName?: string; // Third-party service provider name
+  transferredAmount?: number; // Final amount received after conversion and fees
 }
 
 export interface CreateTransactionData {
@@ -135,6 +140,17 @@ export interface CreateTransactionData {
   amount: number;
   categoryId: string;
   subCategoryId?: string;
+  notes?: string;
+  date?: string;
+}
+
+export interface CreateTransferData {
+  fromAccountId: string;
+  toAccountId: string;
+  amount: number;
+  exchangeRate?: number; // For international transfers
+  commission?: number; // Commission/fee amount
+  serviceName?: string; // Third-party service provider name
   notes?: string;
   date?: string;
 }

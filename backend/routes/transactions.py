@@ -5,7 +5,12 @@ from bson import ObjectId
 from datetime import datetime
 from utils.database import get_database
 from utils.security import get_current_user
-from models.transaction_models import Transaction, CreateTransaction, UpdateTransaction
+from models.transaction_models import (
+    Transaction,
+    CreateTransaction,
+    UpdateTransaction,
+    CreateTransfer,
+)
 
 router = APIRouter()
 
@@ -159,3 +164,124 @@ async def update_transaction(
 
     updated_tx = await db.transactions.find_one({"_id": transaction_obj_id})
     return Transaction(**updated_tx)
+
+
+@router.post(
+    "/transfer",
+    response_model=List[Transaction],
+    status_code=status.HTTP_201_CREATED,
+)
+async def create_transfer(
+    transfer_data: CreateTransfer,
+    db: AsyncIOMotorDatabase = Depends(get_database),
+    user_id: str = Depends(get_current_user),
+):
+    """
+    Creates a transfer between two accounts. Handles domestic and international transfers.
+    """
+    # 1. Validate account IDs
+    if not ObjectId.is_valid(transfer_data.fromAccountId) or not ObjectId.is_valid(
+        transfer_data.toAccountId
+    ):
+        raise HTTPException(status_code=400, detail="Invalid account ID format.")
+
+    from_account_id = ObjectId(transfer_data.fromAccountId)
+    to_account_id = ObjectId(transfer_data.toAccountId)
+
+    # 2. Find both accounts and ensure they belong to the user
+    from_account = await db.accounts.find_one(
+        {"_id": from_account_id, "userId": user_id}
+    )
+    to_account = await db.accounts.find_one({"_id": to_account_id, "userId": user_id})
+
+    if not from_account or not to_account:
+        raise HTTPException(
+            status_code=404,
+            detail="One or both accounts not found or you do not have permission.",
+        )
+
+    # 3. Check if source account has sufficient balance
+    if from_account["balance"] < transfer_data.amount:
+        raise HTTPException(
+            status_code=400, detail="Insufficient balance in source account."
+        )
+
+    # 4. Calculate transferred amount
+    transferred_amount = transfer_data.amount
+    if transfer_data.commission:
+        transferred_amount -= transfer_data.commission
+
+    if transfer_data.exchangeRate:
+        transferred_amount *= transfer_data.exchangeRate
+
+    # 5. Update account balances
+    new_from_balance = from_account["balance"] - transfer_data.amount
+    new_to_balance = to_account["balance"] + transferred_amount
+
+    await db.accounts.update_one(
+        {"_id": from_account_id}, {"$set": {"balance": new_from_balance}}
+    )
+    await db.accounts.update_one(
+        {"_id": to_account_id}, {"$set": {"balance": new_to_balance}}
+    )
+
+    # 6. Create or get transfer category
+    transfer_category = await db.categories.find_one(
+        {"userId": user_id, "name": "Transfer"}
+    )
+    if not transfer_category:
+        # Create transfer category if it doesn't exist
+        transfer_category_doc = {
+            "name": "Transfer",
+            "userId": user_id,
+            "subcategories": [],
+        }
+        result = await db.categories.insert_one(transfer_category_doc)
+        transfer_category = await db.categories.find_one({"_id": result.inserted_id})
+
+    transfer_category_id = str(transfer_category["_id"])
+
+    # 7. Create transaction records
+    transfer_date = transfer_data.date if transfer_data.date else datetime.now()
+
+    # Create "transfer out" transaction for source account
+    from_transaction_doc = {
+        "userId": user_id,
+        "accountId": transfer_data.fromAccountId,
+        "type": "transfer",
+        "amount": transfer_data.amount,
+        "date": transfer_date,
+        "categoryId": transfer_category_id,
+        "notes": transfer_data.notes or f"Transfer to {to_account['accountName']}",
+        "toAccountId": transfer_data.toAccountId,
+        "exchangeRate": transfer_data.exchangeRate,
+        "commission": transfer_data.commission,
+        "serviceName": transfer_data.serviceName,
+        "transferredAmount": transferred_amount,
+    }
+
+    # Create "transfer in" transaction for destination account
+    to_transaction_doc = {
+        "userId": user_id,
+        "accountId": transfer_data.toAccountId,
+        "type": "transfer",
+        "amount": transferred_amount,
+        "date": transfer_date,
+        "categoryId": transfer_category_id,
+        "notes": transfer_data.notes or f"Transfer from {from_account['accountName']}",
+        "toAccountId": transfer_data.fromAccountId,  # Reference back to source
+        "exchangeRate": transfer_data.exchangeRate,
+        "commission": transfer_data.commission,
+        "serviceName": transfer_data.serviceName,
+        "transferredAmount": transferred_amount,
+    }
+
+    # Insert both transactions
+    from_result = await db.transactions.insert_one(from_transaction_doc)
+    to_result = await db.transactions.insert_one(to_transaction_doc)
+
+    # Fetch and return both created transactions
+    from_transaction = await db.transactions.find_one({"_id": from_result.inserted_id})
+    to_transaction = await db.transactions.find_one({"_id": to_result.inserted_id})
+
+    return [Transaction(**from_transaction), Transaction(**to_transaction)]

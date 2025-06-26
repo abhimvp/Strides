@@ -4,6 +4,7 @@ import { getCategories } from "../services/categoryService"; // Import category 
 import AccountList from "../components/expenses/AccountList";
 import { AccountForm } from "../components/expenses/AccountForm";
 import { TransactionForm } from "../components/expenses/TransactionForm"; // Import transaction form
+import { TransferForm } from "../components/expenses/TransferForm"; // Import transfer form
 import type { Account, Category, Transaction } from "../types";
 import { CategoryManager } from "../components/expenses/CategoryManager"; // Import the new component
 import {
@@ -22,6 +23,7 @@ export const ExpensesView = () => {
   const [transactions, setTransactions] = useState<Transaction[]>([]); // State for transactions
   const [editingTransaction, setEditingTransaction] =
     useState<Transaction | null>(null); // State for editing a transaction
+  const [showTransferForm, setShowTransferForm] = useState(false); // State for transfer form visibility
 
   const fetchData = useCallback(async () => {
     try {
@@ -86,12 +88,20 @@ export const ExpensesView = () => {
     <div className="p-4 md:p-6 lg:p-8 h-full text-white bg-gray-800">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-3xl font-bold">Expense Tracker</h1>
-        <button
-          onClick={() => setShowAccountManager(!showAccountManager)}
-          className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded transition duration-300"
-        >
-          {showAccountManager ? "Hide Accounts" : "Manage Accounts"}
-        </button>
+        <div className="flex gap-2">
+          <button
+            onClick={() => setShowAccountManager(!showAccountManager)}
+            className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded transition duration-300"
+          >
+            {showAccountManager ? "Hide Accounts" : "Manage Accounts"}
+          </button>
+          <button
+            onClick={() => setShowTransferForm(!showTransferForm)}
+            className="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded transition duration-300"
+          >
+            {showTransferForm ? "Hide Transfer" : "Transfer Money"}
+          </button>
+        </div>
       </div>
 
       {isLoading && <p>Loading accounts...</p>}
@@ -115,6 +125,26 @@ export const ExpensesView = () => {
               <CategoryManager categories={categories} onUpdate={fetchData} />
             </>
           )}
+        </div>
+      )}
+
+      {/* Transfer Form */}
+      {showTransferForm && !isLoading && !error && accounts.length >= 2 && (
+        <TransferForm
+          accounts={accounts}
+          onSave={() => {
+            setShowTransferForm(false);
+            fetchData();
+          }}
+          onCancel={() => setShowTransferForm(false)}
+        />
+      )}
+
+      {/* Show message if not enough accounts for transfer */}
+      {showTransferForm && accounts.length < 2 && (
+        <div className="bg-yellow-600 text-white p-4 rounded mb-6">
+          You need at least 2 accounts to make transfers. Please add more
+          accounts first.
         </div>
       )}
 

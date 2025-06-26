@@ -3,6 +3,7 @@ import type {
   Transaction,
   CreateTransactionData,
   UpdateTransactionData,
+  CreateTransferData,
 } from "../types";
 
 /**
@@ -51,4 +52,18 @@ export const deleteTransaction = async (
   transactionId: string
 ): Promise<void> => {
   await api.delete(`/transactions/${transactionId}`);
+};
+
+/**
+ * Creates a transfer between two accounts.
+ */
+export const createTransfer = async (
+  transferData: CreateTransferData
+): Promise<Transaction[]> => {
+  const response = await api.post("/transactions/transfer", transferData);
+  // Normalize the response data (array of transactions)
+  return response.data.map((transaction: any) => {
+    const { _id, ...rest } = transaction;
+    return { id: _id, ...rest };
+  });
 };

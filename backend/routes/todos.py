@@ -1,4 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException, status
+from datetime import datetime, timezone
 from motor.motor_asyncio import AsyncIOMotorDatabase
 from bson import ObjectId
 from typing import List
@@ -92,7 +93,13 @@ async def add_todo_log(
     if not ObjectId.is_valid(todo_id):
         raise HTTPException(status_code=400, detail="Invalid To-Do ID.")
 
-    log_doc = TodoLog(notes=log_data.notes).model_dump(by_alias=True)
+    # 2. THE FIX: Explicitly create the log document here.
+    # This guarantees a new ObjectId and a timezone-aware UTC timestamp.
+    log_doc = {
+        "_id": ObjectId(),
+        "timestamp": datetime.now(timezone.utc),
+        "notes": log_data.notes,
+    }
 
     result = await db.todos.update_one(
         {"_id": ObjectId(todo_id), "userId": user_id}, {"$push": {"logs": log_doc}}

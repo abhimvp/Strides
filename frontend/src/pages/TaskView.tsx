@@ -407,38 +407,37 @@ export const TaskView = () => {
     toast.success(`'${deletionInfo?.type}' deleted successfully.`);
   };
 
+  // Replace your entire existing handleSaveLog function with this one.
   const handleSaveLog = (taskId: number, logNote: string) => {
-    if (!userTasks) return;
-    const todayStr = toISODateString(new Date());
+    if (!userTasks || logNote.trim() === "") {
+      return; // Do nothing if the note is empty
+    }
+
+    // Use the full ISO string to include the precise time in UTC.
+    const newTimestamp = new Date().toISOString();
 
     const newCategories = JSON.parse(JSON.stringify(userTasks.categories));
+    let updatedTaskForModal: Task | null = null;
 
-    // Find the task across all categories
     for (const category of newCategories) {
       const task = category.tasks.find((t: Task) => t.id === taskId);
       if (task) {
-        if (!task.daily_logs) task.daily_logs = [];
-        const logIndex = task.daily_logs.findIndex(
-          (log: DailyLog) => log.date === todayStr
-        );
-
-        if (logNote.trim() === "") {
-          // If note is empty, remove the log
-          if (logIndex > -1) task.daily_logs.splice(logIndex, 1);
-        } else {
-          if (logIndex > -1) {
-            // Log for today exists, update it
-            task.daily_logs[logIndex].note = logNote;
-          } else {
-            // No log for today, create it
-            task.daily_logs.push({ date: todayStr, note: logNote });
-          }
+        if (!task.daily_logs) {
+          task.daily_logs = [];
         }
-        break; // Stop searching once task is found and updated
+        // Always push a new log entry with the precise timestamp.
+        task.daily_logs.push({ date: newTimestamp, note: logNote });
+
+        updatedTaskForModal = task;
+        break;
       }
     }
-    updateAndSaveChanges(newCategories);
-    toast.success("Log saved!");
+
+    if (updatedTaskForModal) {
+      updateAndSaveChanges(newCategories);
+      setLoggingTask(updatedTaskForModal);
+      toast.success("Log saved!");
+    }
   };
 
   if (isLoading) {

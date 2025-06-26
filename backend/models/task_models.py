@@ -19,7 +19,7 @@ class TaskHistory(BaseModel):
 
 # Add this new model for a single log entry
 class DailyLog(BaseModel):
-    date: str  # Stored in "YYYY-MM-DD" format
+    date: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     note: str
 
 

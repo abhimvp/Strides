@@ -131,9 +131,12 @@ export const TodoView: React.FC = () => {
     try {
       const data: CreateTodoLogData = { notes: logNote };
       const updatedTodo = await addTodoLog(taskId, data);
-      setTodos(todos.map((t) => (t.id === updatedTodo.id ? updatedTodo : t)));
+      setTodos(todos.map(t => t.id === updatedTodo.id ? updatedTodo : t));
+        
+        // This is the fix: Update the todo being viewed in the modal
+        setLoggingTodo(updatedTodo);
       toast.success("Log saved!", { id: toastId });
-      setLoggingTodo(null);
+      
     } catch (error) {
       toast.error("Failed to save log.", { id: toastId });
     }

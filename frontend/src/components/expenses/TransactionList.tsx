@@ -1,4 +1,3 @@
-import React from "react";
 import type { Transaction, Account, Category } from "../../types";
 import { format } from "date-fns";
 
@@ -9,6 +8,10 @@ interface TransactionListProps {
   onEdit: (transaction: Transaction) => void;
   onDelete: (transactionId: string) => void;
 }
+
+const getCurrencySymbol = (currency: "INR" | "USD") => {
+  return currency === "INR" ? "₹" : "$";
+};
 
 export const TransactionList = ({
   transactions,
@@ -32,6 +35,7 @@ export const TransactionList = ({
 
   // Create maps for quick lookups of names from IDs. This is much more efficient.
   const accountMap = new Map(accounts.map((acc) => [acc.id, acc.accountName]));
+  const accountCurrencyMap = new Map(accounts.map((acc) => [acc.id, acc.currency]));
   // Create nested maps for efficient lookups
   const categoryMap = new Map<
     string,
@@ -43,9 +47,11 @@ export const TransactionList = ({
   });
 
   const handleDelete = (tx: Transaction) => {
+    const currency = accountCurrencyMap.get(tx.accountId) || "INR";
+    const currencySymbol = getCurrencySymbol(currency as "INR" | "USD");
     if (
       window.confirm(
-        `Are you sure you want to delete this ${tx.type} of ₹${tx.amount}? This action cannot be undone.`
+        `Are you sure you want to delete this ${tx.type} of ${currencySymbol}${tx.amount}? This action cannot be undone.`
       )
     ) {
       onDelete(tx.id);
@@ -61,6 +67,8 @@ export const TransactionList = ({
         <ul className="divide-y divide-gray-700">
           {transactions.map((tx) => {
             const isExpense = tx.type === "expense";
+            const currency = accountCurrencyMap.get(tx.accountId) || "INR";
+            const currencySymbol = getCurrencySymbol(currency as "INR" | "USD");
             const categoryInfo = categoryMap.get(tx.categoryId);
             const subCategoryName = tx.subCategoryId
               ? categoryInfo?.subcategories.get(tx.subCategoryId)
@@ -110,7 +118,7 @@ export const TransactionList = ({
                       isExpense ? "text-red-400" : "text-green-400"
                     }`}
                   >
-                    {isExpense ? "-" : "+"}₹{tx.amount.toFixed(2)}
+                    {isExpense ? "-" : "+"}{currencySymbol}{tx.amount.toFixed(2)}
                   </p>
                   <p className="text-xs text-gray-500">
                     {format(new Date(tx.date), "MMM d, yyyy")}

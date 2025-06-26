@@ -49,15 +49,7 @@ export const TransactionList = ({
   });
 
   const handleDelete = (tx: Transaction) => {
-    const currency = accountCurrencyMap.get(tx.accountId) || "INR";
-    const currencySymbol = getCurrencySymbol(currency as "INR" | "USD");
-    if (
-      window.confirm(
-        `Are you sure you want to delete this ${tx.type} of ${currencySymbol}${tx.amount}? This action cannot be undone.`
-      )
-    ) {
-      onDelete(tx.id);
-    }
+    onDelete(tx.id);
   };
 
   return (

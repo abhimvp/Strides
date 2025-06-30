@@ -9,6 +9,7 @@ interface KanbanColumnProps {
   onEdit: (todo: TodoItem) => void;
   onDelete: (todo: TodoItem) => void;
   onLog: (todo: TodoItem) => void;
+  onViewDetails: (todo: TodoItem) => void;
 }
 
 export const KanbanColumn: React.FC<KanbanColumnProps> = ({
@@ -17,6 +18,7 @@ export const KanbanColumn: React.FC<KanbanColumnProps> = ({
   onEdit,
   onDelete,
   onLog,
+  onViewDetails,
 }) => {
   const { setNodeRef, isOver } = useDroppable({ id: status });
 
@@ -50,6 +52,7 @@ export const KanbanColumn: React.FC<KanbanColumnProps> = ({
             onEdit={onEdit}
             onDelete={onDelete}
             onLog={onLog}
+            onViewDetails={onViewDetails}
           />
         ))}
       </div>

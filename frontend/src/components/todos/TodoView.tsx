@@ -31,6 +31,7 @@ import { ConfirmationDialog } from "../ConfirmationDialog";
 // We can reuse the DailyLogModal if it's generic enough, or create a new one.
 // For now, let's assume we can reuse it with minor adaptations if needed.
 import { DailyLogModal } from "../DailyLogModal";
+import { TodoDetailSidebar } from "./TodoDetailSidebar";
 
 const columns: TodoStatus[] = ["Not Started", "In Progress", "Done"];
 
@@ -41,6 +42,7 @@ export const TodoView: React.FC = () => {
   const [editingTodo, setEditingTodo] = useState<TodoItem | null>(null);
   const [deletingTodo, setDeletingTodo] = useState<TodoItem | null>(null);
   const [loggingTodo, setLoggingTodo] = useState<TodoItem | null>(null);
+  const [detailTodo, setDetailTodo] = useState<TodoItem | null>(null);
 
   useEffect(() => {
     const fetchTodos = async () => {
@@ -169,6 +171,51 @@ export const TodoView: React.FC = () => {
     }
   };
 
+  const handleViewDetails = (todo: TodoItem) => {
+    setDetailTodo(todo);
+  };
+
+  const handleUpdateFromDetail = async (updatedTodo: TodoItem) => {
+    try {
+      const result = await updateTodo(updatedTodo.id, updatedTodo);
+      setTodos((prev) => prev.map((t) => (t.id === result.id ? result : t)));
+      // Update the detail view with the latest data
+      setDetailTodo(result);
+      toast.success("Todo updated successfully!");
+    } catch (err) {
+      console.error("Failed to update todo:", err);
+      toast.error("Failed to update todo");
+    }
+  };
+
+  const handleDeleteFromDetail = async (todo: TodoItem) => {
+    try {
+      await deleteTodo(todo.id);
+      setTodos((prev) => prev.filter((t) => t.id !== todo.id));
+      setDetailTodo(null);
+      toast.success("Todo deleted successfully!");
+    } catch (err) {
+      console.error("Failed to delete todo:", err);
+      toast.error("Failed to delete todo");
+    }
+  };
+
+  const handleAddLogFromDetail = async (
+    todoId: string,
+    logData: CreateTodoLogData
+  ) => {
+    try {
+      const result = await addTodoLog(todoId, logData);
+      setTodos((prev) => prev.map((t) => (t.id === result.id ? result : t)));
+      // Update the detail view with the latest data
+      setDetailTodo(result);
+      toast.success("Log added successfully!");
+    } catch (err) {
+      console.error("Failed to add log:", err);
+      toast.error("Failed to add log");
+    }
+  };
+
   if (isLoading) return <p>Loading To-Do board...</p>;
 
   return (
@@ -195,6 +242,7 @@ export const TodoView: React.FC = () => {
               onEdit={setEditingTodo}
               onDelete={setDeletingTodo}
               onLog={setLoggingTodo}
+              onViewDetails={handleViewDetails}
             />
           ))}
         </div>
@@ -246,6 +294,17 @@ export const TodoView: React.FC = () => {
         }
         onSaveLog={handleSaveLog}
       />
+
+      {detailTodo && (
+        <TodoDetailSidebar
+          todo={detailTodo}
+          isOpen={!!detailTodo}
+          onClose={() => setDetailTodo(null)}
+          onUpdate={handleUpdateFromDetail}
+          onDelete={handleDeleteFromDetail}
+          onAddLog={handleAddLogFromDetail}
+        />
+      )}
     </DndContext>
   );
 };

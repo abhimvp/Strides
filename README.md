@@ -267,6 +267,45 @@ Ready to implement:
 - **Legacy Data Handling**: Added frontend graceful handling for todos missing timestamp data with appropriate fallback messages.
   - Open src/data/mockTasks.ts and replace its contents.
 
+#### Jira-Style Todo Detail Sidebar - Frontend
+
+- **Comprehensive Todo Detail View**: Implemented a professional sidebar interface similar to Jira's task detail view for in-depth todo management.
+- **Click-to-View Details**: Added click handler to todo cards to open detailed view without interfering with drag-and-drop functionality.
+- **Full Todo Information Display**:
+  - Complete todo details including title, notes, and status
+  - Color-coded status badges with real-time updates
+  - Comprehensive timeline showing creation, start, and completion dates
+  - Activity log history with timestamps and relative time display
+- **Inline Editing Capabilities**:
+  - Edit todo title, notes, and status directly in the sidebar
+  - Real-time form validation and optimistic UI updates
+  - Automatic timestamp handling for status transitions
+  - Smart status dropdown with visual indicators
+- **Enhanced Activity Log Management**:
+  - View all todo logs in reverse chronological order
+  - Add new activity logs with rich text notes
+  - Timeline view with precise timestamps and human-readable relative time
+  - Activity indicators and visual hierarchy
+- **Professional User Interface**:
+  - Right-side sliding panel design consistent with modern task management tools
+  - Smooth open/close animations with backdrop click handling
+  - Responsive design that adapts to different screen sizes
+  - Dark theme integration matching the existing application design
+- **Smart Event Handling**:
+  - Proper event separation between card clicks, drag handles, and action buttons
+  - Drag-and-drop functionality preserved while adding detail view access
+  - Action buttons (edit, log, delete) use `stopPropagation()` to prevent sidebar opening
+  - Touch-friendly design for mobile and tablet devices
+- **Enhanced Backend Integration**:
+  - Added `GET /todos/{todo_id}` endpoint for individual todo retrieval
+  - Created `getTodoById()` service function for detailed todo fetching
+  - Integrated with existing update, delete, and log management APIs
+- **Component Architecture**:
+  - `TodoDetailSidebar.tsx`: Main sidebar component with full editing capabilities
+  - Updated `TodoCard.tsx`: Added click handler with proper event management
+  - Updated `KanbanColumn.tsx`: Propagated detail view handler through component hierarchy
+  - Updated `TodoView.tsx`: Integrated sidebar state management and API coordination
+
 #### Making the Dashboard editable
 
 - `Feature : Add a new task`: Adding the functionality to create a new task within a category on your dashboard.
@@ -595,6 +634,15 @@ pnpm add react-loading-skeleton
   - Proper null checks and error responses
   - Consistent timestamp formatting across all endpoints
   - Maintains backward compatibility with existing data
+
+#### Jira-Style Todo Detail Sidebar - Backend Enhancement
+
+- **Individual Todo Retrieval**: Added `GET /todos/{todo_id}` endpoint to fetch specific todo items by ID for detailed view functionality.
+- **Enhanced API Coverage**: Completed the REST API suite for todos with individual item access supporting the frontend detail sidebar feature.
+- **User-Scoped Access**: Endpoint ensures users can only access their own todos with proper authentication and authorization checks.
+- **Error Handling**: Comprehensive validation for todo ID format and existence with appropriate HTTP status codes (400 for invalid ID, 404 for not found).
+- **Integration Ready**: Seamless integration with existing frontend `todoService.ts` through new `getTodoById()` function.
+- **Security**: Maintains the same security model as other todo endpoints with user authentication and data isolation.
 
 ### Notes-Backend
 

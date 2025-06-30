@@ -91,6 +91,26 @@ async def create_todo(
     return todo_from_db(created_todo)
 
 
+# GET a single To-Do item by ID
+@router.get("/{todo_id}", response_model=TodoItem)
+async def get_todo(
+    todo_id: str,
+    db: AsyncIOMotorDatabase = Depends(get_database),
+    user_id: str = Depends(get_current_user),
+):
+    """Get a specific todo item by ID for the authenticated user"""
+    try:
+        object_id = ObjectId(todo_id)
+    except Exception:
+        raise HTTPException(status_code=400, detail="Invalid todo ID format")
+
+    todo = await db.todos.find_one({"_id": object_id, "userId": user_id})
+    if not todo:
+        raise HTTPException(status_code=404, detail="Todo not found")
+
+    return todo_from_db(todo)
+
+
 # PUT (update) a To-Do item
 @router.put("/{todo_id}", response_model=TodoItem)
 async def update_todo(

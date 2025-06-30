@@ -1,0 +1,383 @@
+import React, { useState, useEffect } from "react";
+import {
+  X,
+  Clock,
+  Tag,
+  ChatCircle,
+  PencilSimple,
+  Check,
+  Trash,
+  Plus,
+} from "phosphor-react";
+import { format } from "date-fns";
+import toast from "react-hot-toast";
+
+import type { TodoItem, TodoStatus, CreateTodoLogData } from "../../types";
+import { getTodoStatusMessage, getTimeAgo } from "../../utils/date";
+
+interface TodoDetailSidebarProps {
+  todo: TodoItem | null;
+  isOpen: boolean;
+  onClose: () => void;
+  onUpdate: (todo: TodoItem) => void;
+  onDelete: (todo: TodoItem) => void;
+  onAddLog: (todoId: string, logData: CreateTodoLogData) => void;
+}
+
+const statusOptions: { value: TodoStatus; label: string; color: string }[] = [
+  { value: "Not Started", label: "Not Started", color: "bg-gray-500" },
+  { value: "In Progress", label: "In Progress", color: "bg-blue-500" },
+  { value: "Done", label: "Done", color: "bg-green-500" },
+];
+
+export const TodoDetailSidebar: React.FC<TodoDetailSidebarProps> = ({
+  todo,
+  isOpen,
+  onClose,
+  onUpdate,
+  onDelete,
+  onAddLog,
+}) => {
+  const [isEditing, setIsEditing] = useState(false);
+  const [editForm, setEditForm] = useState({
+    title: "",
+    notes: "",
+    status: "Not Started" as TodoStatus,
+  });
+  const [isAddingLog, setIsAddingLog] = useState(false);
+  const [logNotes, setLogNotes] = useState("");
+
+  useEffect(() => {
+    if (todo) {
+      setEditForm({
+        title: todo.title,
+        notes: todo.notes || "",
+        status: todo.status,
+      });
+    }
+  }, [todo]);
+
+  if (!isOpen || !todo) {
+    return null;
+  }
+
+  const handleSaveEdit = async () => {
+    try {
+      const updateData: Partial<TodoItem> = {
+        title: editForm.title,
+        notes: editForm.notes || undefined,
+      };
+
+      // Add timestamp logic based on status change
+      if (editForm.status !== todo.status) {
+        updateData.status = editForm.status;
+        const now = new Date().toISOString();
+
+        if (editForm.status === "In Progress" && !todo.inProgressAt) {
+          updateData.inProgressAt = now;
+        } else if (editForm.status === "Done" && !todo.completedAt) {
+          updateData.completedAt = now;
+        }
+      }
+
+      onUpdate({ ...todo, ...updateData });
+      setIsEditing(false);
+      toast.success("Todo updated successfully!");
+    } catch (error) {
+      console.error("Failed to update todo:", error);
+      toast.error("Failed to update todo");
+    }
+  };
+
+  const handleAddLog = async () => {
+    if (!logNotes.trim()) {
+      toast.error("Please enter log notes");
+      return;
+    }
+
+    try {
+      await onAddLog(todo.id, { notes: logNotes });
+      setLogNotes("");
+      setIsAddingLog(false);
+      toast.success("Log added successfully!");
+    } catch (error) {
+      console.error("Failed to add log:", error);
+      toast.error("Failed to add log");
+    }
+  };
+
+  const handleDelete = () => {
+    if (window.confirm("Are you sure you want to delete this todo?")) {
+      onDelete(todo);
+      onClose();
+      toast.success("Todo deleted successfully!");
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 overflow-hidden">
+      {/* Backdrop */}
+      <div
+        className="absolute inset-0 bg-black bg-opacity-50"
+        onClick={onClose}
+      />
+
+      {/* Sidebar */}
+      <div className="absolute right-0 top-0 h-full w-full max-w-2xl bg-gray-900 shadow-xl overflow-y-auto">
+        {/* Header */}
+        <div className="sticky top-0 bg-gray-900 border-b border-gray-700 p-6 z-10">
+          <div className="flex items-center justify-between">
+            <h2 className="text-xl font-semibold text-white">Todo Details</h2>
+            <button
+              onClick={onClose}
+              className="text-gray-400 hover:text-white p-2 rounded-lg hover:bg-gray-800"
+            >
+              <X size={20} />
+            </button>
+          </div>
+        </div>
+
+        {/* Content */}
+        <div className="p-6 space-y-6">
+          {/* Title Section */}
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <h3 className="text-lg font-medium text-gray-300">Title</h3>
+              <button
+                onClick={() => setIsEditing(!isEditing)}
+                className="text-gray-400 hover:text-blue-400 p-2 rounded-lg hover:bg-gray-800"
+              >
+                <PencilSimple size={16} />
+              </button>
+            </div>
+
+            {isEditing ? (
+              <div className="space-y-4">
+                <input
+                  type="text"
+                  value={editForm.title}
+                  onChange={(e) =>
+                    setEditForm({ ...editForm, title: e.target.value })
+                  }
+                  className="w-full px-3 py-2 bg-gray-800 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:border-blue-500 focus:outline-none"
+                  placeholder="Todo title"
+                />
+
+                <textarea
+                  value={editForm.notes}
+                  onChange={(e) =>
+                    setEditForm({ ...editForm, notes: e.target.value })
+                  }
+                  rows={3}
+                  className="w-full px-3 py-2 bg-gray-800 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:border-blue-500 focus:outline-none resize-none"
+                  placeholder="Notes (optional)"
+                />
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-300 mb-2">
+                    Status
+                  </label>
+                  <select
+                    value={editForm.status}
+                    onChange={(e) =>
+                      setEditForm({
+                        ...editForm,
+                        status: e.target.value as TodoStatus,
+                      })
+                    }
+                    className="w-full px-3 py-2 bg-gray-800 border border-gray-600 rounded-lg text-white focus:border-blue-500 focus:outline-none"
+                  >
+                    {statusOptions.map((option) => (
+                      <option key={option.value} value={option.value}>
+                        {option.label}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className="flex gap-2">
+                  <button
+                    onClick={handleSaveEdit}
+                    className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center gap-2"
+                  >
+                    <Check size={16} />
+                    Save Changes
+                  </button>
+                  <button
+                    onClick={() => setIsEditing(false)}
+                    className="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700"
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                <h1 className="text-2xl font-bold text-white">{todo.title}</h1>
+                {todo.notes && (
+                  <p className="text-gray-300 bg-gray-800 p-3 rounded-lg">
+                    {todo.notes}
+                  </p>
+                )}
+              </div>
+            )}
+          </div>
+
+          {/* Status Section */}
+          <div className="space-y-3">
+            <h3 className="text-lg font-medium text-gray-300 flex items-center gap-2">
+              <Tag size={20} />
+              Status
+            </h3>
+            <div className="flex items-center gap-3">
+              <span
+                className={`px-3 py-1 rounded-full text-white text-sm font-medium ${
+                  statusOptions.find((opt) => opt.value === todo.status)?.color
+                }`}
+              >
+                {todo.status}
+              </span>
+              <span className="text-sm text-gray-400">
+                {getTodoStatusMessage(todo)}
+              </span>
+            </div>
+          </div>
+
+          {/* Timeline Section */}
+          <div className="space-y-3">
+            <h3 className="text-lg font-medium text-gray-300 flex items-center gap-2">
+              <Clock size={20} />
+              Timeline
+            </h3>
+            <div className="space-y-3 bg-gray-800 p-4 rounded-lg">
+              <div className="flex items-center justify-between">
+                <span className="text-gray-400">Created</span>
+                <span className="text-white">
+                  {format(new Date(todo.createdAt), "MMM d, yyyy 'at' h:mm a")}
+                </span>
+              </div>
+
+              {todo.inProgressAt && (
+                <div className="flex items-center justify-between">
+                  <span className="text-gray-400">Started</span>
+                  <span className="text-white">
+                    {format(
+                      new Date(todo.inProgressAt),
+                      "MMM d, yyyy 'at' h:mm a"
+                    )}
+                  </span>
+                </div>
+              )}
+
+              {todo.completedAt && (
+                <div className="flex items-center justify-between">
+                  <span className="text-gray-400">Completed</span>
+                  <span className="text-white">
+                    {format(
+                      new Date(todo.completedAt),
+                      "MMM d, yyyy 'at' h:mm a"
+                    )}
+                  </span>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Activity Logs Section */}
+          <div className="space-y-3">
+            <div className="flex items-center justify-between">
+              <h3 className="text-lg font-medium text-gray-300 flex items-center gap-2">
+                <ChatCircle size={20} />
+                Activity Logs ({todo.logs.length})
+              </h3>
+              <button
+                onClick={() => setIsAddingLog(true)}
+                className="text-blue-400 hover:text-blue-300 p-2 rounded-lg hover:bg-gray-800 flex items-center gap-1"
+              >
+                <Plus size={16} />
+                Add Log
+              </button>
+            </div>
+
+            {/* Add Log Form */}
+            {isAddingLog && (
+              <div className="bg-gray-800 p-4 rounded-lg space-y-3">
+                <textarea
+                  value={logNotes}
+                  onChange={(e) => setLogNotes(e.target.value)}
+                  rows={3}
+                  className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:border-blue-500 focus:outline-none resize-none"
+                  placeholder="Add your log notes..."
+                />
+                <div className="flex gap-2">
+                  <button
+                    onClick={handleAddLog}
+                    className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center gap-2"
+                  >
+                    <Plus size={16} />
+                    Add Log
+                  </button>
+                  <button
+                    onClick={() => {
+                      setIsAddingLog(false);
+                      setLogNotes("");
+                    }}
+                    className="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700"
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* Logs List */}
+            <div className="space-y-3">
+              {todo.logs.length === 0 ? (
+                <p className="text-gray-500 italic bg-gray-800 p-4 rounded-lg text-center">
+                  No activity logs yet. Add the first log to track progress!
+                </p>
+              ) : (
+                todo.logs
+                  .slice()
+                  .reverse()
+                  .map((log) => (
+                    <div key={log.id} className="bg-gray-800 p-4 rounded-lg">
+                      <div className="flex items-start justify-between mb-2">
+                        <div className="flex items-center gap-2">
+                          <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                          <span className="text-sm text-gray-400">
+                            {format(
+                              new Date(log.timestamp),
+                              "MMM d, yyyy 'at' h:mm a"
+                            )}
+                          </span>
+                        </div>
+                        <span className="text-xs text-gray-500">
+                          {getTimeAgo(log.timestamp)}
+                        </span>
+                      </div>
+                      <p className="text-white">{log.notes}</p>
+                    </div>
+                  ))
+              )}
+            </div>
+          </div>
+
+          {/* Actions Section */}
+          <div className="border-t border-gray-700 pt-6">
+            <h3 className="text-lg font-medium text-gray-300 mb-4">Actions</h3>
+            <div className="flex gap-3">
+              <button
+                onClick={handleDelete}
+                className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 flex items-center gap-2"
+              >
+                <Trash size={16} />
+                Delete Todo
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};

@@ -16,6 +16,7 @@ interface TodoCardProps {
   onEdit: (todo: TodoItem) => void;
   onDelete: (todo: TodoItem) => void;
   onLog: (todo: TodoItem) => void;
+  onViewDetails: (todo: TodoItem) => void;
 }
 
 export const TodoCard: React.FC<TodoCardProps> = ({
@@ -23,6 +24,7 @@ export const TodoCard: React.FC<TodoCardProps> = ({
   onEdit,
   onDelete,
   onLog,
+  onViewDetails,
 }) => {
   const { attributes, listeners, setNodeRef, transform, isDragging } =
     useDraggable({
@@ -39,7 +41,8 @@ export const TodoCard: React.FC<TodoCardProps> = ({
     <div
       ref={setNodeRef}
       style={style}
-      className="bg-gray-900 p-4 rounded-lg shadow-md border border-gray-700 group"
+      className="bg-gray-900 p-4 rounded-lg shadow-md border border-gray-700 group cursor-pointer hover:border-gray-600 transition-colors"
+      onClick={() => onViewDetails(todo)}
     >
       <div className="flex justify-between items-start">
         <h4 className="font-semibold text-white">{todo.title}</h4>
@@ -47,6 +50,7 @@ export const TodoCard: React.FC<TodoCardProps> = ({
           {...listeners}
           {...attributes}
           className="cursor-grab touch-none text-gray-500 hover:text-white"
+          onClick={(e) => e.stopPropagation()} // Prevent triggering the card click when dragging
         >
           <DotsSixVertical size={20} />
         </div>
@@ -61,19 +65,28 @@ export const TodoCard: React.FC<TodoCardProps> = ({
         </div>
         <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
           <button
-            onClick={() => onEdit(todo)}
+            onClick={(e) => {
+              e.stopPropagation();
+              onEdit(todo);
+            }}
             className="text-gray-400 hover:text-blue-400"
           >
             <PencilSimple size={16} />
           </button>
           <button
-            onClick={() => onLog(todo)}
+            onClick={(e) => {
+              e.stopPropagation();
+              onLog(todo);
+            }}
             className="text-gray-400 hover:text-green-400"
           >
             <ChatCircle size={16} />
           </button>
           <button
-            onClick={() => onDelete(todo)}
+            onClick={(e) => {
+              e.stopPropagation();
+              onDelete(todo);
+            }}
             className="text-gray-400 hover:text-red-400"
           >
             <Trash size={16} />

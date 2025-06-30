@@ -43,3 +43,8 @@ export const addTodoLog = async (
   const response = await api.post(`/todos/${todoId}/logs`, data);
   return transformTodoItem(response.data);
 };
+
+export const getTodoById = async (id: string): Promise<TodoItem> => {
+  const response = await api.get(`/todos/${id}`);
+  return transformTodoItem(response.data);
+};

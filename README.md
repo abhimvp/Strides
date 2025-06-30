@@ -5,6 +5,11 @@ Implies making consistent, noticeable progress.
 To start backend: `uvicorn main:app --reload`
 To start frontend: `pnpm dev`
 
+## TODO
+
+- [Unleash the power of Scroll-Driven Animations](https://youtube.com/playlist?list=PLNYkxOF6rcICM3ttukz9x5LCNOHfWBVnn&si=MybKEWtsqfeOon-q)
+- [scroll-driven animations style](https://scroll-driven-animations.style/) & [article on it](https://developer.chrome.com/docs/css-ui/scroll-driven-animations)
+
 ## 🎨 **Theme Customization Guide**
 
 ### **Quick Theme Color Changes**
@@ -243,6 +248,23 @@ Ready to implement:
 - `Update the Dashboard Page`: This is the biggest change. We will replace our static mock data with live data fetching, loading states, and API calls.
   - Go to src/pages/Dashboard.tsx and do the necessary changes.
 - `Update Mock Data Structure`: Our mock data needs a slight adjustment to match our new UserTasks type structure.
+
+#### Todo Timestamp Tracking - frontend
+
+- **Smart Time Tracking for Todo Items**: Implemented comprehensive timestamp tracking to show accurate creation dates and status-based time messages.
+- **Fixed Creation Date Bug**: Resolved issue where todos showed current date instead of actual creation date by properly persisting `createdAt` timestamps.
+- **Status-Based Time Messages**: Added intelligent time display that shows different messages based on todo status:
+  - "Created X ago" for new todos
+  - "In progress since X" for active todos
+  - "Done in X days" for completed todos
+- **Enhanced Todo Types**: Updated `TodoItem` interface to include `inProgressAt` and `completedAt` timestamp fields for precise status change tracking.
+- **Date Utility Functions**: Created comprehensive date utilities in `utils/date.ts`:
+  - `getTimeAgo()`: Converts timestamps to human-readable relative time
+  - `getDaysBetween()`: Calculates duration between dates
+  - `getTodoStatusMessage()`: Generates smart status messages based on todo state and timestamps
+- **Enhanced TodoCard Component**: Updated todo cards to display both creation date and dynamic status messages with graceful fallbacks for legacy data.
+- **Optimistic UI Updates**: Enhanced drag-and-drop functionality to immediately update timestamps when todos change status.
+- **Legacy Data Handling**: Added frontend graceful handling for todos missing timestamp data with appropriate fallback messages.
   - Open src/data/mockTasks.ts and replace its contents.
 
 #### Making the Dashboard editable
@@ -540,6 +562,39 @@ pnpm add react-loading-skeleton
 - Implementing a journaling feature that allows users to add daily notes to each of their tasks.
 - `First, we need to update our data structures to support daily logs.`
 - `Update Backend Models`: Open backend/models/task_models.py and add a new `DailyLog` model, then `update` the Task model to include a list of these logs.
+
+#### Todo Timestamp Tracking - Backend
+
+- **Comprehensive Timestamp Management**: Implemented proper timestamp tracking for todo items to fix creation date persistence issues.
+- **Enhanced Todo Models**: Updated `TodoItem` model in `todo_models.py` to include:
+  - `createdAt`: Automatically set when todo is created
+  - `inProgressAt`: Timestamp when todo moves to "In Progress" status
+  - `completedAt`: Timestamp when todo is marked as "Done"
+  - Proper field serializers for consistent ISO format timestamps
+- **Fixed Creation Endpoint**: Corrected POST `/todos/` endpoint to properly persist all required fields:
+  - Ensures `createdAt` is set during todo creation
+  - Initializes proper status and empty logs array
+  - Prevents "created just now" bug for new todos
+- **Smart Status Update Logic**: Enhanced PUT `/todos/{id}` endpoint with automatic timestamp setting:
+  - Automatically sets `inProgressAt` when status changes to "In Progress"
+  - Automatically sets `completedAt` when status changes to "Done"
+  - Respects frontend-provided timestamps when available
+- **Database Document Transformation**: Added `todo_from_db()` helper function to properly handle MongoDB document conversion:
+  - Converts `_id` to `id` field for frontend compatibility
+  - Includes fallback logic for missing timestamps using ObjectId creation time
+  - Ensures robust data handling across all endpoints
+- **Auto-Migration System**: Implemented automatic migration for existing todos:
+  - GET endpoint auto-migrates todos missing `createdAt` field
+  - Uses ObjectId generation time as accurate creation timestamp
+  - Provides seamless experience for existing users
+- **Migration Tools**: Created comprehensive migration utilities:
+  - `migrate_todos.py`: Standalone script for bulk data migration
+  - Admin migration endpoint for manual user-specific migration
+  - Fallback handling in all routes for missing timestamp data
+- **Data Integrity**: Enhanced error handling and validation:
+  - Proper null checks and error responses
+  - Consistent timestamp formatting across all endpoints
+  - Maintains backward compatibility with existing data
 
 ### Notes-Backend
 

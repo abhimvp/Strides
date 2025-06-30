@@ -9,6 +9,7 @@ import {
 } from "phosphor-react";
 import type { TodoItem } from "../../types";
 import { format } from "date-fns";
+import { getTodoStatusMessage } from "../../utils/date";
 
 interface TodoCardProps {
   todo: TodoItem;
@@ -52,9 +53,12 @@ export const TodoCard: React.FC<TodoCardProps> = ({
       </div>
       {todo.notes && <p className="text-sm text-gray-400 mt-2">{todo.notes}</p>}
       <div className="flex justify-between items-center mt-4 pt-2 border-t border-gray-700/50">
-        <p className="text-xs text-gray-500">
-          Created: {format(new Date(todo.createdAt), "MMM d")}
-        </p>
+        <div className="flex flex-col gap-1">
+          <p className="text-xs text-gray-500">
+            Created: {format(new Date(todo.createdAt), "MMM d, yyyy")}
+          </p>
+          <p className="text-xs text-gray-400">{getTodoStatusMessage(todo)}</p>
+        </div>
         <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
           <button
             onClick={() => onEdit(todo)}

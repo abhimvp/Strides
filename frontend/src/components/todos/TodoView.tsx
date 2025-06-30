@@ -48,7 +48,8 @@ export const TodoView: React.FC = () => {
         setIsLoading(true);
         const userTodos = await getTodos();
         setTodos(userTodos);
-      } catch (error) {
+      } catch (err) {
+        console.error("Failed to fetch todos:", err);
         toast.error("Failed to load To-Do items.");
       } finally {
         setIsLoading(false);
@@ -74,15 +75,39 @@ export const TodoView: React.FC = () => {
 
     if (draggedTodo && draggedTodo.status !== newStatus) {
       const originalTodos = todos;
-      // Optimistic UI update
+      const now = new Date().toISOString();
+
+      // Prepare the update data with timestamps
+      const updateData: UpdateTodoData = { status: newStatus };
+
+      // Add timestamps based on the new status
+      if (newStatus === "In Progress" && !draggedTodo.inProgressAt) {
+        updateData.inProgressAt = now;
+      } else if (newStatus === "Done" && !draggedTodo.completedAt) {
+        updateData.completedAt = now;
+      }
+
+      // Optimistic UI update with timestamps
       setTodos((prev) =>
-        prev.map((t) => (t.id === active.id ? { ...t, status: newStatus } : t))
+        prev.map((t) =>
+          t.id === active.id
+            ? {
+                ...t,
+                status: newStatus,
+                ...(newStatus === "In Progress" &&
+                  !t.inProgressAt && { inProgressAt: now }),
+                ...(newStatus === "Done" &&
+                  !t.completedAt && { completedAt: now }),
+              }
+            : t
+        )
       );
 
       try {
-        await updateTodo(draggedTodo.id, { status: newStatus });
+        await updateTodo(draggedTodo.id, updateData);
         toast.success(`Moved "${draggedTodo.title}" to ${newStatus}`);
-      } catch (error) {
+      } catch (err) {
+        console.error("Failed to update todo status:", err);
         toast.error("Failed to update status. Reverting.");
         setTodos(originalTodos); // Revert on error
       }
@@ -108,7 +133,8 @@ export const TodoView: React.FC = () => {
       }
       setEditingTodo(null);
       setIsModalOpen(false);
-    } catch (error) {
+    } catch (err) {
+      console.error("Failed to save todo:", err);
       toast.error("Could not save item.", { id: toastId });
     }
   };
@@ -121,7 +147,8 @@ export const TodoView: React.FC = () => {
       setTodos(todos.filter((t) => t.id !== deletingTodo.id));
       toast.success("Item deleted.", { id: toastId });
       setDeletingTodo(null);
-    } catch (error) {
+    } catch (err) {
+      console.error("Failed to delete todo:", err);
       toast.error("Could not delete item.", { id: toastId });
     }
   };
@@ -136,7 +163,8 @@ export const TodoView: React.FC = () => {
       // This is the fix: Update the todo being viewed in the modal
       setLoggingTodo(updatedTodo);
       toast.success("Log saved!", { id: toastId });
-    } catch (error) {
+    } catch (err) {
+      console.error("Failed to save todo log:", err);
       toast.error("Failed to save log.", { id: toastId });
     }
   };

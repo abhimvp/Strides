@@ -181,6 +181,8 @@ export interface TodoItem {
   notes?: string;
   status: TodoStatus;
   createdAt: string;
+  inProgressAt?: string; // When moved to "In Progress"
+  completedAt?: string; // When moved to "Done"
   logs: TodoLog[];
 }
 
@@ -193,6 +195,8 @@ export interface UpdateTodoData {
   title?: string;
   notes?: string;
   status?: TodoStatus;
+  inProgressAt?: string;
+  completedAt?: string;
 }
 
 export interface CreateTodoLogData {

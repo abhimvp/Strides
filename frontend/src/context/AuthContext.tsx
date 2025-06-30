@@ -14,8 +14,6 @@ export const AuthContext = createContext<AuthContextType | undefined>(
 );
 
 export default function AuthProvider({ children }: { children: ReactNode }) {
-  //   console.log("AuthProvider initialized");
-  //   console.log(" localSTorage : ", localStorage); // TBD
   const [token, setToken] = useState<string | null>(
     localStorage.getItem("token")
   );

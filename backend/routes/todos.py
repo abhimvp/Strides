@@ -16,8 +16,8 @@ from models.todo_models import (
 router = APIRouter()
 
 
-def todo_from_db(doc: dict) -> TodoItem:
-    """Convert MongoDB document to TodoItem model"""
+def todo_from_db(doc: dict) -> dict:
+    """Convert MongoDB document to dict for JSON response"""
     if doc is None:
         raise ValueError("Document cannot be None")
 
@@ -31,12 +31,11 @@ def todo_from_db(doc: dict) -> TodoItem:
         object_id = ObjectId(doc_copy["id"])
         doc_copy["createdAt"] = object_id.generation_time
 
-        # Log this for monitoring
-        print(
-            f"Warning: Todo {doc_copy.get('title', 'Unknown')} missing createdAt, using ObjectId time: {object_id.generation_time}"
-        )
+    # Create TodoItem and convert to dict for JSON response
+    todo_item = TodoItem.model_validate(doc_copy)
+    result_dict = todo_item.model_dump()
 
-    return TodoItem.model_validate(doc_copy)
+    return result_dict
 
 
 # GET all To-Do items for the user
@@ -55,7 +54,6 @@ async def get_user_todos(
             todos_to_migrate.append(doc)
 
     if todos_to_migrate:
-        print(f"Auto-migrating {len(todos_to_migrate)} todos for user {user_id}")
         for doc in todos_to_migrate:
             # Use ObjectId creation time as createdAt
             creation_time = doc["_id"].generation_time
@@ -65,7 +63,8 @@ async def get_user_todos(
             # Update the doc for immediate return
             doc["createdAt"] = creation_time
 
-    return [todo_from_db(doc) for doc in todo_docs]
+    transformed_todos = [todo_from_db(doc) for doc in todo_docs]
+    return transformed_todos
 
 
 # POST a new To-Do item

@@ -6,14 +6,16 @@ import type {
   CreateTodoLogData,
 } from "../types";
 
-// Helper to transform the _id to id
+// Helper to transform the response to TodoItem
 const transformTodoItem = (item: any): TodoItem => {
+  // Backend is sending '_id' but we need 'id' for our TodoItem interface
   const { _id, ...rest } = item;
   return { id: _id, ...rest };
 };
 
 export const getTodos = async (): Promise<TodoItem[]> => {
   const response = await api.get("/todos/");
+
   return response.data.map(transformTodoItem);
 };
 

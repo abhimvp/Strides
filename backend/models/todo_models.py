@@ -20,7 +20,7 @@ class TodoLog(BaseModel):
 
 
 class TodoItem(BaseModel):
-    id: PyObjectId = Field(default_factory=lambda: str(ObjectId()), alias="_id")
+    id: str  # Simply a string field, no ObjectId generation
     userId: str
     title: str
     notes: Optional[str] = None

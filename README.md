@@ -1,9 +1,48 @@
 # Strides
 
+**Strides** is a personal finance and productivity application designed to help you make consistent, noticeable progress in your life. It provides a comprehensive suite of tools to manage your finances, track your tasks, and achieve your goals.
+
 Implies making consistent, noticeable progress.
 
 To start backend: `uvicorn main:app --reload`
 To start frontend: `pnpm dev`
+
+## 🚀 The Future of Strides: AI-Powered Management
+
+The next major evolution of Strides is to integrate a powerful AI agent that will revolutionize how you interact with your finances and tasks. Our goal is to move beyond manual data entry and allow you to manage your life using natural language.
+
+### The Vision: Conversational Management
+
+Imagine being able to simply tell Strides what you've done, and have it intelligently understand and categorize everything for you.
+
+**Example Scenario:**
+
+> **User:** "Hey Strides, I had a chai at Raghavendra hotel and it cost me 10 rupees."
+
+The AI agent would then:
+
+1. **Parse the input:** Identify the key entities: "chai" (description), "Raghavendra hotel" (vendor), "10 rupees" (amount and currency).
+2. **Categorize the transaction:** Recognize that "chai" falls under the "Food & Drink" category.
+3. **Create the transaction:** Automatically create a new expense transaction with the correct details, without you ever having to open a form.
+
+### The Plan: How We'll Make It Work
+
+This will be achieved by building a sophisticated AI agent using the **LangGraph** framework and integrating it with our existing backend APIs. The key is to create a **reasoning loop** that uses the user's own data to make intelligent decisions.
+
+1. **Initial Parsing & Intent Recognition:** The agent first analyzes the user's raw text (e.g., _"I had a chai at Raghavendra hotel for 10 rupees"_) to extract core entities like the description, vendor, amount, and currency.
+
+2. **Contextual Data Fetching (Tool Use - Step 1):** This is the crucial step. Before making any decisions, the agent will call a new, dedicated tool/API endpoint (e.g., `/api/agent/get-context`) that fetches the user's existing financial context. This context will include:
+
+   - A list of all their custom expense categories (e.g., "Food & Drink", "Transportation", "Bills").
+   - A list of their known accounts (e.g., "ICICI Bank", "Cash").
+
+3. **Informed Reasoning & Categorization:** Now armed with the user's specific data, the agent can perform a much more intelligent analysis. It will compare the parsed transaction details against the user's categories. For example, it will see that "chai" and "hotel" strongly correlate with the user's "Food & Drink" category.
+
+4. **Action Execution (Tool Use - Step 2):** Once the agent has confidently determined the correct category and account, it will call the existing `POST /api/transactions` endpoint with a fully formed request, including the correct `categoryId` and `accountId`.
+
+5. **Confirmation and Feedback:** The agent will confirm the action with the user (_"I've added a 10 rupee expense for 'Chai at Raghavendra Hotel' to your 'Food & Drink' category. Is that correct?"_), ensuring accuracy and providing a seamless user experience.
+
+This will make Strides not just a tool for tracking your progress, but a true partner in helping you achieve your goals.
 
 ## 🚀 Recent Updates (December 2024)
 

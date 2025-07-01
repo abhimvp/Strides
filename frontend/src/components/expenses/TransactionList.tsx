@@ -72,8 +72,12 @@ export const TransactionList = ({
             // Handle display for transfers
             let displayName: string;
             let isTransferOut = false;
+            let transferIcon = "";
 
             if (isTransfer) {
+              // Check if this is a credit card payment
+              const isCreditCardPayment = tx.isCreditCardPayment === true;
+
               // Use the new transferDirection field for reliable direction detection
               if (tx.transferDirection === "out") {
                 // Money going OUT of this account (negative)
@@ -81,14 +85,28 @@ export const TransactionList = ({
                 const toAccountName = tx.toAccountId
                   ? accountMap.get(tx.toAccountId)
                   : "Unknown Account";
-                displayName = `Transfer to ${toAccountName}`;
+
+                if (isCreditCardPayment) {
+                  displayName = `Credit Card Payment to ${toAccountName}`;
+                  transferIcon = "💳";
+                } else {
+                  displayName = `Transfer to ${toAccountName}`;
+                  transferIcon = "↗";
+                }
               } else if (tx.transferDirection === "in") {
                 // Money coming INTO this account (positive)
                 isTransferOut = false;
                 const fromAccountName = tx.toAccountId
                   ? accountMap.get(tx.toAccountId)
                   : "Unknown Account";
-                displayName = `Transfer from ${fromAccountName}`;
+
+                if (isCreditCardPayment) {
+                  displayName = `Payment received from ${fromAccountName}`;
+                  transferIcon = "💳";
+                } else {
+                  displayName = `Transfer from ${fromAccountName}`;
+                  transferIcon = "↙";
+                }
               } else {
                 // Fallback for old transfers without transferDirection
                 if (tx.notes && tx.notes.includes("Transfer from")) {
@@ -97,12 +115,14 @@ export const TransactionList = ({
                     ? accountMap.get(tx.toAccountId)
                     : "Unknown Account";
                   displayName = `Transfer from ${fromAccountName}`;
+                  transferIcon = "↙";
                 } else {
                   isTransferOut = true;
                   const toAccountName = tx.toAccountId
                     ? accountMap.get(tx.toAccountId)
                     : "Unknown Account";
                   displayName = `Transfer to ${toAccountName}`;
+                  transferIcon = "↗";
                 }
               }
             } else {
@@ -141,9 +161,7 @@ export const TransactionList = ({
                         }`}
                       >
                         {isTransfer
-                          ? isTransferOut
-                            ? "↗"
-                            : "↙"
+                          ? transferIcon || (isTransferOut ? "↗" : "↙")
                           : isExpense
                           ? "▼"
                           : "▲"}

@@ -68,10 +68,19 @@ export interface Account {
   accountType: "bank_account" | "credit_card" | "e_wallet" | "cash"; // The high-level category
   accountName: string; // The user-defined name (e.g., "Salary Account", "Sapphire Card")
   balance: number;
-  creditLimit?: number; // New optional field
+  creditLimit?: number;
   country: "IN" | "US";
   currency: "INR" | "USD";
   linkedModes: LinkedPaymentMode[]; // An array of linked payment methods
+
+  // Credit Card specific fields
+  minimumPaymentDue?: number;
+  paymentDueDate?: string; // ISO date string
+  statementDate?: string; // ISO date string
+  lastPaymentDate?: string; // ISO date string
+  lastPaymentAmount?: number;
+  interestRate?: number; // APR percentage
+  gracePeriodDays?: number;
 }
 
 /**
@@ -133,6 +142,7 @@ export interface Transaction {
   serviceName?: string; // Third-party service provider name
   transferredAmount?: number; // Final amount received after conversion and fees
   transferDirection?: "out" | "in"; // New field to distinguish transfer direction
+  isCreditCardPayment?: boolean; // New field to identify credit card payments
 }
 
 export interface CreateTransactionData {
@@ -156,12 +166,56 @@ export interface CreateTransferData {
   date?: string;
 }
 
-export interface UpdateTransactionData {
-  amount?: number;
-  categoryId?: string;
-  subCategoryId?: string;
-  notes?: string;
-  date?: string;
+// Credit Card Payment specific interfaces
+export interface CreditCardPaymentData extends CreateTransferData {
+  paymentType: "minimum" | "full" | "custom";
+  currentDebt: number;
+  remainingBalance: number;
+  minimumDue?: number;
+}
+
+export interface CreditCardPaymentInfo {
+  currentDebt: number;
+  minimumDue: number;
+  availableCredit: number;
+  remainingBalanceAfterPayment: number;
+  paymentCoversMinimum: boolean;
+}
+
+// Credit Card Analysis interfaces
+export interface PaymentOption {
+  type: "minimum" | "recommended" | "full" | "custom";
+  amount: number;
+  description: string;
+  impact: string;
+}
+
+export interface CreditCardAnalysis {
+  currentBalance: number;
+  creditLimit: number;
+  availableCredit: number;
+  creditUtilization: number;
+  minimumPaymentDue?: number;
+  paymentDueDate?: string;
+  daysUntilDue?: number;
+  isOverdue: boolean;
+  recommendedPayment: number;
+  paymentOptions: PaymentOption[];
+}
+
+export interface CreditCardPaymentSuggestion {
+  minimumDue: number;
+  recommendedAmount: number;
+  fullBalance: number;
+  urgency: "low" | "medium" | "high";
+  reasoning: string;
+  payoffTimeline?: string;
+}
+
+// Enhanced Credit Card Payment Data
+export interface EnhancedCreditCardPaymentData extends CreditCardPaymentData {
+  analysis: CreditCardAnalysis;
+  suggestion: CreditCardPaymentSuggestion;
 }
 
 // --- Add the new To-Do types below ---

@@ -25,6 +25,8 @@ class Transaction(BaseModel):
     )
     # New field to clearly distinguish transfer direction
     transferDirection: Optional[Literal["out", "in"]] = None
+    # New field to identify credit card payments
+    isCreditCardPayment: Optional[bool] = None
 
 
 class CreateTransaction(BaseModel):

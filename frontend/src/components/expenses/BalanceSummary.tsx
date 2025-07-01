@@ -1,4 +1,8 @@
 import type { Account } from "../../types";
+import {
+  calculateCreditUtilization,
+  getCreditUtilizationStatus,
+} from "../../services/creditCardService";
 
 interface BalanceSummaryProps {
   accounts: Account[];
@@ -13,45 +17,42 @@ const formatAmount = (amount: number, currency: "INR" | "USD") => {
   return `${symbol}${Math.abs(amount).toLocaleString()}`;
 };
 
+const getAccountTypeIcon = (accountType: string) => {
+  switch (accountType) {
+    case "credit_card":
+      return "💳";
+    case "bank_account":
+      return "🏦";
+    case "e_wallet":
+      return "📱";
+    case "cash":
+      return "💵";
+    default:
+      return "💰";
+  }
+};
+
 export const BalanceSummary = ({ accounts }: BalanceSummaryProps) => {
-  // Calculate balances by country and account type
-  const indiaDebitBalance = accounts
-    .filter(
-      (acc) =>
-        acc.country === "IN" &&
-        (acc.accountType === "bank_account" ||
-          acc.accountType === "e_wallet" ||
-          acc.accountType === "cash")
-    )
+  // Group accounts by country and type
+  const indiaAccounts = accounts.filter((acc) => acc.country === "IN");
+  const usaAccounts = accounts.filter((acc) => acc.country === "US");
+
+  // Calculate total balances
+  const indiaDebitBalance = indiaAccounts
+    .filter((acc) => acc.accountType !== "credit_card")
     .reduce((sum, acc) => sum + acc.balance, 0);
 
-  const indiaCreditDebt = accounts
-    .filter((acc) => acc.country === "IN" && acc.accountType === "credit_card")
-    .reduce((sum, acc) => sum + Math.abs(acc.balance), 0); // Taking absolute value since credit card balances are typically negative
-
-  const usaDebitBalance = accounts
-    .filter(
-      (acc) =>
-        acc.country === "US" &&
-        (acc.accountType === "bank_account" ||
-          acc.accountType === "e_wallet" ||
-          acc.accountType === "cash")
-    )
+  const indiaCreditDebt = indiaAccounts
+    .filter((acc) => acc.accountType === "credit_card")
     .reduce((sum, acc) => sum + acc.balance, 0);
 
-  const usaCreditDebt = accounts
-    .filter((acc) => acc.country === "US" && acc.accountType === "credit_card")
-    .reduce((sum, acc) => sum + Math.abs(acc.balance), 0);
+  const usaDebitBalance = usaAccounts
+    .filter((acc) => acc.accountType !== "credit_card")
+    .reduce((sum, acc) => sum + acc.balance, 0);
 
-  // Check if we have any accounts for each category
-  const hasIndiaAccounts = accounts.some((acc) => acc.country === "IN");
-  const hasUsaAccounts = accounts.some((acc) => acc.country === "US");
-  const hasIndiaCreditCards = accounts.some(
-    (acc) => acc.country === "IN" && acc.accountType === "credit_card"
-  );
-  const hasUsaCreditCards = accounts.some(
-    (acc) => acc.country === "US" && acc.accountType === "credit_card"
-  );
+  const usaCreditDebt = usaAccounts
+    .filter((acc) => acc.accountType === "credit_card")
+    .reduce((sum, acc) => sum + acc.balance, 0);
 
   if (accounts.length === 0) {
     return (
@@ -65,56 +66,195 @@ export const BalanceSummary = ({ accounts }: BalanceSummaryProps) => {
 
   return (
     <div className="bg-gray-700 rounded-lg p-6 mb-6">
-      <h3 className="text-xl font-semibold text-white mb-4">Balance Summary</h3>
+      <h3 className="text-xl font-semibold text-white mb-6">Balance Summary</h3>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        {/* India Money I Have */}
-        {hasIndiaAccounts && (
-          <div className="bg-green-600 bg-opacity-20 border border-green-500 rounded-lg p-4">
-            <p className="text-green-200 text-sm font-semibold">
-              Money I Have (India)
-            </p>
-            <p className="text-white text-3xl font-bold">
-              {formatAmount(indiaDebitBalance, "INR")}
-            </p>
+      {/* Overall Summary Cards with Account Breakdown */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+        {/* India Summary */}
+        {indiaAccounts.length > 0 && (
+          <div className="space-y-4">
+            {/* India Money I Have */}
+            {indiaAccounts.filter((acc) => acc.accountType !== "credit_card")
+              .length > 0 && (
+              <div className="bg-green-600 bg-opacity-20 border border-green-500 rounded-lg p-4">
+                <p className="text-green-200 text-sm font-semibold mb-2">
+                  Money I Have (India)
+                </p>
+                <p className="text-white text-2xl font-bold mb-3">
+                  {formatAmount(indiaDebitBalance, "INR")}
+                </p>
+                <div className="space-y-1">
+                  {indiaAccounts
+                    .filter((acc) => acc.accountType !== "credit_card")
+                    .map((account) => (
+                      <div
+                        key={account.id}
+                        className="flex items-center justify-between text-sm"
+                      >
+                        <span className="text-green-100 flex items-center gap-1">
+                          <span className="text-xs">
+                            {getAccountTypeIcon(account.accountType)}
+                          </span>
+                          {account.accountName}
+                        </span>
+                        <span className="text-white font-medium">
+                          {formatAmount(account.balance, account.currency)}
+                        </span>
+                      </div>
+                    ))}
+                </div>
+              </div>
+            )}
+
+            {/* India Money to Pay Off */}
+            {indiaAccounts.some((acc) => acc.accountType === "credit_card") && (
+              <div className="bg-red-600 bg-opacity-20 border border-red-500 rounded-lg p-4">
+                <p className="text-red-200 text-sm font-semibold mb-2">
+                  Money to Pay Off (India)
+                </p>
+                <p className="text-white text-2xl font-bold mb-3">
+                  {formatAmount(indiaCreditDebt, "INR")}
+                </p>
+                <div className="space-y-2">
+                  {indiaAccounts
+                    .filter((acc) => acc.accountType === "credit_card")
+                    .map((account) => {
+                      const utilization = account.creditLimit
+                        ? calculateCreditUtilization(
+                            account.balance,
+                            account.creditLimit
+                          )
+                        : 0;
+                      const utilizationStatus =
+                        getCreditUtilizationStatus(utilization);
+                      return (
+                        <div key={account.id} className="space-y-1">
+                          <div className="flex items-center justify-between text-sm">
+                            <span className="text-red-100 flex items-center gap-1">
+                              <span className="text-xs">💳</span>
+                              {account.accountName}
+                            </span>
+                            <span className="text-white font-medium">
+                              {formatAmount(account.balance, account.currency)}
+                            </span>
+                          </div>
+                          {account.creditLimit && (
+                            <div className="flex items-center justify-between text-xs">
+                              <span
+                                className={`font-medium ${utilizationStatus.color}`}
+                              >
+                                {utilization}% utilization
+                              </span>
+                              <span className="text-gray-400">
+                                Limit:{" "}
+                                {formatAmount(
+                                  account.creditLimit,
+                                  account.currency
+                                )}
+                              </span>
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
+                </div>
+                <p className="text-red-400 text-xs mt-2">Pay soon!</p>
+              </div>
+            )}
           </div>
         )}
 
-        {/* India Money to Pay Off */}
-        {hasIndiaCreditCards && (
-          <div className="bg-red-600 bg-opacity-20 border border-red-500 rounded-lg p-4">
-            <p className="text-red-200 text-sm font-semibold">
-              Money to Pay Off (India)
-            </p>
-            <p className="text-white text-4xl font-bold">
-              {formatAmount(indiaCreditDebt, "INR")}
-            </p>
-            <p className="text-red-400 text-xs">Pay soon!</p>
-          </div>
-        )}
+        {/* USA Summary */}
+        {usaAccounts.length > 0 && (
+          <div className="space-y-4">
+            {/* USA Money I Have */}
+            {usaAccounts.filter((acc) => acc.accountType !== "credit_card")
+              .length > 0 && (
+              <div className="bg-blue-600 bg-opacity-20 border border-blue-500 rounded-lg p-4">
+                <p className="text-blue-200 text-sm font-semibold mb-2">
+                  Money I Have (USA)
+                </p>
+                <p className="text-white text-2xl font-bold mb-3">
+                  {formatAmount(usaDebitBalance, "USD")}
+                </p>
+                <div className="space-y-1">
+                  {usaAccounts
+                    .filter((acc) => acc.accountType !== "credit_card")
+                    .map((account) => (
+                      <div
+                        key={account.id}
+                        className="flex items-center justify-between text-sm"
+                      >
+                        <span className="text-blue-100 flex items-center gap-1">
+                          <span className="text-xs">
+                            {getAccountTypeIcon(account.accountType)}
+                          </span>
+                          {account.accountName}
+                        </span>
+                        <span className="text-white font-medium">
+                          {formatAmount(account.balance, account.currency)}
+                        </span>
+                      </div>
+                    ))}
+                </div>
+              </div>
+            )}
 
-        {/* USA Money I Have */}
-        {hasUsaAccounts && (
-          <div className="bg-blue-600 bg-opacity-20 border border-blue-500 rounded-lg p-4">
-            <p className="text-blue-200 text-sm font-semibold">
-              Money I Have (USA)
-            </p>
-            <p className="text-white text-3xl font-bold">
-              {formatAmount(usaDebitBalance, "USD")}
-            </p>
-          </div>
-        )}
-
-        {/* USA Money to Pay Off */}
-        {hasUsaCreditCards && (
-          <div className="bg-red-600 bg-opacity-20 border border-red-500 rounded-lg p-4">
-            <p className="text-red-200 text-sm font-semibold">
-              Money to Pay Off (USA)
-            </p>
-            <p className="text-white text-4xl font-bold">
-              {formatAmount(usaCreditDebt, "USD")}
-            </p>
-            <p className="text-red-400 text-xs">Pay soon!</p>
+            {/* USA Money to Pay Off */}
+            {usaAccounts.some((acc) => acc.accountType === "credit_card") && (
+              <div className="bg-red-600 bg-opacity-20 border border-red-500 rounded-lg p-4">
+                <p className="text-red-200 text-sm font-semibold mb-2">
+                  Money to Pay Off (USA)
+                </p>
+                <p className="text-white text-2xl font-bold mb-3">
+                  {formatAmount(usaCreditDebt, "USD")}
+                </p>
+                <div className="space-y-2">
+                  {usaAccounts
+                    .filter((acc) => acc.accountType === "credit_card")
+                    .map((account) => {
+                      const utilization = account.creditLimit
+                        ? calculateCreditUtilization(
+                            account.balance,
+                            account.creditLimit
+                          )
+                        : 0;
+                      const utilizationStatus =
+                        getCreditUtilizationStatus(utilization);
+                      return (
+                        <div key={account.id} className="space-y-1">
+                          <div className="flex items-center justify-between text-sm">
+                            <span className="text-red-100 flex items-center gap-1">
+                              <span className="text-xs">💳</span>
+                              {account.accountName}
+                            </span>
+                            <span className="text-white font-medium">
+                              {formatAmount(account.balance, account.currency)}
+                            </span>
+                          </div>
+                          {account.creditLimit && (
+                            <div className="flex items-center justify-between text-xs">
+                              <span
+                                className={`font-medium ${utilizationStatus.color}`}
+                              >
+                                {utilization}% utilization
+                              </span>
+                              <span className="text-gray-400">
+                                Limit:{" "}
+                                {formatAmount(
+                                  account.creditLimit,
+                                  account.currency
+                                )}
+                              </span>
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
+                </div>
+                <p className="text-red-400 text-xs mt-2">Pay soon!</p>
+              </div>
+            )}
           </div>
         )}
       </div>

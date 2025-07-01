@@ -37,11 +37,23 @@ async def create_transaction(
             status_code=404, detail="Account not found or you do not have permission."
         )
 
-    # 3. Calculate the new balance based on transaction type
+    # 3. Calculate the new balance based on transaction type and account type
+    is_credit_card = account["accountType"] == "credit_card"
+
     if transaction_data.type == "expense":
-        new_balance = account["balance"] - transaction_data.amount
+        if is_credit_card:
+            # For credit cards, expenses increase the balance (more debt)
+            new_balance = account["balance"] + transaction_data.amount
+        else:
+            # For debit accounts, expenses decrease the balance
+            new_balance = account["balance"] - transaction_data.amount
     elif transaction_data.type == "income":
-        new_balance = account["balance"] + transaction_data.amount
+        if is_credit_card:
+            # For credit cards, income (payments) decrease the balance (less debt)
+            new_balance = account["balance"] - transaction_data.amount
+        else:
+            # For debit accounts, income increases the balance
+            new_balance = account["balance"] + transaction_data.amount
     else:
         # This case is for safety, though our Pydantic model restricts the type
         raise HTTPException(status_code=400, detail="Invalid transaction type.")
@@ -106,10 +118,22 @@ async def delete_transaction(
         )
         if account:
             # Revert the balance change
+            is_credit_card = account["accountType"] == "credit_card"
+
             if transaction["type"] == "expense":
-                new_balance = account["balance"] + transaction["amount"]
+                if is_credit_card:
+                    # For credit cards, revert expense (subtract amount to decrease debt)
+                    new_balance = account["balance"] - transaction["amount"]
+                else:
+                    # For debit accounts, revert expense (add amount back)
+                    new_balance = account["balance"] + transaction["amount"]
             else:  # income
-                new_balance = account["balance"] - transaction["amount"]
+                if is_credit_card:
+                    # For credit cards, revert income (add amount to increase debt)
+                    new_balance = account["balance"] + transaction["amount"]
+                else:
+                    # For debit accounts, revert income (subtract amount)
+                    new_balance = account["balance"] - transaction["amount"]
             await db.accounts.update_one(
                 {"_id": ObjectId(account["_id"])}, {"$set": {"balance": new_balance}}
             )
@@ -238,10 +262,22 @@ async def update_transaction(
         raise HTTPException(status_code=404, detail="Associated account not found.")
 
     # 1. Revert the original transaction amount from the balance
+    is_credit_card = account["accountType"] == "credit_card"
+
     if original_tx["type"] == "expense":
-        reverted_balance = account["balance"] + original_tx["amount"]
+        if is_credit_card:
+            # For credit cards, revert expense (subtract amount to decrease debt)
+            reverted_balance = account["balance"] - original_tx["amount"]
+        else:
+            # For debit accounts, revert expense (add amount back)
+            reverted_balance = account["balance"] + original_tx["amount"]
     else:  # income
-        reverted_balance = account["balance"] - original_tx["amount"]
+        if is_credit_card:
+            # For credit cards, revert income (add amount to increase debt)
+            reverted_balance = account["balance"] + original_tx["amount"]
+        else:
+            # For debit accounts, revert income (subtract amount)
+            reverted_balance = account["balance"] - original_tx["amount"]
 
     # 2. Apply the new transaction amount to the reverted balance
     new_amount = (
@@ -250,9 +286,19 @@ async def update_transaction(
         else original_tx["amount"]
     )
     if original_tx["type"] == "expense":
-        final_balance = reverted_balance - new_amount
+        if is_credit_card:
+            # For credit cards, expenses increase the balance (more debt)
+            final_balance = reverted_balance + new_amount
+        else:
+            # For debit accounts, expenses decrease the balance
+            final_balance = reverted_balance - new_amount
     else:  # income
-        final_balance = reverted_balance + new_amount
+        if is_credit_card:
+            # For credit cards, income (payments) decrease the balance (less debt)
+            final_balance = reverted_balance - new_amount
+        else:
+            # For debit accounts, income increases the balance
+            final_balance = reverted_balance + new_amount
 
     await db.accounts.update_one(
         {"_id": ObjectId(account["_id"])}, {"$set": {"balance": final_balance}}
@@ -300,13 +346,28 @@ async def create_transfer(
             detail="One or both accounts not found or you do not have permission.",
         )
 
-    # 3. Check if source account has sufficient balance
-    if from_account["balance"] < transfer_data.amount:
-        raise HTTPException(
-            status_code=400, detail="Insufficient balance in source account."
-        )
+    # 3. Determine if this is a credit card payment
+    is_credit_card_payment = (
+        from_account["accountType"] != "credit_card"
+        and to_account["accountType"] == "credit_card"
+    )
 
-    # 4. Calculate transferred amount
+    # 4. Validate balances based on transfer type
+    if is_credit_card_payment:
+        # For credit card payments, check if payment amount doesn't exceed credit card debt
+        if transfer_data.amount > to_account["balance"]:
+            raise HTTPException(
+                status_code=400,
+                detail=f"Payment amount (${transfer_data.amount}) exceeds credit card debt (${to_account['balance']})",
+            )
+    else:
+        # Regular transfer - check if source account has sufficient balance
+        if from_account["balance"] < transfer_data.amount:
+            raise HTTPException(
+                status_code=400, detail="Insufficient balance in source account."
+            )
+
+    # 5. Calculate transferred amount
     transferred_amount = transfer_data.amount
     if transfer_data.commission:
         transferred_amount -= transfer_data.commission
@@ -314,9 +375,33 @@ async def create_transfer(
     if transfer_data.exchangeRate:
         transferred_amount *= transfer_data.exchangeRate
 
-    # 5. Update account balances
-    new_from_balance = from_account["balance"] - transfer_data.amount
-    new_to_balance = to_account["balance"] + transferred_amount
+    # 6. Update account balances based on account types
+    if is_credit_card_payment:
+        # Credit card payment: money goes from debit account to pay off credit card debt
+        new_from_balance = (
+            from_account["balance"] - transfer_data.amount
+        )  # Debit account loses money
+        new_to_balance = (
+            to_account["balance"] - transferred_amount
+        )  # Credit card debt reduces
+    else:
+        # Regular transfer: money moves from one account to another
+        from_is_credit = from_account["accountType"] == "credit_card"
+        to_is_credit = to_account["accountType"] == "credit_card"
+
+        if from_is_credit:
+            # Money leaving credit card (increases debt)
+            new_from_balance = from_account["balance"] + transfer_data.amount
+        else:
+            # Money leaving debit account (decreases balance)
+            new_from_balance = from_account["balance"] - transfer_data.amount
+
+        if to_is_credit:
+            # Money going to credit card (reduces debt)
+            new_to_balance = to_account["balance"] - transferred_amount
+        else:
+            # Money going to debit account (increases balance)
+            new_to_balance = to_account["balance"] + transferred_amount
 
     await db.accounts.update_one(
         {"_id": from_account_id}, {"$set": {"balance": new_from_balance}}
@@ -346,10 +431,23 @@ async def create_transfer(
             status_code=500, detail="Failed to create transfer category"
         )
 
-    # 7. Create transaction records
+    # 7. Create transaction records with enhanced notes for credit card payments
     transfer_date = transfer_data.date if transfer_data.date else datetime.now()
 
-    # Create "transfer out" transaction for source account (negative amount)
+    # Generate appropriate notes based on transfer type
+    if is_credit_card_payment:
+        from_notes = (
+            transfer_data.notes or f"Credit card payment to {to_account['accountName']}"
+        )
+        to_notes = (
+            transfer_data.notes
+            or f"Payment received from {from_account['accountName']}"
+        )
+    else:
+        from_notes = transfer_data.notes or f"Transfer to {to_account['accountName']}"
+        to_notes = transfer_data.notes or f"Transfer from {from_account['accountName']}"
+
+    # Create "transfer out" transaction for source account
     from_transaction_doc = {
         "userId": user_id,
         "accountId": transfer_data.fromAccountId,
@@ -357,16 +455,17 @@ async def create_transfer(
         "amount": transfer_data.amount,  # Original amount sent
         "date": transfer_date,
         "categoryId": transfer_category_id,
-        "notes": transfer_data.notes or f"Transfer to {to_account['accountName']}",
+        "notes": from_notes,
         "toAccountId": transfer_data.toAccountId,
         "transferDirection": "out",
         "exchangeRate": transfer_data.exchangeRate,
         "commission": transfer_data.commission,
         "serviceName": transfer_data.serviceName,
         "transferredAmount": transferred_amount,
+        "isCreditCardPayment": is_credit_card_payment,  # New field to identify credit card payments
     }
 
-    # Create "transfer in" transaction for destination account (positive amount)
+    # Create "transfer in" transaction for destination account
     to_transaction_doc = {
         "userId": user_id,
         "accountId": transfer_data.toAccountId,
@@ -374,13 +473,14 @@ async def create_transfer(
         "amount": transferred_amount,  # Amount received after conversion/fees
         "date": transfer_date,
         "categoryId": transfer_category_id,
-        "notes": transfer_data.notes or f"Transfer from {from_account['accountName']}",
+        "notes": to_notes,
         "toAccountId": transfer_data.fromAccountId,  # Reference back to source
         "transferDirection": "in",
         "exchangeRate": transfer_data.exchangeRate,
         "commission": transfer_data.commission,
         "serviceName": transfer_data.serviceName,
         "transferredAmount": transferred_amount,
+        "isCreditCardPayment": is_credit_card_payment,  # New field to identify credit card payments
     }
 
     # Insert both transactions

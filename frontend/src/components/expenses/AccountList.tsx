@@ -41,6 +41,10 @@ const AccountList: React.FC<AccountListProps> = ({ accounts, onEdit }) => {
               <p className="text-2xl font-light text-white-450 mt-2">
                 {getCurrencySymbol(account.currency)}
                 {account.balance.toFixed(2)}
+                {account.accountType === "credit_card" &&
+                  account.balance > 0 && (
+                    <span className="text-xs text-red-300 ml-2">(debt)</span>
+                  )}
               </p>
               {/* Display for Credit Cards */}
               {account.accountType === "credit_card" && (

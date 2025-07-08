@@ -143,18 +143,18 @@ export const TransactionForm = ({
   };
 
   return (
-    <div className="p-4 bg-gray-900 rounded-lg shadow-md">
-      <h2 className="text-xl font-semibold mb-4 text-white">
+    <div className="p-4 bg-white rounded-lg shadow-md">
+      <h2 className="text-xl font-semibold mb-4 text-black">
         {isEditMode ? "Edit Transaction" : "Add New Transaction"}
       </h2>
       <form onSubmit={handleSubmit} className="space-y-4">
         {/* Disable type and account toggle in edit mode */}
-        <div className="flex bg-gray-800 rounded-lg p-1">
+        <div className="flex bg-white rounded-lg p-1">
           <button
             type="button"
             onClick={() => !isEditMode && setType("expense")}
             className={`w-full p-2 rounded-md text-sm font-medium ${
-              type === "expense" ? "bg-black text-white" : "text-gray-300"
+              type === "expense" ? "bg-black text-white" : "text-black"
             } ${isEditMode && "cursor-not-allowed opacity-70"}`}
           >
             Expense
@@ -163,7 +163,7 @@ export const TransactionForm = ({
             type="button"
             onClick={() => !isEditMode && setType("income")}
             className={`w-full p-2 rounded-md text-sm font-medium ${
-              type === "income" ? "bg-black text-white" : "text-gray-300"
+              type === "income" ? "bg-black text-white" : "text-black"
             } ${isEditMode && "cursor-not-allowed opacity-70"}`}
           >
             Income
@@ -175,7 +175,7 @@ export const TransactionForm = ({
           type="date"
           value={date}
           onChange={(e) => setDate(e.target.value)}
-          className="w-full p-2 rounded bg-gray-700 text-white border border-gray-600"
+          className="w-full p-2 rounded bg-white text-black border border-black"
           required
         />
 
@@ -186,13 +186,13 @@ export const TransactionForm = ({
             placeholder="Amount"
             value={amount}
             onChange={(e) => setAmount(e.target.value)}
-            className="p-2 rounded bg-gray-700 text-white border border-gray-600"
+            className="p-2 rounded bg-white text-black border border-black"
             required
           />
           <select
             value={accountId}
             onChange={(e) => setAccountId(e.target.value)}
-            className="p-2 rounded bg-gray-700 text-white border border-gray-600"
+            className="p-2 rounded bg-white text-black border border-black"
             required
             disabled={isEditMode}
           >
@@ -212,7 +212,7 @@ export const TransactionForm = ({
           <select
             value={categoryId}
             onChange={(e) => setCategoryId(e.target.value)}
-            className="p-2 rounded bg-gray-700 text-white border border-gray-600"
+            className="p-2 rounded bg-white text-black border border-black"
             required
           >
             <option value="" disabled>
@@ -227,7 +227,7 @@ export const TransactionForm = ({
           <select
             value={subCategoryId}
             onChange={(e) => setSubCategoryId(e.target.value)}
-            className="p-2 rounded bg-gray-700 text-white border border-gray-600"
+            className="p-2 rounded bg-white text-black border border-black"
             disabled={availableSubcategories.length === 0}
           >
             <option value="">Select Sub-category (Optional)</option>
@@ -245,17 +245,17 @@ export const TransactionForm = ({
           placeholder="Notes (e.g., 'Chai with friends')"
           value={notes}
           onChange={(e) => setNotes(e.target.value)}
-          className="w-full p-2 rounded bg-gray-700 text-white border border-gray-600"
+          className="w-full p-2 rounded bg-white text-black border border-black"
         />
 
-        {error && <p className="text-red-500 text-sm">{error}</p>}
+        {error && <p className="text-black text-sm">{error}</p>}
 
         <div className="flex gap-4">
           {isEditMode && (
             <button
               type="button"
               onClick={onCancelEdit}
-              className="w-full bg-gray-600 hover:bg-gray-500 text-white font-bold py-2 px-4 rounded"
+              className="w-full bg-white hover:bg-white text-black font-bold py-2 px-4 rounded"
             >
               Cancel
             </button>
@@ -263,7 +263,7 @@ export const TransactionForm = ({
           <button
             type="submit"
             disabled={isSubmitting}
-            className="w-full bg-black hover:bg-gray-800 text-white font-bold py-2 px-4 rounded disabled:bg-gray-500"
+            className="w-full bg-black hover:bg-black text-white font-bold py-2 px-4 rounded disabled:bg-gray-400"
           >
             {isSubmitting
               ? "Saving..."

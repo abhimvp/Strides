@@ -250,14 +250,14 @@ export const TransferForm = ({
   const transferredAmount = calculateTransferredAmount();
 
   return (
-    <div className="bg-gray-700 p-6 rounded-lg mb-6">
+    <div className="bg-white p-6 rounded-lg mb-6 border border-black">
       <div className="flex justify-between items-center mb-4">
-        <h2 className="text-xl font-bold text-white">Transfer Money</h2>
+        <h2 className="text-xl font-bold text-black">Transfer Money</h2>
         {onCancel && (
           <button
             type="button"
             onClick={onCancel}
-            className="text-gray-400 hover:text-white"
+            className="text-black hover:text-black"
           >
             ✕
           </button>
@@ -272,11 +272,11 @@ export const TransferForm = ({
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {/* From Account */}
           <div>
-            <label className="block text-white mb-2">From Account *</label>
+            <label className="block text-black mb-2">From Account *</label>
             <select
               value={fromAccountId}
               onChange={(e) => setFromAccountId(e.target.value)}
-              className="w-full p-3 bg-gray-600 text-white rounded border border-gray-500 focus:border-blue-500"
+              className="w-full p-3 bg-white text-black rounded border border-black focus:border-black"
               required
             >
               <option value="">Select source account</option>
@@ -291,11 +291,11 @@ export const TransferForm = ({
 
           {/* To Account */}
           <div>
-            <label className="block text-white mb-2">To Account *</label>
+            <label className="block text-black mb-2">To Account *</label>
             <select
               value={toAccountId}
               onChange={(e) => setToAccountId(e.target.value)}
-              className="w-full p-3 bg-gray-600 text-white rounded border border-gray-500 focus:border-blue-500"
+              className="w-full p-3 bg-white text-black rounded border border-black focus:border-black"
               required
             >
               <option value="">Select destination account</option>
@@ -311,14 +311,14 @@ export const TransferForm = ({
 
         {/* Amount */}
         <div>
-          <label className="block text-white mb-2">Amount *</label>
+          <label className="block text-black mb-2">Amount *</label>
           <input
             type="number"
             step="0.01"
             min="0.01"
             value={amount}
             onChange={(e) => setAmount(e.target.value)}
-            className="w-full p-3 bg-gray-600 text-white rounded border border-gray-500 focus:border-blue-500"
+            className="w-full p-3 bg-white text-black rounded border border-black focus:border-black"
             placeholder="Enter amount"
             required
           />
@@ -326,13 +326,13 @@ export const TransferForm = ({
 
         {/* Enhanced Credit Card Payment Info */}
         {isCreditCardPayment && creditCardInfo && (
-          <div className="bg-gradient-to-r from-purple-900 to-blue-900 p-6 rounded-lg border border-purple-500">
+          <div className="bg-white p-6 rounded-lg border border-black">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-white font-semibold flex items-center gap-2">
+              <h3 className="text-black font-semibold flex items-center gap-2">
                 💳 Credit Card Payment
               </h3>
               {isLoadingAnalysis && (
-                <div className="text-purple-200 text-sm animate-pulse">
+                <div className="text-black text-sm animate-pulse">
                   Loading analysis...
                 </div>
               )}
@@ -340,7 +340,7 @@ export const TransferForm = ({
 
             {/* Credit Card Analysis Section */}
             {analysisError && (
-              <div className="bg-black border border-gray-600 p-3 rounded-lg mb-4 text-white">
+              <div className="bg-white border border-black p-3 rounded-lg mb-4 text-black">
                 {analysisError}
               </div>
             )}
@@ -363,7 +363,7 @@ export const TransferForm = ({
                         <div className="flex items-center gap-2">
                           <span className="text-lg">{icon}</span>
                           <div>
-                            <p className="text-white font-medium">
+                            <p className="text-black font-medium">
                               {creditCardAnalysis.isOverdue
                                 ? "Payment Overdue!"
                                 : `Payment Due in ${
@@ -375,7 +375,7 @@ export const TransferForm = ({
                                   }`}
                             </p>
                             {creditCardAnalysis.minimumPaymentDue && (
-                              <p className="text-gray-200 text-sm">
+                              <p className="text-black text-sm">
                                 Minimum due:{" "}
                                 {formatCurrency(
                                   creditCardAnalysis.minimumPaymentDue,
@@ -390,9 +390,9 @@ export const TransferForm = ({
                   })()}
 
                 {/* Credit Utilization */}
-                <div className="bg-gray-800 bg-opacity-50 p-3 rounded-lg mb-4">
+                <div className="bg-white bg-opacity-50 p-3 rounded-lg mb-4 border border-black">
                   <div className="flex justify-between items-center mb-2">
-                    <span className="text-gray-200 text-sm">
+                    <span className="text-black text-sm">
                       Credit Utilization
                     </span>
                     <span
@@ -405,16 +405,16 @@ export const TransferForm = ({
                       {creditCardAnalysis.creditUtilization}%
                     </span>
                   </div>
-                  <div className="w-full bg-gray-700 rounded-full h-2">
+                  <div className="w-full bg-black rounded-full h-2">
                     <div
                       className={`h-2 rounded-full ${
                         creditCardAnalysis.creditUtilization >= 90
                           ? "bg-black"
                           : creditCardAnalysis.creditUtilization >= 70
-                          ? "bg-gray-800"
+                          ? "bg-black"
                           : creditCardAnalysis.creditUtilization >= 30
-                          ? "bg-gray-600"
-                          : "bg-gray-400"
+                          ? "bg-black"
+                          : "bg-black"
                       }`}
                       style={{
                         width: `${Math.min(
@@ -431,8 +431,8 @@ export const TransferForm = ({
             {/* Balance Information Grid */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm mb-4">
               <div className="bg-black bg-opacity-50 p-3 rounded">
-                <p className="text-gray-200 font-medium">Current Debt</p>
-                <p className="text-white text-lg font-bold">
+                <p className="text-black font-medium">Current Debt</p>
+                <p className="text-black text-lg font-bold">
                   {formatCurrency(
                     creditCardInfo.currentDebt,
                     getAccountCurrency(toAccountId)
@@ -441,23 +441,23 @@ export const TransferForm = ({
               </div>
 
               {amount && parseFloat(amount) > 0 && (
-                <div className="bg-gray-800 bg-opacity-50 p-3 rounded">
-                  <p className="text-gray-200 font-medium">After Payment</p>
-                  <p className="text-white text-lg font-bold">
+                <div className="bg-white bg-opacity-50 p-3 rounded border border-black">
+                  <p className="text-black font-medium">After Payment</p>
+                  <p className="text-black text-lg font-bold">
                     {formatCurrency(
                       creditCardInfo.remainingAfterPayment,
                       getAccountCurrency(toAccountId)
                     )}
                   </p>
                   {creditCardInfo.remainingAfterPayment < 0 && (
-                    <p className="text-green-300 text-xs">Credit balance!</p>
+                    <p className="text-black text-xs">Credit balance!</p>
                   )}
                 </div>
               )}
 
-              <div className="bg-blue-800 bg-opacity-50 p-3 rounded">
-                <p className="text-blue-200 font-medium">Available Credit</p>
-                <p className="text-white text-lg font-bold">
+              <div className="bg-white bg-opacity-50 p-3 rounded border border-black">
+                <p className="text-black font-medium">Available Credit</p>
+                <p className="text-black text-lg font-bold">
                   {formatCurrency(
                     creditCardInfo.availableCredit,
                     getAccountCurrency(toAccountId)
@@ -468,7 +468,7 @@ export const TransferForm = ({
 
             {/* Enhanced Payment Options */}
             <div className="space-y-3">
-              <p className="text-gray-200 text-sm font-medium">
+              <p className="text-black text-sm font-medium">
                 Quick Payment Options:
               </p>
 
@@ -481,22 +481,22 @@ export const TransferForm = ({
                       onClick={() => setAmount(option.amount.toString())}
                       className={`p-3 rounded text-left transition-colors ${
                         option.type === "minimum"
-                          ? "bg-gray-700 hover:bg-gray-600 border border-gray-500"
+                          ? "bg-white hover:bg-white border border-black"
                           : option.type === "recommended"
-                          ? "bg-gray-800 hover:bg-gray-700 border border-gray-600"
-                          : "bg-black hover:bg-gray-800 border border-gray-700"
+                          ? "bg-white hover:bg-white border border-black"
+                          : "bg-black hover:bg-black border border-black"
                       }`}
                     >
-                      <div className="text-white font-medium text-sm">
+                      <div className="text-black font-medium text-sm">
                         {option.description}
                       </div>
-                      <div className="text-lg font-bold text-white">
+                      <div className="text-lg font-bold text-black">
                         {formatCurrency(
                           option.amount,
                           getAccountCurrency(toAccountId)
                         )}
                       </div>
-                      <div className="text-xs text-gray-200 mt-1">
+                      <div className="text-xs text-black mt-1">
                         {option.impact}
                       </div>
                     </button>
@@ -510,7 +510,7 @@ export const TransferForm = ({
                     onClick={() =>
                       setAmount(creditCardInfo.currentDebt.toString())
                     }
-                    className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white text-sm rounded transition-colors"
+                    className="px-4 py-2 bg-black hover:bg-black text-white text-sm rounded transition-colors"
                   >
                     Pay Full Balance
                   </button>
@@ -523,7 +523,7 @@ export const TransferForm = ({
                           creditCardAnalysis.minimumPaymentDue!.toString()
                         )
                       }
-                      className="px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white text-sm rounded transition-colors"
+                      className="px-4 py-2 bg-white hover:bg-white text-black text-sm rounded transition-colors"
                     >
                       Pay Minimum Due
                     </button>
@@ -536,14 +536,14 @@ export const TransferForm = ({
 
         {/* International Transfer Fields */}
         {isInternational && (
-          <div className="bg-gray-900 p-4 rounded">
-            <h3 className="text-white font-semibold mb-3">
+          <div className="bg-white p-4 rounded">
+            <h3 className="text-black font-semibold mb-3">
               International Transfer
             </h3>
 
             {/* Exchange Rate */}
             <div className="mb-4">
-              <label className="block text-white mb-2">
+              <label className="block text-black mb-2">
                 Exchange Rate * ({exchangeRateLabel})
               </label>
               <input
@@ -552,7 +552,7 @@ export const TransferForm = ({
                 min="0.0001"
                 value={exchangeRate}
                 onChange={(e) => setExchangeRate(e.target.value)}
-                className="w-full p-3 bg-gray-600 text-white rounded border border-gray-500 focus:border-blue-500"
+                className="w-full p-3 bg-white text-black rounded border border-black focus:border-black"
                 placeholder="Enter exchange rate"
                 required
               />
@@ -560,42 +560,42 @@ export const TransferForm = ({
 
             {/* Commission */}
             <div className="mb-4">
-              <label className="block text-white mb-2">Commission/Fee</label>
+              <label className="block text-black mb-2">Commission/Fee</label>
               <input
                 type="number"
                 step="0.01"
                 min="0"
                 value={commission}
                 onChange={(e) => setCommission(e.target.value)}
-                className="w-full p-3 bg-gray-600 text-white rounded border border-gray-500 focus:border-blue-500"
+                className="w-full p-3 bg-white text-black rounded border border-black focus:border-black"
                 placeholder="Enter commission fee"
               />
             </div>
 
             {/* Service Name */}
             <div className="mb-4">
-              <label className="block text-white mb-2">Service Provider</label>
+              <label className="block text-black mb-2">Service Provider</label>
               <input
                 type="text"
                 value={serviceName}
                 onChange={(e) => setServiceName(e.target.value)}
-                className="w-full p-3 bg-gray-600 text-white rounded border border-gray-500 focus:border-blue-500"
+                className="w-full p-3 bg-white text-black rounded border border-black focus:border-black"
                 placeholder="e.g., Wise, Western Union, Bank Name, Person Name"
               />
             </div>
 
             {/* Transfer Summary */}
             {amount && exchangeRate && (
-              <div className="bg-gray-800 p-3 rounded">
-                <h4 className="text-white font-medium mb-2">
+              <div className="bg-white p-3 rounded">
+                <h4 className="text-black font-medium mb-2">
                   Transfer Summary:
                 </h4>
-                <p className="text-gray-300">Amount to send: {amount}</p>
+                <p className="text-black">Amount to send: {amount}</p>
                 {commission && (
-                  <p className="text-gray-300">Commission: {commission}</p>
+                  <p className="text-black">Commission: {commission}</p>
                 )}
-                <p className="text-gray-300">Exchange rate: {exchangeRate}</p>
-                <p className="text-green-400 font-semibold">
+                <p className="text-black">Exchange rate: {exchangeRate}</p>
+                <p className="text-black font-semibold">
                   Amount to receive: {transferredAmount.toFixed(2)}
                 </p>
               </div>
@@ -605,11 +605,11 @@ export const TransferForm = ({
 
         {/* Notes */}
         <div>
-          <label className="block text-white mb-2">Notes</label>
+          <label className="block text-black mb-2">Notes</label>
           <textarea
             value={notes}
             onChange={(e) => setNotes(e.target.value)}
-            className="w-full p-3 bg-gray-600 text-white rounded border border-gray-500 focus:border-blue-500"
+            className="w-full p-3 bg-white text-black rounded border border-black focus:border-black"
             placeholder="Optional notes about the transfer"
             rows={3}
           />
@@ -617,12 +617,12 @@ export const TransferForm = ({
 
         {/* Date */}
         <div>
-          <label className="block text-white mb-2">Date</label>
+          <label className="block text-black mb-2">Date</label>
           <input
             type="date"
             value={date}
             onChange={(e) => setDate(e.target.value)}
-            className="w-full p-3 bg-gray-600 text-white rounded border border-gray-500 focus:border-blue-500"
+            className="w-full p-3 bg-white text-black rounded border border-black focus:border-black"
           />
         </div>
 
@@ -630,7 +630,7 @@ export const TransferForm = ({
         <button
           type="submit"
           disabled={isSubmitting}
-          className="w-full bg-black hover:bg-gray-800 disabled:bg-gray-500 text-white font-bold py-3 px-4 rounded transition duration-300"
+          className="w-full bg-black hover:bg-black disabled:bg-gray-400 text-white font-bold py-3 px-4 rounded transition duration-300"
         >
           {isSubmitting ? "Processing Transfer..." : "Transfer Money"}
         </button>

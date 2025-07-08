@@ -62,11 +62,11 @@ export const MonthlyView = ({ userTasks }: MonthlyViewProps) => {
       <div className="flex justify-between items-center mb-6 bg-white p-3 rounded-xl shadow">
         <button
           onClick={() => changeMonth(-1)}
-          className="p-2 rounded-full hover:bg-slate-200 transition-colors"
+          className="p-2 rounded-full hover:bg-white transition-colors"
         >
           <CaretLeft />
         </button>
-        <h2 className="text-2xl font-bold text-slate-800">
+        <h2 className="text-2xl font-bold text-black">
           {currentDate.toLocaleString("default", {
             month: "long",
             year: "numeric",
@@ -74,14 +74,14 @@ export const MonthlyView = ({ userTasks }: MonthlyViewProps) => {
         </h2>
         <button
           onClick={() => changeMonth(1)}
-          className="p-2 rounded-full hover:bg-slate-200 transition-colors"
+          className="p-2 rounded-full hover:bg-white transition-colors"
         >
           <CaretRight />
         </button>
       </div>
 
       {isLoading ? (
-        <div className="text-center p-8 text-slate-500">
+        <div className="text-center p-8 text-black">
           Loading monthly progress...
         </div>
       ) : (
@@ -92,12 +92,12 @@ export const MonthlyView = ({ userTasks }: MonthlyViewProps) => {
                 onClick={() => handleCategoryClick(category.name)}
                 className="w-full flex justify-between items-center p-4 text-left"
               >
-                <span className="text-xl font-semibold text-slate-700">
+                <span className="text-xl font-semibold text-black">
                   {category.name}
                 </span>
                 <CaretDown
                   size={24}
-                  className={`text-slate-500 transition-transform ${
+                  className={`text-black transition-transform ${
                     openCategory === category.name ? "rotate-180" : ""
                   }`}
                 />
@@ -107,7 +107,7 @@ export const MonthlyView = ({ userTasks }: MonthlyViewProps) => {
                 <div className="px-4 pb-4">
                   {category.tasks.map((task) => (
                     <div key={task.id} className="py-3 border-t">
-                      <p className="font-medium mb-2 text-slate-600">
+                      <p className="font-medium mb-2 text-black">
                         {task.text}
                       </p>
                       <div className="grid grid-cols-7 sm:grid-cols-10 md:grid-cols-15 gap-1.5">
@@ -125,7 +125,7 @@ export const MonthlyView = ({ userTasks }: MonthlyViewProps) => {
                               className={`w-6 h-6 rounded-sm flex items-center justify-center text-xs font-mono ${
                                 isCompleted
                                   ? "bg-black text-white"
-                                  : "bg-gray-200 text-gray-500"
+                                  : "bg-white text-black border border-black"
                               }`}
                             >
                               {day}
@@ -136,7 +136,7 @@ export const MonthlyView = ({ userTasks }: MonthlyViewProps) => {
                     </div>
                   ))}
                   {category.tasks.length === 0 && (
-                    <p className="text-slate-500 px-4 pb-2">
+                    <p className="text-black px-4 pb-2">
                       No tasks in this category.
                     </p>
                   )}

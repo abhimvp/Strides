@@ -176,7 +176,7 @@ export const ExpensesView = () => {
 
   if (isLoading) {
     return (
-      <div className="p-4 md:p-6 lg:p-8 h-full text-white bg-gray-800 flex items-center justify-center">
+      <div className="p-4 md:p-6 lg:p-8 h-full text-black bg-white flex items-center justify-center">
         <p className="text-xl">Loading your expenses data...</p>
       </div>
     );
@@ -184,14 +184,14 @@ export const ExpensesView = () => {
 
   if (error) {
     return (
-      <div className="p-4 md:p-6 lg:p-8 h-full text-white bg-gray-800 flex items-center justify-center">
+      <div className="p-4 md:p-6 lg:p-8 h-full text-black bg-white flex items-center justify-center">
         <p className="text-red-500 text-xl">{error}</p>
       </div>
     );
   }
 
   return (
-    <div className="p-4 md:p-6 lg:p-8 h-full text-white bg-gray-800 relative">
+    <div className="p-4 md:p-6 lg:p-8 h-full text-black bg-white relative">
       {/* Header */}
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-3xl font-bold">Expense Tracker</h1>
@@ -204,7 +204,7 @@ export const ExpensesView = () => {
           </button>
           <button
             onClick={() => setShowCategoryModal(true)}
-            className="bg-gray-600 hover:bg-gray-700 text-white font-medium py-2 px-4 rounded-lg transition duration-200 shadow-md"
+            className="bg-black hover:bg-gray-800 text-white font-medium py-2 px-4 rounded-lg transition duration-200 shadow-md"
           >
             Manage Categories
           </button>
@@ -213,7 +213,7 @@ export const ExpensesView = () => {
           <div className="flex items-center gap-2 ml-2">
             <button
               onClick={() => setShowTransferForm(true)}
-              className="bg-gray-800 hover:bg-gray-900 text-white p-2.5 rounded-lg shadow-md transition duration-200 flex items-center justify-center"
+              className="bg-black hover:bg-gray-800 text-white p-2.5 rounded-lg shadow-md transition duration-200 flex items-center justify-center"
               title="Transfer Money"
               disabled={accounts.length < 2}
             >
@@ -262,7 +262,7 @@ export const ExpensesView = () => {
         onClose={() => setShowAccountModal(false)}
         title="Manage Accounts"
       >
-        <div className="text-gray-800">
+        <div className="text-black">
           {editingAccount ? (
             <AccountForm
               accountToEdit={editingAccount}
@@ -292,7 +292,7 @@ export const ExpensesView = () => {
         onClose={() => setShowCategoryModal(false)}
         title="Manage Categories"
       >
-        <div className="text-gray-800">
+        <div className="text-black">
           <CategoryManager
             categories={categories}
             onUpdate={handleUpdateCategories}
@@ -306,7 +306,7 @@ export const ExpensesView = () => {
         onClose={() => setShowTransactionForm(false)}
         title={editingTransaction ? "Edit Transaction" : "Add Expense/Income"}
       >
-        <div className="text-gray-800">
+        <div className="text-black">
           <TransactionForm
             accounts={accounts}
             categories={categories}
@@ -323,7 +323,7 @@ export const ExpensesView = () => {
         onClose={() => setShowTransferForm(false)}
         title="Transfer Money"
       >
-        <div className="text-gray-800">
+        <div className="text-black">
           {accounts.length >= 2 ? (
             <TransferForm
               accounts={accounts}
@@ -348,7 +348,7 @@ export const ExpensesView = () => {
         title="Delete Transaction"
       >
         {transactionToDelete && (
-          <div className="text-gray-800">
+          <div className="text-black">
             <p className="mb-4">
               Are you sure you want to delete this transaction? This action
               cannot be undone.

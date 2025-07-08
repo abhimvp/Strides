@@ -30,14 +30,14 @@ export const Dashboard = () => {
           </div>
         </div>
         {/* Top-Level Navigation Tabs */}
-        <div className="mb-8 border-b-2 border-gray-300">
+        <div className="mb-8 border-b-2 border-black">
           <nav className="-mb-0.5 flex space-x-8">
             <button
               onClick={() => setCurrentView("tasks")}
               className={`py-4 px-1 border-b-4 font-semibold text-xl transition-colors ${
                 currentView === "tasks"
                   ? "border-black text-black"
-                  : "border-transparent text-gray-500 hover:text-gray-700"
+                  : "border-transparent text-black hover:text-black"
               }`}
             >
               Tasks
@@ -47,7 +47,7 @@ export const Dashboard = () => {
               className={`py-4 px-1 border-b-4 font-semibold text-xl transition-colors ${
                 currentView === "expenses"
                   ? "border-black text-black"
-                  : "border-transparent text-gray-500 hover:text-gray-700"
+                  : "border-transparent text-black hover:text-black"
               }`}
             >
               Expenses
@@ -58,7 +58,7 @@ export const Dashboard = () => {
               className={`py-4 px-1 border-b-4 font-semibold text-xl transition-colors ${
                 currentView === "todos"
                   ? "border-black text-black"
-                  : "border-transparent text-gray-500 hover:text-gray-700"
+                  : "border-transparent text-black hover:text-black"
               }`}
             >
               To-Do Board

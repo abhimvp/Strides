@@ -72,18 +72,18 @@ export const ExpenseSidebar = ({
 
       {/* Sidebar */}
       <div
-        className={`fixed right-0 top-0 h-full w-96 bg-gray-900 shadow-2xl transform transition-transform duration-300 ease-in-out z-50 ${
+        className={`fixed right-0 top-0 h-full w-96 bg-white shadow-2xl transform transition-transform duration-300 ease-in-out z-50 ${
           isAnimating ? "translate-x-full" : "translate-x-0"
         }`}
       >
         {/* Header */}
-        <div className="flex justify-between items-center p-6 border-b border-gray-700">
-          <h2 className="text-xl font-semibold text-white">
+        <div className="flex justify-between items-center p-6 border-b border-black">
+          <h2 className="text-xl font-semibold text-black">
             {getSidebarTitle()}
           </h2>
           <button
             onClick={handleClose}
-            className="text-gray-400 hover:text-white transition-colors p-2 rounded-full hover:bg-gray-800"
+            className="text-black hover:text-black transition-colors p-2 rounded-full hover:bg-white"
           >
             <svg
               className="w-6 h-6"
@@ -145,7 +145,7 @@ export const ExpenseSidebar = ({
                     onEdit={onAccountEdit || (() => {})}
                   />
                   <div>
-                    <h4 className="text-lg font-semibold mb-3 text-white">
+                    <h4 className="text-lg font-semibold mb-3 text-black">
                       Add New Account
                     </h4>
                     <AccountForm

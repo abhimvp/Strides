@@ -150,18 +150,18 @@ export const AccountForm = ({
   return (
     <form
       onSubmit={handleSubmit}
-      className="p-4 bg-gray-800 rounded-lg shadow-md mb-6 space-y-4"
+      className="p-4 bg-white rounded-lg shadow-md mb-6 space-y-4"
     >
-      <h3 className="text-lg font-semibold text-white">
+      <h3 className="text-lg font-semibold text-black">
         {isEditMode ? "Edit Account" : "Add New Account"}
       </h3>
-      {error && <p className="text-red-500">{error}</p>}
+      {error && <p className="text-black">{error}</p>}
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <select
           value={provider}
           onChange={(e) => setProvider(e.target.value)}
-          className="p-2 rounded bg-gray-700 text-white border border-gray-600"
+          className="p-2 rounded bg-white text-black border border-black"
         >
           {providers.map((p) => (
             <option key={p} value={p}>
@@ -173,7 +173,7 @@ export const AccountForm = ({
         <select
           value={accountType}
           onChange={(e) => setAccountType(e.target.value as any)}
-          className="p-2 rounded bg-gray-700 text-white border border-gray-600"
+          className="p-2 rounded bg-white text-black border border-black"
         >
           <option value="bank_account">Bank Account</option>
           <option value="credit_card">Credit Card</option>
@@ -184,7 +184,7 @@ export const AccountForm = ({
         <select
           value={country}
           onChange={(e) => setCountry(e.target.value as "IN" | "US")}
-          className="p-2 rounded bg-gray-700 text-white border border-gray-600"
+          className="p-2 rounded bg-white text-black border border-black"
         >
           <option value="IN">India (INR)</option>
           <option value="US">USA (USD)</option>
@@ -195,7 +195,7 @@ export const AccountForm = ({
           placeholder="Account Name (e.g., Salary Account)"
           value={accountName}
           onChange={(e) => setAccountName(e.target.value)}
-          className="p-2 rounded bg-gray-700 text-white border border-gray-600"
+          className="p-2 rounded bg-white text-black border border-black"
           required
         />
         <input
@@ -203,7 +203,7 @@ export const AccountForm = ({
           placeholder="Initial Balance"
           value={balance}
           onChange={(e) => setBalance(e.target.value)}
-          className="p-2 rounded bg-gray-700 text-white border border-gray-600"
+          className="p-2 rounded bg-white text-black border border-black"
         />
       </div>
       {/* Conditionally render Credit Limit field */}
@@ -213,12 +213,12 @@ export const AccountForm = ({
           placeholder="Credit Limit"
           value={creditLimit}
           onChange={(e) => setCreditLimit(e.target.value)}
-          className="p-2 rounded bg-gray-700 text-white border border-gray-600"
+          className="p-2 rounded bg-white text-black border border-black"
         />
       )}
 
       <div>
-        <h4 className="text-md font-semibold text-white mb-2">
+        <h4 className="text-md font-semibold text-black mb-2">
           Linked Payment Modes (Optional)
         </h4>
         {linkedModes.map((mode, index) => (
@@ -230,7 +230,7 @@ export const AccountForm = ({
               onChange={(e) =>
                 handleLinkedModeChange(index, "name", e.target.value)
               }
-              className="flex-grow p-2 rounded bg-gray-700 text-white border border-gray-600"
+              className="flex-grow p-2 rounded bg-white text-black border border-black"
             />
             <input
               type="text"
@@ -239,12 +239,12 @@ export const AccountForm = ({
               onChange={(e) =>
                 handleLinkedModeChange(index, "type", e.target.value)
               }
-              className="p-2 rounded bg-gray-700 text-white border border-gray-600"
+              className="p-2 rounded bg-white text-black border border-black"
             />
             <button
               type="button"
               onClick={() => handleRemoveLinkedMode(index)}
-              className="bg-black hover:bg-gray-800 text-white font-bold py-2 px-3 rounded"
+              className="bg-black hover:bg-black text-white font-bold py-2 px-3 rounded"
             >
               -
             </button>
@@ -253,7 +253,7 @@ export const AccountForm = ({
         <button
           type="button"
           onClick={handleAddLinkedMode}
-          className="w-full text-sm bg-gray-600 hover:bg-gray-500 text-white font-bold py-2 px-4 rounded transition duration-300"
+          className="w-full text-sm bg-white hover:bg-white text-black font-bold py-2 px-4 rounded transition duration-300"
         >
           + Add Payment Mode
         </button>
@@ -264,7 +264,7 @@ export const AccountForm = ({
           <button
             type="button"
             onClick={onCancel}
-            className="w-full bg-gray-600 hover:bg-gray-500 text-white font-bold py-2 px-4 rounded"
+            className="w-full bg-white hover:bg-white text-black font-bold py-2 px-4 rounded"
           >
             Cancel
           </button>
@@ -272,7 +272,7 @@ export const AccountForm = ({
         <button
           type="submit"
           disabled={isSubmitting}
-          className="w-full bg-black hover:bg-gray-800 text-white font-bold py-2 px-4 rounded disabled:bg-gray-500"
+          className="w-full bg-black hover:bg-black text-white font-bold py-2 px-4 rounded disabled:bg-gray-400"
         >
           {isSubmitting
             ? "Saving..."

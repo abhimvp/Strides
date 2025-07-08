@@ -82,12 +82,12 @@ export const TaskItem = ({
       ref={setNodeRef}
       style={style}
       {...attributes}
-      className="flex justify-between items-center py-3 bg-white rounded-lg px-3 group mb-2 shadow-sm border border-slate-100 hover:border-slate-200 transition-all"
+      className="flex justify-between items-center py-3 bg-white rounded-lg px-3 group mb-2 shadow-sm border border-black hover:border-black transition-all"
     >
       {/* Enhanced Drag Handle */}
       <motion.div
         {...listeners}
-        className="cursor-grab active:cursor-grabbing text-slate-400 p-2 hover:text-slate-600 transition-colors"
+        className="cursor-grab active:cursor-grabbing text-black p-2 hover:text-black transition-colors"
         whileHover={{ scale: 1.1 }}
         whileTap={{ scale: 0.95 }}
       >
@@ -99,10 +99,10 @@ export const TaskItem = ({
           <p className="font-medium">{task.text}</p>
           {task.notes && (
             <div className="relative flex items-center group/tooltip">
-              <Info size={16} className="text-blue-400 cursor-pointer" />
-              <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-max max-w-xs bg-gray-800 text-white text-xs rounded py-1 px-2 opacity-0 group-hover/tooltip:opacity-100 transition-opacity pointer-events-none">
+              <Info size={16} className="text-black cursor-pointer" />
+              <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-max max-w-xs bg-black text-white text-xs rounded py-1 px-2 opacity-0 group-hover/tooltip:opacity-100 transition-opacity pointer-events-none">
                 {task.notes}
-                <div className="absolute top-full left-1/2 -translate-x-1/2 w-0 h-0 border-x-4 border-x-transparent border-t-4 border-t-gray-800"></div>
+                <div className="absolute top-full left-1/2 -translate-x-1/2 w-0 h-0 border-x-4 border-x-transparent border-t-4 border-t-black"></div>
               </div>
             </div>
           )}
@@ -119,13 +119,13 @@ export const TaskItem = ({
             whileHover={{ scale: 1.1 }}
             whileTap={{ scale: 0.95 }}
             onClick={() => onEdit(categoryName, task.id, task.text)}
-            className="text-gray-400 hover:text-blue-500 opacity-0 group-hover:opacity-100 transition-opacity"
+            className="text-black hover:text-black opacity-0 group-hover:opacity-100 transition-opacity"
             aria-label={`Edit task ${task.text}`}
           >
             <PencilSimple size={16} />
           </motion.button>
         </div>
-        <div className="flex items-center gap-4 text-xs text-slate-400">
+        <div className="flex items-center gap-4 text-xs text-black">
           {task.frequency && (
             <span className="flex items-center gap-1">
               <Bell size={12} /> {task.frequency}
@@ -167,7 +167,7 @@ export const TaskItem = ({
                   />
                 ) : (
                   <Circle
-                    className="text-slate-300 hover:text-slate-400"
+                    className="text-black hover:text-black"
                     size={22}
                   />
                 )}

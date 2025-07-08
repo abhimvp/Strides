@@ -22,11 +22,11 @@ export const TransactionList = ({
 }: TransactionListProps) => {
   if (transactions.length === 0) {
     return (
-      <div className="text-center py-10 px-4 mt-8 bg-gray-800 rounded-lg shadow-md">
-        <h3 className="text-lg font-semibold text-white">
+      <div className="text-center py-10 px-4 mt-8 bg-white rounded-lg shadow-md">
+        <h3 className="text-lg font-semibold text-black">
           No Transactions Yet
         </h3>
-        <p className="text-gray-400 mt-2">
+        <p className="text-black mt-2">
           Add your first expense or income using the form above to see it here.
         </p>
       </div>
@@ -54,10 +54,10 @@ export const TransactionList = ({
 
   return (
     <div className="mt-8">
-      <h2 className="text-2xl font-semibold mb-4 text-white">
+      <h2 className="text-2xl font-semibold mb-4 text-black">
         Recent Transactions
       </h2>
-      <div className="bg-gray-800 rounded-lg shadow-md">
+      <div className="bg-white rounded-lg shadow-md">
         <ul className="divide-y divide-gray-700">
           {transactions.map((tx) => {
             const isExpense = tx.type === "expense";
@@ -134,7 +134,7 @@ export const TransactionList = ({
             return (
               <li
                 key={tx.id}
-                className="p-4 flex justify-between items-center hover:bg-gray-700/50 transition-colors duration-200"
+                className="p-4 flex justify-between items-center hover:bg-white/50 transition-colors duration-200"
               >
                 <div className="flex items-center">
                   <div className="flex-shrink-0">
@@ -142,22 +142,22 @@ export const TransactionList = ({
                       className={`w-10 h-10 rounded-full flex items-center justify-center mr-4 ${
                         isTransfer
                           ? isTransferOut
-                            ? "bg-gray-800/50"
-                            : "bg-gray-700/50"
+                            ? "bg-white/50"
+                            : "bg-white/50"
                           : isExpense
-                          ? "bg-gray-800/50"
-                          : "bg-gray-700/50"
+                          ? "bg-white/50"
+                          : "bg-white/50"
                       }`}
                     >
                       <span
                         className={`text-xl font-bold ${
                           isTransfer
                             ? isTransferOut
-                              ? "text-red-400"
-                              : "text-green-400"
+                              ? "text-black"
+                              : "text-black"
                             : isExpense
-                            ? "text-red-400"
-                            : "text-green-400"
+                            ? "text-black"
+                            : "text-black"
                         }`}
                       >
                         {isTransfer
@@ -169,19 +169,19 @@ export const TransactionList = ({
                     </div>
                   </div>
                   <div>
-                    <p className="font-semibold text-white">{displayName}</p>
-                    <p className="text-sm text-gray-400">
+                    <p className="font-semibold text-black">{displayName}</p>
+                    <p className="text-sm text-black">
                       {accountMap.get(tx.accountId) || "Account"}
                     </p>
                     {tx.notes && (
-                      <p className="text-xs text-gray-500 italic pt-1">
+                      <p className="text-xs text-black italic pt-1">
                         "{tx.notes}"
                       </p>
                     )}
                     {/* Show transfer details for international transfers */}
                     {isTransfer &&
                       (tx.exchangeRate || tx.commission || tx.serviceName) && (
-                        <div className="text-xs text-gray-400 mt-1">
+                        <div className="text-xs text-black mt-1">
                           {tx.exchangeRate && <p>Rate: {tx.exchangeRate}</p>}
                           {tx.commission && (
                             <p>
@@ -191,7 +191,7 @@ export const TransactionList = ({
                           )}
                           {tx.serviceName && <p>Via: {tx.serviceName}</p>}
                           {tx.transferredAmount && (
-                            <p className="text-green-400">
+                            <p className="text-black">
                               Received: {tx.transferredAmount.toFixed(2)}
                             </p>
                           )}
@@ -204,11 +204,11 @@ export const TransactionList = ({
                     className={`font-bold text-lg ${
                       isTransfer
                         ? isTransferOut
-                          ? "text-red-400"
-                          : "text-green-400"
+                          ? "text-black"
+                          : "text-black"
                         : isExpense
-                        ? "text-red-400"
-                        : "text-green-400"
+                        ? "text-black"
+                        : "text-black"
                     }`}
                   >
                     {isTransfer
@@ -221,21 +221,21 @@ export const TransactionList = ({
                     {currencySymbol}
                     {tx.amount.toFixed(2)}
                   </p>
-                  <p className="text-xs text-gray-500">
+                  <p className="text-xs text-black">
                     {format(new Date(tx.date), "MMM d, yyyy")}
                   </p>
                   <div className="mt-2 group-hover:opacity-100 transition-opacity duration-300 flex gap-2 justify-end">
                     {!isTransfer && (
                       <button
                         onClick={() => onEdit(tx)}
-                        className="text-xs bg-blue-600 hover:bg-blue-700 text-white font-bold py-1 px-3 rounded"
+                        className="text-xs bg-black hover:bg-black text-white font-bold py-1 px-3 rounded"
                       >
                         Edit
                       </button>
                     )}
                     <button
                       onClick={() => handleDelete(tx)}
-                      className="text-xs bg-black hover:bg-gray-800 text-white font-bold py-1 px-3 rounded"
+                      className="text-xs bg-black hover:bg-black text-white font-bold py-1 px-3 rounded"
                     >
                       Delete
                     </button>

@@ -56,8 +56,8 @@ export const BalanceSummary = ({ accounts }: BalanceSummaryProps) => {
 
   if (accounts.length === 0) {
     return (
-      <div className="bg-gray-700 rounded-lg p-4 mb-6">
-        <p className="text-gray-300 text-center">
+      <div className="bg-white rounded-lg p-4 mb-6 border border-black">
+        <p className="text-black text-center">
           No accounts found. Add an account to see your balance summary.
         </p>
       </div>
@@ -65,8 +65,8 @@ export const BalanceSummary = ({ accounts }: BalanceSummaryProps) => {
   }
 
   return (
-    <div className="bg-gray-700 rounded-lg p-6 mb-6">
-      <h3 className="text-xl font-semibold text-white mb-6">Balance Summary</h3>
+    <div className="bg-white rounded-lg p-6 mb-6 border border-black">
+      <h3 className="text-xl font-semibold text-black mb-6">Balance Summary</h3>
 
       {/* Overall Summary Cards with Account Breakdown */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
@@ -76,11 +76,11 @@ export const BalanceSummary = ({ accounts }: BalanceSummaryProps) => {
             {/* India Money I Have */}
             {indiaAccounts.filter((acc) => acc.accountType !== "credit_card")
               .length > 0 && (
-              <div className="bg-green-600 bg-opacity-20 border border-green-500 rounded-lg p-4">
-                <p className="text-green-200 text-sm font-semibold mb-2">
+              <div className="bg-white bg-opacity-20 border border-black rounded-lg p-4">
+                <p className="text-black text-sm font-semibold mb-2">
                   Money I Have (India)
                 </p>
-                <p className="text-white text-2xl font-bold mb-3">
+                <p className="text-black text-2xl font-bold mb-3">
                   {formatAmount(indiaDebitBalance, "INR")}
                 </p>
                 <div className="space-y-1">
@@ -91,13 +91,13 @@ export const BalanceSummary = ({ accounts }: BalanceSummaryProps) => {
                         key={account.id}
                         className="flex items-center justify-between text-sm"
                       >
-                        <span className="text-green-100 flex items-center gap-1">
+                        <span className="text-black flex items-center gap-1">
                           <span className="text-xs">
                             {getAccountTypeIcon(account.accountType)}
                           </span>
                           {account.accountName}
                         </span>
-                        <span className="text-white font-medium">
+                        <span className="text-black font-medium">
                           {formatAmount(account.balance, account.currency)}
                         </span>
                       </div>
@@ -108,11 +108,11 @@ export const BalanceSummary = ({ accounts }: BalanceSummaryProps) => {
 
             {/* India Money to Pay Off */}
             {indiaAccounts.some((acc) => acc.accountType === "credit_card") && (
-              <div className="bg-black bg-opacity-20 border border-gray-500 rounded-lg p-4">
-                <p className="text-gray-200 text-sm font-semibold mb-2">
+              <div className="bg-white bg-opacity-20 border border-black rounded-lg p-4">
+                <p className="text-black text-sm font-semibold mb-2">
                   Money to Pay Off (India)
                 </p>
-                <p className="text-white text-2xl font-bold mb-3">
+                <p className="text-black text-2xl font-bold mb-3">
                   {formatAmount(indiaCreditDebt, "INR")}
                 </p>
                 <div className="space-y-2">
@@ -130,11 +130,11 @@ export const BalanceSummary = ({ accounts }: BalanceSummaryProps) => {
                       return (
                         <div key={account.id} className="space-y-1">
                           <div className="flex items-center justify-between text-sm">
-                            <span className="text-red-100 flex items-center gap-1">
+                            <span className="text-black flex items-center gap-1">
                               <span className="text-xs">💳</span>
                               {account.accountName}
                             </span>
-                            <span className="text-white font-medium">
+                            <span className="text-black font-medium">
                               {formatAmount(account.balance, account.currency)}
                             </span>
                           </div>
@@ -145,7 +145,7 @@ export const BalanceSummary = ({ accounts }: BalanceSummaryProps) => {
                               >
                                 {utilization}% utilization
                               </span>
-                              <span className="text-gray-400">
+                              <span className="text-black">
                                 Limit:{" "}
                                 {formatAmount(
                                   account.creditLimit,
@@ -158,7 +158,7 @@ export const BalanceSummary = ({ accounts }: BalanceSummaryProps) => {
                       );
                     })}
                 </div>
-                <p className="text-red-400 text-xs mt-2">Pay soon!</p>
+                <p className="text-black text-xs mt-2">Pay soon!</p>
               </div>
             )}
           </div>
@@ -170,11 +170,11 @@ export const BalanceSummary = ({ accounts }: BalanceSummaryProps) => {
             {/* USA Money I Have */}
             {usaAccounts.filter((acc) => acc.accountType !== "credit_card")
               .length > 0 && (
-              <div className="bg-blue-600 bg-opacity-20 border border-blue-500 rounded-lg p-4">
-                <p className="text-blue-200 text-sm font-semibold mb-2">
+              <div className="bg-white bg-opacity-20 border border-black rounded-lg p-4">
+                <p className="text-black text-sm font-semibold mb-2">
                   Money I Have (USA)
                 </p>
-                <p className="text-white text-2xl font-bold mb-3">
+                <p className="text-black text-2xl font-bold mb-3">
                   {formatAmount(usaDebitBalance, "USD")}
                 </p>
                 <div className="space-y-1">
@@ -185,13 +185,13 @@ export const BalanceSummary = ({ accounts }: BalanceSummaryProps) => {
                         key={account.id}
                         className="flex items-center justify-between text-sm"
                       >
-                        <span className="text-blue-100 flex items-center gap-1">
+                        <span className="text-black flex items-center gap-1">
                           <span className="text-xs">
                             {getAccountTypeIcon(account.accountType)}
                           </span>
                           {account.accountName}
                         </span>
-                        <span className="text-white font-medium">
+                        <span className="text-black font-medium">
                           {formatAmount(account.balance, account.currency)}
                         </span>
                       </div>
@@ -202,11 +202,11 @@ export const BalanceSummary = ({ accounts }: BalanceSummaryProps) => {
 
             {/* USA Money to Pay Off */}
             {usaAccounts.some((acc) => acc.accountType === "credit_card") && (
-              <div className="bg-black bg-opacity-20 border border-gray-500 rounded-lg p-4">
-                <p className="text-gray-200 text-sm font-semibold mb-2">
+              <div className="bg-white border border-black rounded-lg p-4">
+                <p className="text-black text-sm font-semibold mb-2">
                   Money to Pay Off (USA)
                 </p>
-                <p className="text-white text-2xl font-bold mb-3">
+                <p className="text-black text-2xl font-bold mb-3">
                   {formatAmount(usaCreditDebt, "USD")}
                 </p>
                 <div className="space-y-2">
@@ -224,11 +224,11 @@ export const BalanceSummary = ({ accounts }: BalanceSummaryProps) => {
                       return (
                         <div key={account.id} className="space-y-1">
                           <div className="flex items-center justify-between text-sm">
-                            <span className="text-red-100 flex items-center gap-1">
+                            <span className="text-black flex items-center gap-1">
                               <span className="text-xs">💳</span>
                               {account.accountName}
                             </span>
-                            <span className="text-white font-medium">
+                            <span className="text-black font-medium">
                               {formatAmount(account.balance, account.currency)}
                             </span>
                           </div>
@@ -239,7 +239,7 @@ export const BalanceSummary = ({ accounts }: BalanceSummaryProps) => {
                               >
                                 {utilization}% utilization
                               </span>
-                              <span className="text-gray-400">
+                              <span className="text-black">
                                 Limit:{" "}
                                 {formatAmount(
                                   account.creditLimit,
@@ -252,7 +252,7 @@ export const BalanceSummary = ({ accounts }: BalanceSummaryProps) => {
                       );
                     })}
                 </div>
-                <p className="text-red-400 text-xs mt-2">Pay soon!</p>
+                <p className="text-black text-xs mt-2">Pay soon!</p>
               </div>
             )}
           </div>

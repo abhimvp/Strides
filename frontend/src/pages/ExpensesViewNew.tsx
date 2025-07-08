@@ -201,9 +201,9 @@ export const ExpensesViewNew = () => {
 
   if (isInitialLoading) {
     return (
-      <div className="p-4 md:p-6 lg:p-8 h-full text-white bg-gray-800 flex items-center justify-center">
+      <div className="p-4 md:p-6 lg:p-8 h-full text-black bg-white flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white mx-auto mb-4"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-black mx-auto mb-4"></div>
           <p className="text-xl">Loading your expenses data...</p>
         </div>
       </div>
@@ -217,7 +217,7 @@ export const ExpensesViewNew = () => {
           <p className="text-black text-xl mb-4">{error}</p>
           <button
             onClick={fetchInitialData}
-            className="bg-black hover:bg-gray-800 text-white font-medium py-2 px-4 rounded-lg transition duration-200"
+            className="bg-black hover:bg-black text-white font-medium py-2 px-4 rounded-lg transition duration-200"
           >
             Retry
           </button>
@@ -234,13 +234,13 @@ export const ExpensesViewNew = () => {
         <div className="flex items-center gap-3">
           <button
             onClick={() => openSidebar("account")}
-            className="bg-black hover:bg-gray-800 text-white font-medium py-2 px-4 rounded-lg transition duration-200 shadow-md"
+            className="bg-black hover:bg-black text-white font-medium py-2 px-4 rounded-lg transition duration-200 shadow-md"
           >
             Manage Accounts
           </button>
           <button
             onClick={() => openSidebar("category")}
-            className="bg-gray-600 hover:bg-gray-700 text-white font-medium py-2 px-4 rounded-lg transition duration-200 shadow-md"
+            className="bg-black hover:bg-black text-white font-medium py-2 px-4 rounded-lg transition duration-200 shadow-md"
           >
             Manage Categories
           </button>
@@ -249,7 +249,7 @@ export const ExpensesViewNew = () => {
           <div className="flex items-center gap-2 ml-2">
             <button
               onClick={() => openSidebar("transfer")}
-              className="bg-gray-800 hover:bg-gray-900 text-white p-2.5 rounded-lg shadow-md transition duration-200 flex items-center justify-center"
+              className="bg-black hover:bg-black text-white p-2.5 rounded-lg shadow-md transition duration-200 flex items-center justify-center"
               title="Transfer Money"
               disabled={accounts.length < 2}
             >
@@ -269,7 +269,7 @@ export const ExpensesViewNew = () => {
             </button>
             <button
               onClick={() => openSidebar("transaction")}
-              className="bg-black hover:bg-gray-800 text-white p-2.5 rounded-lg shadow-md transition duration-200 flex items-center justify-center text-lg font-bold"
+              className="bg-black hover:bg-black text-white p-2.5 rounded-lg shadow-md transition duration-200 flex items-center justify-center text-lg font-bold"
               title="Add Expense/Income"
             >
               +

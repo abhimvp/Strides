@@ -58,8 +58,8 @@ export const CategoryManager = ({
   };
 
   return (
-    <div className="p-4 bg-gray-800 rounded-lg shadow-md mt-6">
-      <h3 className="text-lg font-semibold text-white mb-4">
+    <div className="p-4 bg-white rounded-lg shadow-md mt-6">
+      <h3 className="text-lg font-semibold text-black mb-4">
         Manage Categories
       </h3>
 
@@ -69,12 +69,12 @@ export const CategoryManager = ({
           placeholder="New Category Name"
           value={newCategoryName}
           onChange={(e) => setNewCategoryName(e.target.value)}
-          className="flex-grow p-2 rounded bg-gray-700 text-white border border-gray-600"
+          className="flex-grow p-2 rounded bg-white text-black border border-black"
         />
         <button
           type="submit"
           disabled={isSubmitting}
-          className="bg-black hover:bg-gray-800 text-white font-bold py-2 px-4 rounded disabled:bg-gray-500"
+          className="bg-black hover:bg-black text-white font-bold py-2 px-4 rounded disabled:bg-gray-400"
         >
           {isSubmitting ? "Creating..." : "Create"}
         </button>
@@ -83,16 +83,16 @@ export const CategoryManager = ({
 
       <div className="space-y-4">
         {categories.map((category) => (
-          <div key={category.id} className="p-3 bg-gray-900 rounded">
-            <h4 className="font-bold text-white">{category.name}</h4>
+          <div key={category.id} className="p-3 bg-white rounded">
+            <h4 className="font-bold text-black">{category.name}</h4>
             <div className="pl-4 mt-2 space-y-1">
               {category.subcategories.map((sub) => (
-                <p key={sub.id} className="text-sm text-gray-300">
+                <p key={sub.id} className="text-sm text-black">
                   - {sub.name}
                 </p>
               ))}
               {category.subcategories.length === 0 && (
-                <p className="text-xs text-gray-500">No sub-categories yet.</p>
+                <p className="text-xs text-black">No sub-categories yet.</p>
               )}
             </div>
             <div className="flex gap-2 mt-3">
@@ -103,11 +103,11 @@ export const CategoryManager = ({
                 onChange={(e) =>
                   handleSubCategoryNameChange(category.id, e.target.value)
                 }
-                className="flex-grow p-1 rounded text-sm bg-gray-700 text-white border border-gray-600"
+                className="flex-grow p-1 rounded text-sm bg-white text-black border border-black"
               />
               <button
                 onClick={() => handleCreateSubCategory(category.id)}
-                className="bg-black hover:bg-gray-800 text-white text-xs font-bold py-1 px-3 rounded"
+                className="bg-black hover:bg-black text-white text-xs font-bold py-1 px-3 rounded"
               >
                 Add
               </button>

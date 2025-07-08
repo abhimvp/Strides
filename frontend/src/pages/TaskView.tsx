@@ -40,6 +40,7 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
+  DialogDescription,
 } from "../components/ui/Dialog";
 
 type DeletionInfo = {
@@ -483,7 +484,7 @@ export const TaskView = () => {
             {/* <Header /> */}
             <div className="flex items-center gap-4 mt-4">
               {/* Enhanced Add Task Button */}
-              <Dialog>
+              <Dialog open={isGlobalTaskModalOpen} onOpenChange={setIsGlobalTaskModalOpen}>
                 <DialogTrigger asChild>
                   <Button>
                     <Plus size={16} className="mr-2" />
@@ -493,23 +494,27 @@ export const TaskView = () => {
                 <DialogContent>
                   <DialogHeader>
                     <DialogTitle>Add a New Task</DialogTitle>
+                    <DialogDescription>
+                      Create a new task and assign it to a category to track your progress.
+                    </DialogDescription>
                   </DialogHeader>
                   <AddTaskForm
                     categories={[
                       DEFAULT_CATEGORY,
                       ...(userTasks?.categories.map((c) => c.name) || []),
-                    ]}
+                    ].filter((cat, index, arr) => arr.indexOf(cat) === index)} // Remove duplicates
                     defaultCategory={DEFAULT_CATEGORY}
                     onAddTask={(taskData, categoryName) => {
                       handleAddTask(categoryName, taskData);
                       toast.success(`Task added to ${categoryName}!`);
+                      setIsGlobalTaskModalOpen(false);
                     }}
-                    onClose={() => {}}
+                    onClose={() => setIsGlobalTaskModalOpen(false)}
                   />
                 </DialogContent>
               </Dialog>
 
-              <Dialog>
+              <Dialog open={isCategoryModalOpen} onOpenChange={setIsCategoryModalOpen}>
                 <DialogTrigger asChild>
                   <Button variant="outline">
                     <Plus size={16} className="mr-2" />
@@ -519,10 +524,16 @@ export const TaskView = () => {
                 <DialogContent>
                   <DialogHeader>
                     <DialogTitle>Create New Category</DialogTitle>
+                    <DialogDescription>
+                      Add a new category to organize your tasks and goals.
+                    </DialogDescription>
                   </DialogHeader>
                   <AddCategoryForm
-                    onAddCategory={handleAddCategory}
-                    onClose={() => {}}
+                    onAddCategory={(categoryName) => {
+                      handleAddCategory(categoryName);
+                      setIsCategoryModalOpen(false);
+                    }}
+                    onClose={() => setIsCategoryModalOpen(false)}
                   />
                 </DialogContent>
               </Dialog>
@@ -641,7 +652,7 @@ export const TaskView = () => {
           categories={[
             DEFAULT_CATEGORY,
             ...(userTasks?.categories.map((c) => c.name) || []),
-          ]}
+          ].filter((cat, index, arr) => arr.indexOf(cat) === index)} // Remove duplicates
           defaultCategory={DEFAULT_CATEGORY}
           onAddTask={(taskData, categoryName) => {
             handleAddTask(categoryName, taskData);

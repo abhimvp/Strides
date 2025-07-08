@@ -24,8 +24,9 @@ const DialogContent = React.forwardRef<
 >(({ children, ...props }, ref) => (
   <DialogPrimitive.Portal>
     <AnimatePresence>
-      <DialogOverlay />
+      <DialogOverlay key="overlay" />
       <DialogPrimitive.Content
+        key="content"
         ref={ref}
         className="fixed left-[50%] top-[50%] z-50 w-full max-w-lg translate-x-[-50%] translate-y-[-50%] rounded-xl bg-white p-6 shadow-xl border border-gray-300"
         {...props}
@@ -69,4 +70,16 @@ const DialogTitle = React.forwardRef<
 ));
 DialogTitle.displayName = DialogPrimitive.Title.displayName;
 
-export { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle };
+const DialogDescription = React.forwardRef<
+  React.ElementRef<typeof DialogPrimitive.Description>,
+  React.ComponentPropsWithoutRef<typeof DialogPrimitive.Description>
+>(({ ...props }, ref) => (
+  <DialogPrimitive.Description
+    ref={ref}
+    className="text-sm text-gray-600 mt-1"
+    {...props}
+  />
+));
+DialogDescription.displayName = DialogPrimitive.Description.displayName;
+
+export { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle, DialogDescription };

@@ -9,6 +9,7 @@ import type {
 
 interface AccountFormProps {
   onSave: () => void; // Generic save handler
+  onAccountCreated?: (account: Account) => void; // New callback for optimistic updates
   onCancel?: () => void; // To cancel editing
   // onAccountAdded: () => void;
   accountToEdit?: Account | null;
@@ -28,6 +29,7 @@ const providers = [
 
 export const AccountForm = ({
   onSave,
+  onAccountCreated,
   onCancel,
   accountToEdit,
 }: AccountFormProps) => {
@@ -117,9 +119,20 @@ export const AccountForm = ({
           setIsSubmitting(false);
           return;
         }
-        await updateAccount(accountToEdit.id, dataPayload);
+        const updatedAccount = await updateAccount(
+          accountToEdit.id,
+          dataPayload
+        );
+        if (onAccountCreated) {
+          onAccountCreated(updatedAccount);
+        }
       } else {
-        await createAccount(dataPayload as CreateAccountData);
+        const newAccount = await createAccount(
+          dataPayload as CreateAccountData
+        );
+        if (onAccountCreated) {
+          onAccountCreated(newAccount);
+        }
         resetForm();
       }
       onSave(); // Notify parent to refresh list and close form
@@ -231,7 +244,7 @@ export const AccountForm = ({
             <button
               type="button"
               onClick={() => handleRemoveLinkedMode(index)}
-              className="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-3 rounded"
+              className="bg-black hover:bg-gray-800 text-white font-bold py-2 px-3 rounded"
             >
               -
             </button>
@@ -259,7 +272,7 @@ export const AccountForm = ({
         <button
           type="submit"
           disabled={isSubmitting}
-          className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded disabled:bg-gray-500"
+          className="w-full bg-black hover:bg-gray-800 text-white font-bold py-2 px-4 rounded disabled:bg-gray-500"
         >
           {isSubmitting
             ? "Saving..."

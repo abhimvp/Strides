@@ -7,7 +7,7 @@ interface SkeletonProps extends React.HTMLAttributes<HTMLDivElement> {
 export const Skeleton = ({ className, ...props }: SkeletonProps) => {
   return (
     <div
-      className={`animate-pulse rounded-md bg-slate-200 dark:bg-slate-700 transition-colors ${className}`}
+      className={`animate-pulse rounded-md bg-gray-200 ${className}`}
       {...props}
     />
   );
@@ -32,7 +32,7 @@ export const TaskSkeleton = () => (
 );
 
 export const CategorySkeleton = () => (
-  <div className="bg-white dark:bg-slate-800 rounded-xl shadow-lg p-4 mb-4 border dark:border-slate-700 transition-colors">
+  <div className="bg-white rounded-xl shadow-lg p-4 mb-4 border border-gray-300">
     <div className="flex justify-between items-center mb-4">
       <Skeleton className="h-6 w-40" />
       <div className="flex gap-2">

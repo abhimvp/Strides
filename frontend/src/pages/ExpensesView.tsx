@@ -198,13 +198,13 @@ export const ExpensesView = () => {
         <div className="flex items-center gap-3">
           <button
             onClick={() => setShowAccountModal(true)}
-            className="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg transition duration-200 shadow-md"
+            className="bg-black hover:bg-gray-800 text-white font-medium py-2 px-4 rounded-lg transition duration-200 shadow-md"
           >
             Manage Accounts
           </button>
           <button
             onClick={() => setShowCategoryModal(true)}
-            className="bg-purple-600 hover:bg-purple-700 text-white font-medium py-2 px-4 rounded-lg transition duration-200 shadow-md"
+            className="bg-gray-600 hover:bg-gray-700 text-white font-medium py-2 px-4 rounded-lg transition duration-200 shadow-md"
           >
             Manage Categories
           </button>
@@ -213,7 +213,7 @@ export const ExpensesView = () => {
           <div className="flex items-center gap-2 ml-2">
             <button
               onClick={() => setShowTransferForm(true)}
-              className="bg-green-600 hover:bg-green-700 text-white p-2.5 rounded-lg shadow-md transition duration-200 flex items-center justify-center"
+              className="bg-gray-800 hover:bg-gray-900 text-white p-2.5 rounded-lg shadow-md transition duration-200 flex items-center justify-center"
               title="Transfer Money"
               disabled={accounts.length < 2}
             >
@@ -233,7 +233,7 @@ export const ExpensesView = () => {
             </button>
             <button
               onClick={() => setShowTransactionForm(true)}
-              className="bg-indigo-600 hover:bg-indigo-700 text-white p-2.5 rounded-lg shadow-md transition duration-200 flex items-center justify-center text-lg font-bold"
+              className="bg-black hover:bg-gray-800 text-white p-2.5 rounded-lg shadow-md transition duration-200 flex items-center justify-center text-lg font-bold"
               title="Add Expense/Income"
             >
               +
@@ -364,10 +364,10 @@ export const ExpensesView = () => {
                       <span
                         className={`ml-2 px-2 py-1 rounded text-xs font-medium ${
                           details.type === "Expense"
-                            ? "bg-red-100 text-red-800"
+                            ? "bg-gray-100 text-gray-800"
                             : details.type === "Income"
-                            ? "bg-green-100 text-green-800"
-                            : "bg-blue-100 text-blue-800"
+                            ? "bg-gray-200 text-gray-900"
+                            : "bg-gray-300 text-black"
                         }`}
                       >
                         {details.type}
@@ -417,7 +417,7 @@ export const ExpensesView = () => {
               </button>
               <button
                 onClick={confirmDeleteTransaction}
-                className="px-4 py-2 bg-red-500 text-white rounded-md hover:bg-red-600 transition-colors"
+                className="px-4 py-2 bg-black text-white rounded-md hover:bg-gray-800 transition-colors"
               >
                 Delete Transaction
               </button>

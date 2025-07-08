@@ -24,8 +24,8 @@ export const KanbanColumn: React.FC<KanbanColumnProps> = ({
 
   const statusColor = {
     "Not Started": "bg-gray-500",
-    "In Progress": "bg-yellow-500",
-    Done: "bg-green-500",
+    "In Progress": "bg-gray-700",
+    Done: "bg-black",
   };
 
   return (

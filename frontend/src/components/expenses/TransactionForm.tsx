@@ -18,6 +18,7 @@ interface TransactionFormProps {
   categories: ExpenseCategory[];
   transactionToEdit?: Transaction | null;
   onSave: () => void; // Generic save handler
+  onTransactionCreated?: (transaction: Transaction) => void; // New callback for optimistic updates
   onCancelEdit?: () => void;
 }
 
@@ -25,6 +26,7 @@ export const TransactionForm = ({
   accounts,
   categories,
   onSave,
+  onTransactionCreated,
   transactionToEdit,
   onCancelEdit,
 }: TransactionFormProps) => {
@@ -109,7 +111,13 @@ export const TransactionForm = ({
 
     try {
       if (isEditMode && transactionToEdit) {
-        await updateTransaction(transactionToEdit.id, dataPayload);
+        const updatedTransaction = await updateTransaction(
+          transactionToEdit.id,
+          dataPayload
+        );
+        if (onTransactionCreated) {
+          onTransactionCreated(updatedTransaction);
+        }
       } else {
         const createPayload: CreateTransactionData = {
           type,
@@ -120,7 +128,10 @@ export const TransactionForm = ({
           notes: notes || undefined,
           date: new Date(date).toISOString(),
         };
-        await createTransaction(createPayload);
+        const newTransaction = await createTransaction(createPayload);
+        if (onTransactionCreated) {
+          onTransactionCreated(newTransaction);
+        }
         resetForm();
       }
       onSave();
@@ -143,7 +154,7 @@ export const TransactionForm = ({
             type="button"
             onClick={() => !isEditMode && setType("expense")}
             className={`w-full p-2 rounded-md text-sm font-medium ${
-              type === "expense" ? "bg-red-600 text-white" : "text-gray-300"
+              type === "expense" ? "bg-black text-white" : "text-gray-300"
             } ${isEditMode && "cursor-not-allowed opacity-70"}`}
           >
             Expense
@@ -152,7 +163,7 @@ export const TransactionForm = ({
             type="button"
             onClick={() => !isEditMode && setType("income")}
             className={`w-full p-2 rounded-md text-sm font-medium ${
-              type === "income" ? "bg-green-600 text-white" : "text-gray-300"
+              type === "income" ? "bg-black text-white" : "text-gray-300"
             } ${isEditMode && "cursor-not-allowed opacity-70"}`}
           >
             Income
@@ -252,7 +263,7 @@ export const TransactionForm = ({
           <button
             type="submit"
             disabled={isSubmitting}
-            className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded disabled:bg-gray-500"
+            className="w-full bg-black hover:bg-gray-800 text-white font-bold py-2 px-4 rounded disabled:bg-gray-500"
           >
             {isSubmitting
               ? "Saving..."

@@ -55,13 +55,13 @@ const AccountList: React.FC<AccountListProps> = ({ accounts, onEdit }) => {
                       {account.creditLimit.toFixed(2)}
                     </p>
                   ) : (
-                    <div className="p-2 bg-yellow-900/50 rounded-md text-center">
-                      <p className="text-yellow-300 text-xs">
+                    <div className="p-2 bg-gray-900/50 rounded-md text-center">
+                      <p className="text-gray-300 text-xs">
                         Credit limit not set.
                       </p>
                       <button
                         onClick={() => onEdit(account)}
-                        className="text-xs text-white underline hover:text-yellow-300"
+                        className="text-xs text-white underline hover:text-gray-300"
                       >
                         Add Limit
                       </button>

@@ -3,7 +3,7 @@ import type {
   Account,
   CreateTransferData,
   CreditCardAnalysis,
-  PaymentOption,
+  Transaction,
 } from "../../types/index";
 import { createTransfer } from "../../services/transactionService";
 import {
@@ -18,12 +18,14 @@ import { format } from "date-fns";
 interface TransferFormProps {
   accounts: Account[];
   onSave: () => void;
+  onTransferCreated?: (transactions: Transaction[]) => void;
   onCancel?: () => void;
 }
 
 export const TransferForm = ({
   accounts,
   onSave,
+  onTransferCreated,
   onCancel,
 }: TransferFormProps) => {
   const [fromAccountId, setFromAccountId] = useState("");
@@ -219,7 +221,11 @@ export const TransferForm = ({
         }
       }
 
-      await createTransfer(transferData);
+      const transferTransactions = await createTransfer(transferData);
+
+      if (onTransferCreated) {
+        onTransferCreated(transferTransactions);
+      }
 
       // Reset form
       setFromAccountId("");
@@ -260,7 +266,7 @@ export const TransferForm = ({
 
       <form onSubmit={handleSubmit} className="space-y-4">
         {error && (
-          <div className="bg-red-600 text-white p-3 rounded">{error}</div>
+          <div className="bg-black text-white p-3 rounded">{error}</div>
         )}
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -334,7 +340,7 @@ export const TransferForm = ({
 
             {/* Credit Card Analysis Section */}
             {analysisError && (
-              <div className="bg-red-800 border border-red-600 p-3 rounded-lg mb-4 text-white">
+              <div className="bg-black border border-gray-600 p-3 rounded-lg mb-4 text-white">
                 {analysisError}
               </div>
             )}
@@ -403,12 +409,12 @@ export const TransferForm = ({
                     <div
                       className={`h-2 rounded-full ${
                         creditCardAnalysis.creditUtilization >= 90
-                          ? "bg-red-500"
+                          ? "bg-black"
                           : creditCardAnalysis.creditUtilization >= 70
-                          ? "bg-orange-500"
+                          ? "bg-gray-800"
                           : creditCardAnalysis.creditUtilization >= 30
-                          ? "bg-yellow-500"
-                          : "bg-green-500"
+                          ? "bg-gray-600"
+                          : "bg-gray-400"
                       }`}
                       style={{
                         width: `${Math.min(
@@ -424,8 +430,8 @@ export const TransferForm = ({
 
             {/* Balance Information Grid */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm mb-4">
-              <div className="bg-red-800 bg-opacity-50 p-3 rounded">
-                <p className="text-red-200 font-medium">Current Debt</p>
+              <div className="bg-black bg-opacity-50 p-3 rounded">
+                <p className="text-gray-200 font-medium">Current Debt</p>
                 <p className="text-white text-lg font-bold">
                   {formatCurrency(
                     creditCardInfo.currentDebt,
@@ -435,8 +441,8 @@ export const TransferForm = ({
               </div>
 
               {amount && parseFloat(amount) > 0 && (
-                <div className="bg-green-800 bg-opacity-50 p-3 rounded">
-                  <p className="text-green-200 font-medium">After Payment</p>
+                <div className="bg-gray-800 bg-opacity-50 p-3 rounded">
+                  <p className="text-gray-200 font-medium">After Payment</p>
                   <p className="text-white text-lg font-bold">
                     {formatCurrency(
                       creditCardInfo.remainingAfterPayment,
@@ -475,10 +481,10 @@ export const TransferForm = ({
                       onClick={() => setAmount(option.amount.toString())}
                       className={`p-3 rounded text-left transition-colors ${
                         option.type === "minimum"
-                          ? "bg-yellow-700 hover:bg-yellow-600 border border-yellow-500"
+                          ? "bg-gray-700 hover:bg-gray-600 border border-gray-500"
                           : option.type === "recommended"
-                          ? "bg-blue-700 hover:bg-blue-600 border border-blue-500"
-                          : "bg-green-700 hover:bg-green-600 border border-green-500"
+                          ? "bg-gray-800 hover:bg-gray-700 border border-gray-600"
+                          : "bg-black hover:bg-gray-800 border border-gray-700"
                       }`}
                     >
                       <div className="text-white font-medium text-sm">
@@ -517,7 +523,7 @@ export const TransferForm = ({
                           creditCardAnalysis.minimumPaymentDue!.toString()
                         )
                       }
-                      className="px-4 py-2 bg-yellow-600 hover:bg-yellow-700 text-white text-sm rounded transition-colors"
+                      className="px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white text-sm rounded transition-colors"
                     >
                       Pay Minimum Due
                     </button>
@@ -530,7 +536,7 @@ export const TransferForm = ({
 
         {/* International Transfer Fields */}
         {isInternational && (
-          <div className="bg-blue-900 p-4 rounded">
+          <div className="bg-gray-900 p-4 rounded">
             <h3 className="text-white font-semibold mb-3">
               International Transfer
             </h3>
@@ -624,7 +630,7 @@ export const TransferForm = ({
         <button
           type="submit"
           disabled={isSubmitting}
-          className="w-full bg-green-600 hover:bg-green-700 disabled:bg-gray-500 text-white font-bold py-3 px-4 rounded transition duration-300"
+          className="w-full bg-black hover:bg-gray-800 disabled:bg-gray-500 text-white font-bold py-3 px-4 rounded transition duration-300"
         >
           {isSubmitting ? "Processing Transfer..." : "Transfer Money"}
         </button>

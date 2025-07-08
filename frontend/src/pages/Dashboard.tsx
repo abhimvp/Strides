@@ -3,7 +3,7 @@ import { useState } from "react";
 import { Header } from "../components/Header";
 import { useAuth } from "../hooks/useAuth";
 import { TaskView } from "./TaskView";
-import { ExpensesView } from "./ExpensesView";
+import { ExpensesViewNew } from "./ExpensesViewNew";
 import { TodoView } from "../components/todos/TodoView"; // 1. Import the new view
 
 type MainView = "tasks" | "expenses" | "todos"; // 2. Add 'todos' to the view type
@@ -13,7 +13,7 @@ export const Dashboard = () => {
   const [currentView, setCurrentView] = useState<MainView>("tasks");
 
   return (
-    <div className="theme-bg-secondary min-h-screen font-sans theme-text-primary transition-colors duration-300">
+    <div className="bg-white min-h-screen font-sans text-black">
       <div className="container mx-auto p-4 sm:p-6 md:p-8 max-w-6xl">
         {" "}
         {/* Increased max-width for new layout */}
@@ -23,21 +23,21 @@ export const Dashboard = () => {
           <div className="flex items-center gap-4 mt-4">
             <button
               onClick={logout}
-              className="bg-red-500 text-white py-2 px-4 rounded-lg shadow-md hover:bg-red-600 transition-all"
+              className="bg-black text-white py-2 px-4 rounded-lg shadow-md hover:bg-gray-800 transition-all"
             >
               Logout
             </button>
           </div>
         </div>
         {/* Top-Level Navigation Tabs */}
-        <div className="mb-8 border-b-2 theme-border">
+        <div className="mb-8 border-b-2 border-gray-300">
           <nav className="-mb-0.5 flex space-x-8">
             <button
               onClick={() => setCurrentView("tasks")}
               className={`py-4 px-1 border-b-4 font-semibold text-xl transition-colors ${
                 currentView === "tasks"
-                  ? "border-blue-500 text-blue-600"
-                  : "border-transparent theme-text-muted hover:theme-text-secondary"
+                  ? "border-black text-black"
+                  : "border-transparent text-gray-500 hover:text-gray-700"
               }`}
             >
               Tasks
@@ -46,8 +46,8 @@ export const Dashboard = () => {
               onClick={() => setCurrentView("expenses")}
               className={`py-4 px-1 border-b-4 font-semibold text-xl transition-colors ${
                 currentView === "expenses"
-                  ? "border-blue-500 text-blue-600"
-                  : "border-transparent theme-text-muted hover:theme-text-secondary"
+                  ? "border-black text-black"
+                  : "border-transparent text-gray-500 hover:text-gray-700"
               }`}
             >
               Expenses
@@ -57,8 +57,8 @@ export const Dashboard = () => {
               onClick={() => setCurrentView("todos")}
               className={`py-4 px-1 border-b-4 font-semibold text-xl transition-colors ${
                 currentView === "todos"
-                  ? "border-blue-500 text-blue-600"
-                  : "border-transparent theme-text-muted hover:theme-text-secondary"
+                  ? "border-black text-black"
+                  : "border-transparent text-gray-500 hover:text-gray-700"
               }`}
             >
               To-Do Board
@@ -68,7 +68,7 @@ export const Dashboard = () => {
         {/* Conditionally Render the Active View */}
         <div>
           {currentView === "tasks" && <TaskView />}
-          {currentView === "expenses" && <ExpensesView />}
+          {currentView === "expenses" && <ExpensesViewNew />}
           {/* 4. Add the new conditional render for the To-Do View */}
           {currentView === "todos" && <TodoView />}
         </div>

@@ -8,11 +8,13 @@ import {
 interface CategoryManagerProps {
   categories: ExpenseCategory[];
   onUpdate: () => void;
+  onCategoriesUpdated?: (categories: ExpenseCategory[]) => void;
 }
 
 export const CategoryManager = ({
   categories,
   onUpdate,
+  onCategoriesUpdated,
 }: CategoryManagerProps) => {
   const [newCategoryName, setNewCategoryName] = useState("");
   const [newSubCategoryNames, setNewSubCategoryNames] = useState<{
@@ -72,12 +74,12 @@ export const CategoryManager = ({
         <button
           type="submit"
           disabled={isSubmitting}
-          className="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded disabled:bg-gray-500"
+          className="bg-black hover:bg-gray-800 text-white font-bold py-2 px-4 rounded disabled:bg-gray-500"
         >
           {isSubmitting ? "Creating..." : "Create"}
         </button>
       </form>
-      {error && <p className="text-red-500 text-sm mb-4">{error}</p>}
+      {error && <p className="text-black text-sm mb-4">{error}</p>}
 
       <div className="space-y-4">
         {categories.map((category) => (
@@ -105,7 +107,7 @@ export const CategoryManager = ({
               />
               <button
                 onClick={() => handleCreateSubCategory(category.id)}
-                className="bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold py-1 px-3 rounded"
+                className="bg-black hover:bg-gray-800 text-white text-xs font-bold py-1 px-3 rounded"
               >
                 Add
               </button>

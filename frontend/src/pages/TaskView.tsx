@@ -445,7 +445,7 @@ export const TaskView = () => {
 
   if (isLoading) {
     return (
-      <div className="bg-slate-50 dark:bg-slate-900 min-h-screen font-sans text-gray-800 dark:text-gray-200 transition-colors">
+      <div className="bg-white min-h-screen font-sans text-black">
         <div className="container mx-auto p-4 sm:p-6 md:p-8 max-w-4xl">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -472,7 +472,7 @@ export const TaskView = () => {
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
-        className="bg-slate-50 dark:bg-slate-900 min-h-screen font-sans text-gray-800 dark:text-gray-200 transition-colors"
+        className="bg-white min-h-screen font-sans text-black"
       >
         <div className="container mx-auto p-4 sm:p-6 md:p-8 max-w-4xl">
           <motion.div
@@ -544,7 +544,7 @@ export const TaskView = () => {
             initial={{ y: 10, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             transition={{ delay: 0.1 }}
-            className="mb-6 border-b-2 border-slate-200 dark:border-slate-700 transition-colors"
+            className="mb-6 border-b-2 border-gray-300"
           >
             <nav className="-mb-0.5 flex space-x-6">
               {[
@@ -558,8 +558,8 @@ export const TaskView = () => {
                   onClick={() => setCurrentView(key as "weekly" | "monthly")}
                   className={`py-2 px-4 border-b-4 font-medium text-lg transition-all rounded-t-lg flex items-center gap-2 ${
                     currentView === key
-                      ? "border-blue-500 text-blue-600 bg-blue-50 dark:bg-blue-900/30 dark:text-blue-400"
-                      : "border-transparent text-slate-500 hover:text-slate-700 hover:bg-slate-50 dark:text-slate-400 dark:hover:text-slate-300 dark:hover:bg-slate-800"
+                      ? "border-black text-black bg-gray-100"
+                      : "border-transparent text-gray-500 hover:text-gray-700 hover:bg-gray-50"
                   }`}
                 >
                   <Icon size={20} />
@@ -580,7 +580,7 @@ export const TaskView = () => {
               >
                 {isNewUser && (
                   <div
-                    className="bg-blue-100 border-l-4 border-blue-500 text-blue-700 p-4 mb-6 rounded-md"
+                    className="bg-gray-100 border-l-4 border-gray-500 text-gray-700 p-4 mb-6 rounded-md"
                     role="alert"
                   >
                     <p className="font-bold">Welcome to Strides!</p>

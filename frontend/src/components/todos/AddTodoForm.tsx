@@ -77,7 +77,7 @@ export const AddTodoForm: React.FC<AddTodoFormProps> = ({
         </button>
         <button
           type="submit"
-          className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+          className="bg-black hover:bg-gray-800 text-white font-bold py-2 px-4 rounded"
         >
           {existingTodo ? "Update" : "Create"}
         </button>

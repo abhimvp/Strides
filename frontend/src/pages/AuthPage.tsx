@@ -41,57 +41,57 @@ export const AuthPage = () => {
   };
 
   return (
-    <div className="min-h-screen theme-bg-secondary flex flex-col justify-center items-center transition-colors duration-300">
+    <div className="min-h-screen bg-white flex flex-col justify-center items-center">
       <div className="max-w-md w-full mx-auto">
-        <h1 className="text-4xl font-bold text-center theme-text-primary mb-2">
+        <h1 className="text-4xl font-bold text-center text-black mb-2">
           Strides
         </h1>
-        <p className="text-center theme-text-muted mb-8">
+        <p className="text-center text-gray-600 mb-8">
           Your daily checkpoint for growth.
         </p>
-        <div className="theme-bg-card p-8 rounded-xl shadow-lg">
-          <h2 className="text-2xl font-bold text-center theme-text-primary mb-6">
+        <div className="bg-white p-8 rounded-xl shadow-lg border border-gray-300">
+          <h2 className="text-2xl font-bold text-center text-black mb-6">
             {isLogin ? "Log In" : "Sign Up"}
           </h2>
           <form onSubmit={handleSubmit} className="space-y-6">
             <div>
-              <label className="text-sm font-bold theme-text-secondary block">
+              <label className="text-sm font-bold text-gray-700 block">
                 Email
               </label>
               <input
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full p-2 border theme-border rounded-md mt-1 theme-bg-card theme-text-primary focus:outline-none focus:ring-2 focus:ring-blue-400"
+                className="w-full p-2 border border-gray-300 rounded-md mt-1 bg-white text-black focus:outline-none focus:ring-2 focus:ring-gray-400"
                 required
               />
             </div>
             <div>
-              <label className="text-sm font-bold theme-text-secondary block">
+              <label className="text-sm font-bold text-gray-700 block">
                 Password
               </label>
               <input
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full p-2 border theme-border rounded-md mt-1 theme-bg-card theme-text-primary focus:outline-none focus:ring-2 focus:ring-blue-400"
+                className="w-full p-2 border border-gray-300 rounded-md mt-1 bg-white text-black focus:outline-none focus:ring-2 focus:ring-gray-400"
                 required
               />
             </div>
             <div>
               <button
                 type="submit"
-                className="w-full py-2 px-4 bg-blue-500 text-white rounded-md hover:bg-blue-600 font-semibold transition-colors"
+                className="w-full py-2 px-4 bg-black text-white rounded-md hover:bg-gray-800 font-semibold transition-colors"
               >
                 {isLogin ? "Log In" : "Create Account"}
               </button>
             </div>
           </form>
-          <p className="text-center text-sm mt-6 theme-text-secondary">
+          <p className="text-center text-sm mt-6 text-gray-600">
             {isLogin ? "Don't have an account?" : "Already have an account?"}
             <button
               onClick={() => setIsLogin(!isLogin)}
-              className="text-blue-500 hover:underline ml-1 font-semibold"
+              className="text-black hover:underline ml-1 font-semibold"
             >
               {isLogin ? "Sign Up" : "Log In"}
             </button>

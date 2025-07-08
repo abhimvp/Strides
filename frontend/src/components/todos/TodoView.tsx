@@ -227,7 +227,7 @@ export const TodoView: React.FC = () => {
               setEditingTodo(null);
               setIsModalOpen(true);
             }}
-            className="flex items-center gap-2 bg-blue-600 text-white font-semibold py-2 px-4 rounded-lg shadow hover:bg-blue-700"
+            className="flex items-center gap-2 bg-black text-white font-semibold py-2 px-4 rounded-lg shadow hover:bg-gray-800"
           >
             <Plus size={16} />
             Add To-Do

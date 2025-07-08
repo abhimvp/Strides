@@ -124,8 +124,8 @@ export const MonthlyView = ({ userTasks }: MonthlyViewProps) => {
                               title={fullDateStr}
                               className={`w-6 h-6 rounded-sm flex items-center justify-center text-xs font-mono ${
                                 isCompleted
-                                  ? "bg-green-500 text-white"
-                                  : "bg-slate-200 text-slate-500"
+                                  ? "bg-black text-white"
+                                  : "bg-gray-200 text-gray-500"
                               }`}
                             >
                               {day}

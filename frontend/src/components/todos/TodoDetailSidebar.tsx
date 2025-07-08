@@ -26,8 +26,8 @@ interface TodoDetailSidebarProps {
 
 const statusOptions: { value: TodoStatus; label: string; color: string }[] = [
   { value: "Not Started", label: "Not Started", color: "bg-gray-500" },
-  { value: "In Progress", label: "In Progress", color: "bg-blue-500" },
-  { value: "Done", label: "Done", color: "bg-green-500" },
+  { value: "In Progress", label: "In Progress", color: "bg-gray-700" },
+  { value: "Done", label: "Done", color: "bg-black" },
 ];
 
 export const TodoDetailSidebar: React.FC<TodoDetailSidebarProps> = ({
@@ -198,7 +198,7 @@ export const TodoDetailSidebar: React.FC<TodoDetailSidebarProps> = ({
                 <div className="flex gap-2">
                   <button
                     onClick={handleSaveEdit}
-                    className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center gap-2"
+                    className="px-4 py-2 bg-black text-white rounded-lg hover:bg-gray-800 flex items-center gap-2"
                   >
                     <Check size={16} />
                     Save Changes
@@ -312,7 +312,7 @@ export const TodoDetailSidebar: React.FC<TodoDetailSidebarProps> = ({
                 <div className="flex gap-2">
                   <button
                     onClick={handleAddLog}
-                    className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center gap-2"
+                    className="px-4 py-2 bg-black text-white rounded-lg hover:bg-gray-800 flex items-center gap-2"
                   >
                     <Plus size={16} />
                     Add Log
@@ -344,7 +344,7 @@ export const TodoDetailSidebar: React.FC<TodoDetailSidebarProps> = ({
                     <div key={log.id} className="bg-gray-800 p-4 rounded-lg">
                       <div className="flex items-start justify-between mb-2">
                         <div className="flex items-center gap-2">
-                          <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                          <div className="w-2 h-2 bg-gray-400 rounded-full"></div>
                           <span className="text-sm text-gray-400">
                             {format(
                               new Date(log.timestamp),
@@ -369,7 +369,7 @@ export const TodoDetailSidebar: React.FC<TodoDetailSidebarProps> = ({
             <div className="flex gap-3">
               <button
                 onClick={handleDelete}
-                className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 flex items-center gap-2"
+                className="px-4 py-2 bg-black text-white rounded-lg hover:bg-gray-800 flex items-center gap-2"
               >
                 <Trash size={16} />
                 Delete Todo

@@ -142,11 +142,11 @@ export const TransactionList = ({
                       className={`w-10 h-10 rounded-full flex items-center justify-center mr-4 ${
                         isTransfer
                           ? isTransferOut
-                            ? "bg-red-900/50"
-                            : "bg-green-900/50"
+                            ? "bg-gray-800/50"
+                            : "bg-gray-700/50"
                           : isExpense
-                          ? "bg-red-900/50"
-                          : "bg-green-900/50"
+                          ? "bg-gray-800/50"
+                          : "bg-gray-700/50"
                       }`}
                     >
                       <span
@@ -235,7 +235,7 @@ export const TransactionList = ({
                     )}
                     <button
                       onClick={() => handleDelete(tx)}
-                      className="text-xs bg-red-600 hover:bg-red-700 text-white font-bold py-1 px-3 rounded"
+                      className="text-xs bg-black hover:bg-gray-800 text-white font-bold py-1 px-3 rounded"
                     >
                       Delete
                     </button>

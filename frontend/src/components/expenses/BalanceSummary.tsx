@@ -108,8 +108,8 @@ export const BalanceSummary = ({ accounts }: BalanceSummaryProps) => {
 
             {/* India Money to Pay Off */}
             {indiaAccounts.some((acc) => acc.accountType === "credit_card") && (
-              <div className="bg-red-600 bg-opacity-20 border border-red-500 rounded-lg p-4">
-                <p className="text-red-200 text-sm font-semibold mb-2">
+              <div className="bg-black bg-opacity-20 border border-gray-500 rounded-lg p-4">
+                <p className="text-gray-200 text-sm font-semibold mb-2">
                   Money to Pay Off (India)
                 </p>
                 <p className="text-white text-2xl font-bold mb-3">
@@ -202,8 +202,8 @@ export const BalanceSummary = ({ accounts }: BalanceSummaryProps) => {
 
             {/* USA Money to Pay Off */}
             {usaAccounts.some((acc) => acc.accountType === "credit_card") && (
-              <div className="bg-red-600 bg-opacity-20 border border-red-500 rounded-lg p-4">
-                <p className="text-red-200 text-sm font-semibold mb-2">
+              <div className="bg-black bg-opacity-20 border border-gray-500 rounded-lg p-4">
+                <p className="text-gray-200 text-sm font-semibold mb-2">
                   Money to Pay Off (USA)
                 </p>
                 <p className="text-white text-2xl font-bold mb-3">

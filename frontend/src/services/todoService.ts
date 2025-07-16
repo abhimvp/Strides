@@ -7,10 +7,15 @@ import type {
 } from "../types";
 
 // Helper to transform the response to TodoItem
-const transformTodoItem = (item: any): TodoItem => {
+const transformTodoItem = (item: Record<string, unknown>): TodoItem => {
   // Backend is sending '_id' but we need 'id' for our TodoItem interface
   const { _id, ...rest } = item;
-  return { id: _id, ...rest };
+
+  // Since we fixed the backend to send log ids properly, no need for complex transformation
+  return {
+    id: _id,
+    ...rest,
+  } as TodoItem;
 };
 
 export const getTodos = async (): Promise<TodoItem[]> => {

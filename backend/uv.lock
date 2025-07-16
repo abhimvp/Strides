@@ -1264,6 +1264,11 @@ wheels = [
     { url = "https://files.pythonhosted.org/packages/b5/69/831ed22b38ff9b4b64b66569f0e5b7b97cf3638346eb95a2147fdb49ad5f/pydantic-2.11.5-py3-none-any.whl", hash = "sha256:f9c26ba06f9747749ca1e5c94d6a85cb84254577553c8785576fd38fa64dc0f7", size = 444229 },
 ]
 
+[package.optional-dependencies]
+email = [
+    { name = "email-validator" },
+]
+
 [[package]]
 name = "pydantic-core"
 version = "2.33.2"
@@ -1586,7 +1591,7 @@ dependencies = [
     { name = "langsmith" },
     { name = "motor" },
     { name = "passlib", extra = ["bcrypt"] },
-    { name = "pydantic" },
+    { name = "pydantic", extra = ["email"] },
     { name = "python-dotenv" },
     { name = "python-jose" },
     { name = "requests" },
@@ -1603,7 +1608,7 @@ requires-dist = [
     { name = "langsmith", specifier = ">=0.3.45" },
     { name = "motor" },
     { name = "passlib", extras = ["bcrypt"] },
-    { name = "pydantic", specifier = ">=2.11.5" },
+    { name = "pydantic", extras = ["email"], specifier = ">=2.11.5" },
     { name = "python-dotenv", specifier = ">=1.1.0" },
     { name = "python-jose" },
     { name = "requests", specifier = ">=2.32.4" },

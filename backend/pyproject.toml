@@ -15,5 +15,5 @@ dependencies = [
     "python-dotenv>=1.1.0",
     "python-jose",
     "requests>=2.32.4",
-    "pydantic>=2.11.5",
+    "pydantic[email]>=2.11.5",
 ]

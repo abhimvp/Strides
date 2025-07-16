@@ -55,13 +55,22 @@ const DEFAULT_CATEGORY = "Not Yet Categorized";
 // Helper function to get week data for a specific date
 const getWeekDaysForDate = (date: Date) => {
   const days = [];
-  const startOfWeek = new Date(date);
+
+  // Create a date in local timezone to avoid timezone shifts
+  const startOfWeek = new Date(
+    date.getFullYear(),
+    date.getMonth(),
+    date.getDate()
+  );
   const dayOfWeek = startOfWeek.getDay();
   startOfWeek.setDate(startOfWeek.getDate() - dayOfWeek);
 
   for (let i = 0; i < 7; i++) {
-    const day = new Date(startOfWeek);
-    day.setDate(startOfWeek.getDate() + i);
+    const day = new Date(
+      startOfWeek.getFullYear(),
+      startOfWeek.getMonth(),
+      startOfWeek.getDate() + i
+    );
     days.push(day);
   }
   return days;
@@ -75,7 +84,14 @@ export const TaskView = () => {
   const [editingInfo, setEditingInfo] = useState<EditingInfo>(null);
   const [openCategory, setOpenCategory] = useState<string | null>(null);
   const [activeDragItem, setActiveDragItem] = useState<ActiveDragItem>(null);
-  const [currentWeekStart, setCurrentWeekStart] = useState(new Date());
+  const [currentWeekStart, setCurrentWeekStart] = useState(() => {
+    // Initialize with the proper start of the current week
+    const today = new Date();
+    const startOfWeek = new Date(today);
+    const dayOfWeek = startOfWeek.getDay();
+    startOfWeek.setDate(startOfWeek.getDate() - dayOfWeek);
+    return startOfWeek;
+  });
 
   // New state for sidebar editing
   const [sidebarEditingTask, setSidebarEditingTask] = useState<Task | null>(
@@ -734,7 +750,12 @@ export const TaskView = () => {
                         date.toDateString() === new Date().toDateString(),
                     }))}
                     weekDates={weekData.map((date) => ({
-                      fullDate: date.toISOString().split("T")[0],
+                      fullDate: `${date.getFullYear()}-${String(
+                        date.getMonth() + 1
+                      ).padStart(2, "0")}-${String(date.getDate()).padStart(
+                        2,
+                        "0"
+                      )}`,
                       isPast: date < new Date(new Date().setHours(0, 0, 0, 0)),
                     }))}
                     isOpen={openCategory === category.name}

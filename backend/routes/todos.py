@@ -31,6 +31,13 @@ def todo_from_db(doc: dict) -> dict:
         object_id = ObjectId(doc_copy["id"])
         doc_copy["createdAt"] = object_id.generation_time
 
+    # Convert log _id fields to id fields for the frontend
+    if "logs" in doc_copy and doc_copy["logs"]:
+        for log in doc_copy["logs"]:
+            if "_id" in log:
+                # Convert database _id to frontend id
+                log["id"] = str(log.pop("_id"))
+
     # Create TodoItem and convert to dict for JSON response
     todo_item = TodoItem.model_validate(doc_copy)
     result_dict = todo_item.model_dump()
@@ -191,7 +198,7 @@ async def add_todo_log(
     # 2. THE FIX: Explicitly create the log document here.
     # This guarantees a new ObjectId and a timezone-aware UTC timestamp.
     log_doc = {
-        "_id": ObjectId(),
+        "_id": ObjectId(),  # Store as _id in database
         "timestamp": datetime.now(timezone.utc),
         "notes": log_data.notes,
     }
@@ -223,8 +230,9 @@ async def update_todo_log(
         raise HTTPException(status_code=404, detail="To-Do not found.")
 
     # Update the specific log entry
+    # MongoDB stores logs with _id field as ObjectId, so we need to convert the string ID
     result = await db.todos.update_one(
-        {"_id": ObjectId(todo_id), "userId": user_id, "logs.id": log_id},
+        {"_id": ObjectId(todo_id), "userId": user_id, "logs._id": ObjectId(log_id)},
         {
             "$set": {
                 "logs.$.notes": log_data.notes,
@@ -256,9 +264,10 @@ async def delete_todo_log(
         raise HTTPException(status_code=404, detail="To-Do not found.")
 
     # Remove the specific log entry
+    # MongoDB stores logs with _id field as ObjectId, so we need to convert the string ID
     result = await db.todos.update_one(
         {"_id": ObjectId(todo_id), "userId": user_id},
-        {"$pull": {"logs": {"id": log_id}}},
+        {"$pull": {"logs": {"_id": ObjectId(log_id)}}},
     )
 
     if result.matched_count == 0:
@@ -267,6 +276,7 @@ async def delete_todo_log(
     updated_todo = await db.todos.find_one({"_id": ObjectId(todo_id)})
     if not updated_todo:
         raise HTTPException(status_code=500, detail="Failed to retrieve updated todo")
+
     return todo_from_db(updated_todo)
 
 

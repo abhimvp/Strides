@@ -6,18 +6,8 @@ import {
   useSensors,
 } from "@dnd-kit/core";
 import type { DragEndEvent } from "@dnd-kit/core";
-import {
-  Plus,
-  Trash,
-  Clock,
-  Tag,
-  ChatCircle,
-  PencilSimple,
-  X,
-  Check,
-} from "phosphor-react";
+import { Plus } from "phosphor-react";
 import toast from "react-hot-toast";
-import { format } from "date-fns";
 
 import {
   getTodos,
@@ -25,8 +15,6 @@ import {
   updateTodo,
   deleteTodo,
   addTodoLog,
-  updateTodoLog,
-  deleteTodoLog,
 } from "../../services/todoService";
 import type {
   TodoItem,
@@ -38,320 +26,12 @@ import type {
 
 import { KanbanColumn } from "./KanbanColumn";
 import { AddTodoForm } from "./AddTodoForm";
+import { TodoDetailSidebar } from "./TodoDetailSidebar";
 import { ConfirmationDialog } from "../ConfirmationDialog";
 
 const columns: TodoStatus[] = ["Not Started", "In Progress", "Done"];
 
 type SidebarType = "add" | "edit" | "details" | null;
-
-// Simple Todo Detail Form Component
-const TodoDetailForm: React.FC<{
-  todo: TodoItem;
-  onUpdate: (todo: TodoItem) => void;
-  onDelete: (todo: TodoItem) => void;
-  onAddLog: (todoId: string, logData: CreateTodoLogData) => void;
-}> = ({ todo, onUpdate, onDelete, onAddLog }) => {
-  const [isEditing, setIsEditing] = useState(false);
-  const [isAddingLog, setIsAddingLog] = useState(false);
-  const [editingLogId, setEditingLogId] = useState<string | null>(null);
-  const [editingLogText, setEditingLogText] = useState("");
-  const [logNotes, setLogNotes] = useState("");
-  const [editForm, setEditForm] = useState({
-    title: todo.title,
-    notes: todo.notes || "",
-    status: todo.status,
-  });
-
-  const handleSave = () => {
-    onUpdate({
-      ...todo,
-      title: editForm.title,
-      notes: editForm.notes,
-      status: editForm.status,
-    });
-    setIsEditing(false);
-  };
-
-  const handleLogSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (logNotes.trim()) {
-      onAddLog(todo.id, { notes: logNotes.trim() });
-      setLogNotes("");
-      setIsAddingLog(false);
-    }
-  };
-
-  const handleEditLog = (logId: string, currentText: string) => {
-    setEditingLogId(logId);
-    setEditingLogText(currentText);
-  };
-
-  const handleUpdateLog = async (logId: string) => {
-    if (editingLogText.trim()) {
-      try {
-        const updatedTodo = await updateTodoLog(todo.id, logId, {
-          notes: editingLogText.trim(),
-        });
-        onUpdate(updatedTodo);
-        setEditingLogId(null);
-        setEditingLogText("");
-        toast.success("Log updated successfully!");
-      } catch (error) {
-        console.error("Failed to update log:", error);
-        toast.error("Failed to update log");
-      }
-    }
-  };
-
-  const handleDeleteLog = async (logId: string) => {
-    if (confirm("Are you sure you want to delete this log entry?")) {
-      try {
-        const updatedTodo = await deleteTodoLog(todo.id, logId);
-        onUpdate(updatedTodo);
-        toast.success("Log deleted successfully!");
-      } catch (error) {
-        console.error("Failed to delete log:", error);
-        toast.error("Failed to delete log");
-      }
-    }
-  };
-
-  const handleCancelLogEdit = () => {
-    setEditingLogId(null);
-    setEditingLogText("");
-  };
-
-  return (
-    <div className="space-y-6">
-      {/* Todo Info */}
-      <div className="space-y-4">
-        {isEditing ? (
-          <>
-            <input
-              type="text"
-              value={editForm.title}
-              onChange={(e) =>
-                setEditForm((prev) => ({ ...prev, title: e.target.value }))
-              }
-              className="w-full p-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-400"
-              placeholder="Todo title"
-            />
-            <textarea
-              value={editForm.notes}
-              onChange={(e) =>
-                setEditForm((prev) => ({ ...prev, notes: e.target.value }))
-              }
-              className="w-full p-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-400 resize-none"
-              rows={3}
-              placeholder="Notes (optional)"
-            />
-            <select
-              value={editForm.status}
-              onChange={(e) =>
-                setEditForm((prev) => ({
-                  ...prev,
-                  status: e.target.value as TodoStatus,
-                }))
-              }
-              className="w-full p-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-400"
-            >
-              <option value="Not Started">Not Started</option>
-              <option value="In Progress">In Progress</option>
-              <option value="Done">Done</option>
-            </select>
-            <div className="flex gap-2">
-              <button
-                onClick={handleSave}
-                className="flex-1 bg-black text-white py-2 px-4 rounded-lg hover:bg-gray-800 transition-colors"
-              >
-                Save Changes
-              </button>
-              <button
-                onClick={() => setIsEditing(false)}
-                className="flex-1 border border-gray-300 text-gray-700 py-2 px-4 rounded-lg hover:bg-gray-50 transition-colors"
-              >
-                Cancel
-              </button>
-            </div>
-          </>
-        ) : (
-          <>
-            <h3 className="text-lg font-semibold text-gray-800">
-              {todo.title}
-            </h3>
-            {todo.notes && (
-              <p className="text-gray-600 bg-gray-50 p-3 rounded-lg">
-                {todo.notes}
-              </p>
-            )}
-            <div className="flex items-center gap-2">
-              <Tag size={16} className="text-gray-500" />
-              <span className="text-sm text-gray-600">
-                Status: {todo.status}
-              </span>
-            </div>
-            {todo.createdAt && (
-              <div className="flex items-center gap-2">
-                <Clock size={16} className="text-gray-500" />
-                <span className="text-sm text-gray-600">
-                  Created:{" "}
-                  {format(new Date(todo.createdAt), "MMM d, yyyy 'at' h:mm a")}
-                </span>
-              </div>
-            )}
-          </>
-        )}
-      </div>
-
-      {/* Actions */}
-      {!isEditing && (
-        <div className="flex gap-2">
-          <button
-            onClick={() => setIsEditing(true)}
-            className="flex items-center gap-2 flex-1 bg-gray-100 text-gray-700 py-2 px-3 rounded-lg hover:bg-gray-200 transition-colors"
-          >
-            <PencilSimple size={16} />
-            Edit
-          </button>
-          <button
-            onClick={() => setIsAddingLog(!isAddingLog)}
-            className={`flex items-center gap-2 flex-1 py-2 px-3 rounded-lg transition-colors ${
-              isAddingLog
-                ? "bg-black text-white hover:bg-gray-800"
-                : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-            }`}
-          >
-            <ChatCircle size={16} />
-            {isAddingLog ? "Cancel Log" : "Add Log"}
-          </button>
-        </div>
-      )}
-
-      {/* Add Log Form */}
-      {isAddingLog && (
-        <form
-          onSubmit={handleLogSubmit}
-          className="space-y-3 bg-gray-50 p-4 rounded-lg"
-        >
-          <h4 className="font-medium text-gray-800">Add Activity Log</h4>
-          <textarea
-            value={logNotes}
-            onChange={(e) => setLogNotes(e.target.value)}
-            className="w-full p-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-400 resize-none"
-            rows={3}
-            placeholder="Enter your log notes..."
-            required
-          />
-          <div className="flex gap-2">
-            <button
-              type="submit"
-              className="flex-1 bg-black text-white py-2 px-4 rounded-lg hover:bg-gray-800 transition-colors"
-            >
-              Add Log
-            </button>
-            <button
-              type="button"
-              onClick={() => {
-                setIsAddingLog(false);
-                setLogNotes("");
-              }}
-              className="flex-1 border border-gray-300 text-gray-700 py-2 px-4 rounded-lg hover:bg-gray-50 transition-colors"
-            >
-              Cancel
-            </button>
-          </div>
-        </form>
-      )}
-
-      {/* Logs */}
-      {todo.logs && todo.logs.length > 0 && (
-        <div className="space-y-3">
-          <h4 className="font-medium text-gray-800 flex items-center gap-2">
-            <ChatCircle size={16} />
-            Activity Logs ({todo.logs.length})
-          </h4>
-          <div className="space-y-2 max-h-60 overflow-y-auto">
-            {todo.logs.map((log) => (
-              <div key={log.id} className="bg-gray-50 p-3 rounded-lg">
-                {editingLogId === log.id ? (
-                  // Edit mode
-                  <div className="space-y-2">
-                    <textarea
-                      value={editingLogText}
-                      onChange={(e) => setEditingLogText(e.target.value)}
-                      className="w-full p-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-400 resize-none"
-                      rows={2}
-                    />
-                    <div className="flex gap-1">
-                      <button
-                        onClick={() => handleUpdateLog(log.id)}
-                        className="flex items-center gap-1 bg-black text-white px-2 py-1 rounded text-xs hover:bg-gray-800 transition-colors"
-                      >
-                        <Check size={12} />
-                        Save
-                      </button>
-                      <button
-                        onClick={handleCancelLogEdit}
-                        className="flex items-center gap-1 bg-gray-300 text-gray-700 px-2 py-1 rounded text-xs hover:bg-gray-400 transition-colors"
-                      >
-                        <X size={12} />
-                        Cancel
-                      </button>
-                    </div>
-                  </div>
-                ) : (
-                  // View mode
-                  <div className="group">
-                    <div className="flex justify-between items-start">
-                      <p className="text-sm text-gray-700 flex-1">
-                        {log.notes}
-                      </p>
-                      <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                        <button
-                          onClick={() => handleEditLog(log.id, log.notes)}
-                          className="text-gray-400 hover:text-gray-600 transition-colors"
-                          title="Edit log"
-                        >
-                          <PencilSimple size={14} />
-                        </button>
-                        <button
-                          onClick={() => handleDeleteLog(log.id)}
-                          className="text-gray-400 hover:text-red-600 transition-colors"
-                          title="Delete log"
-                        >
-                          <Trash size={14} />
-                        </button>
-                      </div>
-                    </div>
-                    <p className="text-xs text-gray-500 mt-1">
-                      {format(
-                        new Date(log.timestamp),
-                        "MMM d, yyyy 'at' h:mm a"
-                      )}
-                    </p>
-                  </div>
-                )}
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* Delete Button */}
-      <button
-        onClick={() => {
-          if (confirm(`Are you sure you want to delete "${todo.title}"?`)) {
-            onDelete(todo);
-          }
-        }}
-        className="w-full flex items-center justify-center gap-2 bg-red-50 text-red-600 py-2 px-4 rounded-lg hover:bg-red-100 transition-colors"
-      >
-        <Trash size={16} />
-        Delete Todo
-      </button>
-    </div>
-  );
-};
 
 export const TodoView: React.FC = () => {
   const [todos, setTodos] = useState<TodoItem[]>([]);
@@ -537,17 +217,12 @@ export const TodoView: React.FC = () => {
     openSidebar("details", todo);
   };
 
-  const handleUpdateFromDetail = async (updatedTodo: TodoItem) => {
-    try {
-      const result = await updateTodo(updatedTodo.id, updatedTodo);
-      setTodos((prev) => prev.map((t) => (t.id === result.id ? result : t)));
-      // Update the detail view with the latest data
-      setDetailTodo(result);
-      toast.success("Todo updated successfully!");
-    } catch (err) {
-      console.error("Failed to update todo:", err);
-      toast.error("Failed to update todo");
-    }
+  // Direct update function for log operations (no API call needed)
+  const handleDirectUpdate = (updatedTodo: TodoItem) => {
+    setTodos((prev) =>
+      prev.map((t) => (t.id === updatedTodo.id ? updatedTodo : t))
+    );
+    setDetailTodo(updatedTodo);
   };
 
   const handleDeleteFromDetail = async (todo: TodoItem) => {
@@ -568,9 +243,8 @@ export const TodoView: React.FC = () => {
   ) => {
     try {
       const result = await addTodoLog(todoId, logData);
-      setTodos((prev) => prev.map((t) => (t.id === result.id ? result : t)));
-      // Update the detail view with the latest data
-      setDetailTodo(result);
+      // Use direct update since addTodoLog already returns the updated todo
+      handleDirectUpdate(result);
       toast.success("Log added successfully!");
     } catch (err) {
       console.error("Failed to add log:", err);
@@ -609,7 +283,7 @@ export const TodoView: React.FC = () => {
           </div>
         </div>
 
-        {/* Sidebar */}
+        {/* Sidebar for Add/Edit/Details */}
         {sidebarOpen && (
           <div
             className="bg-white rounded-2xl shadow-lg border border-gray-100 relative"
@@ -627,7 +301,7 @@ export const TodoView: React.FC = () => {
                 <h2 className="text-xl font-semibold text-black">
                   {sidebarType === "add" && "Add To-Do"}
                   {sidebarType === "edit" && "Edit To-Do"}
-                  {sidebarType === "details" && "To-Do Details"}
+                  {sidebarType === "details" && "Todo Details"}
                 </h2>
                 <button
                   onClick={closeSidebar}
@@ -648,9 +322,11 @@ export const TodoView: React.FC = () => {
                 )}
 
                 {sidebarType === "details" && detailTodo && (
-                  <TodoDetailForm
+                  <TodoDetailSidebar
                     todo={detailTodo}
-                    onUpdate={handleUpdateFromDetail}
+                    isOpen={true}
+                    onClose={closeSidebar}
+                    onUpdate={handleDirectUpdate}
                     onDelete={handleDeleteFromDetail}
                     onAddLog={handleAddLogFromDetail}
                   />

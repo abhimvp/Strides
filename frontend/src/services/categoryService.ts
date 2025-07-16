@@ -49,3 +49,60 @@ export const createSubCategory = async (
   const { _id, ...rest } = response.data;
   return { id: _id, ...rest };
 };
+
+/**
+ * Updates an existing category.
+ */
+export const updateCategory = async (
+  categoryId: string,
+  categoryData: CreateCategoryData
+): Promise<ExpenseCategory> => {
+  const response = await api.put(`/categories/${categoryId}`, categoryData);
+  const { _id, subcategories, ...rest } = response.data;
+
+  const mappedSubcategories = subcategories.map((sub: any) => {
+    const { _id: subId, ...subRest } = sub;
+    return { id: subId, ...subRest };
+  });
+
+  return { id: _id, subcategories: mappedSubcategories, ...rest };
+};
+
+/**
+ * Updates an existing subcategory.
+ */
+export const updateSubCategory = async (
+  categoryId: string,
+  subcategoryId: string,
+  subCategoryData: CreateSubCategoryData
+): Promise<ExpenseCategory> => {
+  const response = await api.put(
+    `/categories/${categoryId}/subcategories/${subcategoryId}`,
+    subCategoryData
+  );
+  const { _id, subcategories, ...rest } = response.data;
+
+  const mappedSubcategories = subcategories.map((sub: any) => {
+    const { _id: subId, ...subRest } = sub;
+    return { id: subId, ...subRest };
+  });
+
+  return { id: _id, subcategories: mappedSubcategories, ...rest };
+};
+
+/**
+ * Deletes a category and all its subcategories.
+ */
+export const deleteCategory = async (categoryId: string): Promise<void> => {
+  await api.delete(`/categories/${categoryId}`);
+};
+
+/**
+ * Deletes a specific subcategory from a category.
+ */
+export const deleteSubCategory = async (
+  categoryId: string,
+  subcategoryId: string
+): Promise<void> => {
+  await api.delete(`/categories/${categoryId}/subcategories/${subcategoryId}`);
+};

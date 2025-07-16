@@ -1,9 +1,12 @@
-import React from "react";
+import React, { useState } from "react";
 import type { Account } from "../../types";
+import { deleteAccount } from "../../services/accountService";
+import { ConfirmationDialog } from "../ConfirmationDialog";
 
 interface AccountListSidebarProps {
   accounts: Account[];
   onEdit: (account: Account) => void;
+  onAccountDeleted?: () => void;
 }
 
 const getCurrencySymbol = (currency: "INR" | "USD") => {
@@ -13,7 +16,34 @@ const getCurrencySymbol = (currency: "INR" | "USD") => {
 export const AccountListSidebar: React.FC<AccountListSidebarProps> = ({
   accounts,
   onEdit,
+  onAccountDeleted,
 }) => {
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [accountToDelete, setAccountToDelete] = useState<Account | null>(null);
+
+  const handleDeleteClick = (account: Account) => {
+    setAccountToDelete(account);
+    setShowDeleteConfirm(true);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!accountToDelete) return;
+
+    try {
+      await deleteAccount(accountToDelete.id);
+      onAccountDeleted?.();
+    } catch (error) {
+      console.error("Failed to delete account:", error);
+      alert("Failed to delete account. Please try again.");
+    } finally {
+      setAccountToDelete(null);
+    }
+  };
+
+  const handleCancelDelete = () => {
+    setShowDeleteConfirm(false);
+    setAccountToDelete(null);
+  };
   if (accounts.length === 0) {
     return (
       <div className="text-center py-6 px-4 bg-white rounded-lg mb-6">
@@ -60,17 +90,23 @@ export const AccountListSidebar: React.FC<AccountListSidebarProps> = ({
                     {account.balance.toFixed(2)}
                     {account.accountType === "credit_card" &&
                       account.balance > 0 && (
-                        <span className="text-xs text-black ml-2">
-                          (debt)
-                        </span>
+                        <span className="text-xs text-black ml-2">(debt)</span>
                       )}
                   </span>
-                  <button
-                    onClick={() => onEdit(account)}
-                    className="text-black hover:text-black text-sm font-medium transition-colors"
-                  >
-                    Edit
-                  </button>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => onEdit(account)}
+                      className="text-black hover:text-gray-600 text-sm font-medium transition-colors"
+                    >
+                      Edit
+                    </button>
+                    <button
+                      onClick={() => handleDeleteClick(account)}
+                      className="text-red-600 hover:text-red-800 text-sm font-medium transition-colors"
+                    >
+                      Delete
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
@@ -97,6 +133,17 @@ export const AccountListSidebar: React.FC<AccountListSidebarProps> = ({
           </div>
         ))}
       </div>
+
+      {/* Delete Confirmation Dialog */}
+      {showDeleteConfirm && accountToDelete && (
+        <ConfirmationDialog
+          isOpen={showDeleteConfirm}
+          title="Delete Account"
+          message={`Are you sure you want to delete "${accountToDelete.accountName}"? This action cannot be undone and will remove all associated transactions.`}
+          onConfirm={handleConfirmDelete}
+          onClose={handleCancelDelete}
+        />
+      )}
     </div>
   );
 };

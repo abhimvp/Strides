@@ -143,6 +143,9 @@ export const ExpenseSidebar = ({
                   <AccountListSidebar
                     accounts={accounts}
                     onEdit={onAccountEdit || (() => {})}
+                    onAccountDeleted={() => {
+                      onDataChange();
+                    }}
                   />
                   <div>
                     <h4 className="text-lg font-semibold mb-3 text-black">

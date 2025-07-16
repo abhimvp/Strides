@@ -33,9 +33,20 @@ export const createAccount = async (
  * @param accountId The ID of the account to update.
  * @param accountData The data to update.
  */
-export const updateAccount = async (accountId: string, accountData: UpdateAccountData): Promise<Account> => {
+export const updateAccount = async (
+  accountId: string,
+  accountData: UpdateAccountData
+): Promise<Account> => {
   const response = await api.put(`/accounts/${accountId}`, accountData);
   // Also apply the transformation to the updated account response
   const { _id, ...rest } = response.data;
   return { id: _id, ...rest };
+};
+
+/**
+ * Deletes an existing account.
+ * @param accountId The ID of the account to delete.
+ */
+export const deleteAccount = async (accountId: string): Promise<void> => {
+  await api.delete(`/accounts/${accountId}`);
 };

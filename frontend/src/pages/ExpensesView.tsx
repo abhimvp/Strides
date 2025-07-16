@@ -1,94 +1,170 @@
 import { useState, useEffect, useCallback } from "react";
-import { getAccounts } from "../services/accountService";
-import { getCategories } from "../services/categoryService";
-import AccountList from "../components/expenses/AccountList";
-import { AccountForm } from "../components/expenses/AccountForm";
+import { TransactionList } from "../components/expenses/TransactionList";
+import { BalanceSummary } from "../components/expenses/BalanceSummary";
+import { ConfirmationDialog } from "../components/ConfirmationDialog";
 import { TransactionForm } from "../components/expenses/TransactionForm";
 import { TransferForm } from "../components/expenses/TransferForm";
-import type { Account, ExpenseCategory, Transaction } from "../types";
+import { AccountForm } from "../components/expenses/AccountForm";
+import { AccountListSidebar } from "../components/expenses/AccountListSidebar";
 import { CategoryManager } from "../components/expenses/CategoryManager";
 import {
-  getTransactions,
-  deleteTransaction,
-} from "../services/transactionService";
-import { TransactionList } from "../components/expenses/TransactionList";
-import { Modal } from "../components/Modal";
-import { BalanceSummary } from "../components/expenses/BalanceSummary";
+  useOptimisticTransactions,
+  useOptimisticAccounts,
+  useOptimisticCategories,
+} from "../hooks/useOptimisticUpdates";
+import { useSelectiveDataFetching } from "../hooks/useSelectiveDataFetching";
+import { deleteTransaction } from "../services/transactionService";
+import type { Account, ExpenseCategory, Transaction } from "../types";
 
 export const ExpensesView = () => {
-  const [accounts, setAccounts] = useState<Account[]>([]);
-  const [categories, setCategories] = useState<ExpenseCategory[]>([]);
-  const [transactions, setTransactions] = useState<Transaction[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  // Data state
+  const [initialAccounts, setInitialAccounts] = useState<Account[]>([]);
+  const [initialCategories, setInitialCategories] = useState<ExpenseCategory[]>(
+    []
+  );
+  const [initialTransactions, setInitialTransactions] = useState<Transaction[]>(
+    []
+  );
+  const [isInitialLoading, setIsInitialLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Modal states
-  const [showAccountModal, setShowAccountModal] = useState(false);
-  const [showCategoryModal, setShowCategoryModal] = useState(false);
-  const [showTransactionForm, setShowTransactionForm] = useState(false);
-  const [showTransferForm, setShowTransferForm] = useState(false);
-  const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
+  // Optimistic update hooks
+  const { accounts, updateAccountsList, updateAccountBalance } =
+    useOptimisticAccounts(initialAccounts);
 
-  // Editing states
-  const [editingAccount, setEditingAccount] = useState<Account | null>(null);
+  const { categories, updateCategoriesList } =
+    useOptimisticCategories(initialCategories);
+
+  const {
+    transactions,
+    updateTransactionsList,
+    optimisticDeleteTransaction,
+    rollbackDeleteTransaction,
+  } = useOptimisticTransactions(initialTransactions);
+
+  // Selective data fetching
+  const {
+    isLoading: isRefetching,
+    refetchAccounts,
+    refetchCategories,
+    refetchTransactions,
+  } = useSelectiveDataFetching();
+
+  // UI state - Sidebar can be shown/hidden and resized
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [sidebarType, setSidebarType] = useState<
+    "transaction" | "transfer" | "account" | "category"
+  >("account");
+  const [sidebarWidth, setSidebarWidth] = useState(320); // Default width in pixels
+  const [isResizing, setIsResizing] = useState(false);
   const [editingTransaction, setEditingTransaction] =
     useState<Transaction | null>(null);
+  const [editingAccount, setEditingAccount] = useState<Account | null>(null);
+  const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
   const [transactionToDelete, setTransactionToDelete] =
     useState<Transaction | null>(null);
 
-  const fetchData = useCallback(async () => {
+  // Initial data fetch
+  const fetchInitialData = useCallback(async () => {
     try {
-      setIsLoading(true);
-      const [userAccounts, userCategories, userTransactions] =
-        await Promise.all([getAccounts(), getCategories(), getTransactions()]);
-      setAccounts(userAccounts);
-      setCategories(userCategories);
-      setTransactions(userTransactions);
+      setIsInitialLoading(true);
+      // Fetch all data in parallel
+      const [accountsData, categoriesData, transactionsData] =
+        await Promise.all([
+          import("../services/accountService").then((m) => m.getAccounts()),
+          import("../services/categoryService").then((m) => m.getCategories()),
+          import("../services/transactionService").then((m) =>
+            m.getTransactions()
+          ),
+        ]);
+
+      setInitialAccounts(accountsData);
+      setInitialCategories(categoriesData);
+      setInitialTransactions(transactionsData);
       setError(null);
     } catch (err) {
-      console.error("Failed to fetch data:", err);
+      console.error("Failed to fetch initial data:", err);
       setError("Could not load your data. Please try refreshing the page.");
     } finally {
-      setIsLoading(false);
+      setIsInitialLoading(false);
     }
   }, []);
 
   useEffect(() => {
-    fetchData();
-  }, [fetchData]);
+    fetchInitialData();
+  }, [fetchInitialData]);
 
-  // Account handlers
-  const handleEditAccount = (account: Account) => {
-    setEditingAccount(account);
-    setShowAccountModal(true);
+  // Update optimistic state when initial data changes
+  useEffect(() => {
+    updateAccountsList(initialAccounts);
+  }, [initialAccounts, updateAccountsList]);
+
+  useEffect(() => {
+    updateCategoriesList(initialCategories);
+  }, [initialCategories, updateCategoriesList]);
+
+  useEffect(() => {
+    updateTransactionsList(initialTransactions);
+  }, [initialTransactions, updateTransactionsList]);
+
+  // Sidebar handlers - Open/close and change type
+  const openSidebar = (
+    type: "transaction" | "transfer" | "account" | "category"
+  ) => {
+    if (type === "transfer" && accounts.length < 2) {
+      alert(
+        "You need at least 2 accounts to make transfers. Please add more accounts first."
+      );
+      return;
+    }
+    setSidebarType(type);
+    setSidebarOpen(true);
   };
 
-  const handleSaveAccount = () => {
+  const closeSidebar = () => {
+    setSidebarOpen(false);
+    setEditingTransaction(null);
     setEditingAccount(null);
-    setShowAccountModal(false);
-    fetchData();
   };
 
-  const handleCancelAccountEdit = () => {
-    setEditingAccount(null);
-    setShowAccountModal(false);
+  // Resize handlers
+  const handleMouseDown = (e: React.MouseEvent) => {
+    setIsResizing(true);
+    e.preventDefault();
   };
+
+  const handleMouseMove = useCallback(
+    (e: MouseEvent) => {
+      if (!isResizing) return;
+      const newWidth = window.innerWidth - e.clientX;
+      if (newWidth >= 280 && newWidth <= 600) {
+        // Min 280px, Max 600px
+        setSidebarWidth(newWidth);
+      }
+    },
+    [isResizing]
+  );
+
+  const handleMouseUp = useCallback(() => {
+    setIsResizing(false);
+  }, []);
+
+  // Add event listeners for resizing
+  useEffect(() => {
+    if (isResizing) {
+      document.addEventListener("mousemove", handleMouseMove);
+      document.addEventListener("mouseup", handleMouseUp);
+      return () => {
+        document.removeEventListener("mousemove", handleMouseMove);
+        document.removeEventListener("mouseup", handleMouseUp);
+      };
+    }
+  }, [isResizing, handleMouseMove, handleMouseUp]);
 
   // Transaction handlers
   const handleEditTransaction = (transaction: Transaction) => {
     setEditingTransaction(transaction);
-    setShowTransactionForm(true);
-  };
-
-  const handleSaveTransaction = () => {
-    setEditingTransaction(null);
-    setShowTransactionForm(false);
-    fetchData();
-  };
-
-  const handleCancelTransactionEdit = () => {
-    setEditingTransaction(null);
-    setShowTransactionForm(false);
+    openSidebar("transaction");
   };
 
   const handleDeleteTransaction = (transactionId: string) => {
@@ -102,14 +178,41 @@ export const ExpensesView = () => {
   const confirmDeleteTransaction = async () => {
     if (!transactionToDelete) return;
 
+    // Optimistically remove the transaction
+    optimisticDeleteTransaction(transactionToDelete.id);
+    setShowDeleteConfirmation(false);
+
     try {
       await deleteTransaction(transactionToDelete.id);
-      fetchData();
-    } catch {
-      alert("Failed to delete transaction.");
+      // Update account balance optimistically
+      const account = accounts.find(
+        (a) => a.id === transactionToDelete.accountId
+      );
+      if (account) {
+        let newBalance = account.balance;
+        const isCredit = account.accountType === "credit_card";
+
+        if (transactionToDelete.type === "expense") {
+          newBalance = isCredit
+            ? newBalance - transactionToDelete.amount
+            : newBalance + transactionToDelete.amount;
+        } else if (transactionToDelete.type === "income") {
+          newBalance = isCredit
+            ? newBalance + transactionToDelete.amount
+            : newBalance - transactionToDelete.amount;
+        }
+
+        updateAccountBalance(account.id, newBalance);
+      }
+
+      // Refetch transactions to ensure consistency
+      refetchTransactions(updateTransactionsList);
+    } catch (error) {
+      console.error("Failed to delete transaction:", error);
+      // Rollback the optimistic update
+      rollbackDeleteTransaction(transactionToDelete);
     } finally {
       setTransactionToDelete(null);
-      setShowDeleteConfirmation(false);
     }
   };
 
@@ -118,66 +221,37 @@ export const ExpensesView = () => {
     setShowDeleteConfirmation(false);
   };
 
-  // Transfer handlers
-  const handleSaveTransfer = () => {
-    setShowTransferForm(false);
-    fetchData();
+  // Account handlers
+  const handleEditAccount = (account: Account) => {
+    setEditingAccount(account);
+    openSidebar("account");
   };
 
-  const handleCancelTransfer = () => {
-    setShowTransferForm(false);
-  };
-
-  // Category handlers
-  const handleUpdateCategories = () => {
-    fetchData(); // This will refetch categories
-  };
-
-  // Helper function to get transaction details for confirmation
-  const getTransactionDetails = (transaction: Transaction) => {
-    const account = accounts.find((acc) => acc.id === transaction.accountId);
-    const category = categories.find(
-      (cat) => cat.id === transaction.categoryId
-    );
-    const subCategory = transaction.subCategoryId
-      ? category?.subcategories.find(
-          (sub) => sub.id === transaction.subCategoryId
-        )
-      : null;
-
-    const currencySymbol = account?.currency === "INR" ? "₹" : "$";
-    const categoryName = subCategory
-      ? `${category?.name}: ${subCategory.name}`
-      : category?.name || "Category";
-
-    if (transaction.type === "transfer") {
-      const toAccount = accounts.find(
-        (acc) => acc.id === transaction.toAccountId
-      );
-      return {
-        type: "Transfer",
-        amount: `${currencySymbol}${transaction.amount}`,
-        description: `Transfer to ${
-          toAccount?.accountName || "Unknown Account"
-        }`,
-        account: account?.accountName || "Unknown Account",
-        date: new Date(transaction.date).toLocaleDateString(),
-      };
+  // Data change handlers
+  const handleDataChange = () => {
+    // Refetch only the necessary data based on the sidebar type
+    switch (sidebarType) {
+      case "transaction":
+      case "transfer":
+        refetchTransactions(updateTransactionsList);
+        refetchAccounts(updateAccountsList);
+        break;
+      case "account":
+        refetchAccounts(updateAccountsList);
+        break;
+      case "category":
+        refetchCategories(updateCategoriesList);
+        break;
     }
-
-    return {
-      type: transaction.type === "expense" ? "Expense" : "Income",
-      amount: `${currencySymbol}${transaction.amount}`,
-      description: categoryName,
-      account: account?.accountName || "Unknown Account",
-      date: new Date(transaction.date).toLocaleDateString(),
-    };
   };
 
-  if (isLoading) {
+  if (isInitialLoading) {
     return (
       <div className="p-4 md:p-6 lg:p-8 h-full text-black bg-white flex items-center justify-center">
-        <p className="text-xl">Loading your expenses data...</p>
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-black mx-auto mb-4"></div>
+          <p className="text-xl">Loading your expenses data...</p>
+        </div>
       </div>
     );
   }
@@ -185,25 +259,33 @@ export const ExpensesView = () => {
   if (error) {
     return (
       <div className="p-4 md:p-6 lg:p-8 h-full text-black bg-white flex items-center justify-center">
-        <p className="text-red-500 text-xl">{error}</p>
+        <div className="text-center">
+          <p className="text-black text-xl mb-4">{error}</p>
+          <button
+            onClick={fetchInitialData}
+            className="bg-black hover:bg-black text-white font-medium py-2 px-4 rounded-lg transition duration-200"
+          >
+            Retry
+          </button>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="p-4 md:p-6 lg:p-8 h-full text-black bg-white relative">
+    <div className="p-4 md:p-6 lg:p-8 h-full text-black bg-white">
       {/* Header */}
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-3xl font-bold">Expense Tracker</h1>
         <div className="flex items-center gap-3">
           <button
-            onClick={() => setShowAccountModal(true)}
+            onClick={() => openSidebar("account")}
             className="bg-black hover:bg-gray-800 text-white font-medium py-2 px-4 rounded-lg transition duration-200 shadow-md"
           >
             Manage Accounts
           </button>
           <button
-            onClick={() => setShowCategoryModal(true)}
+            onClick={() => openSidebar("category")}
             className="bg-black hover:bg-gray-800 text-white font-medium py-2 px-4 rounded-lg transition duration-200 shadow-md"
           >
             Manage Categories
@@ -212,7 +294,7 @@ export const ExpensesView = () => {
           {/* Action Icons */}
           <div className="flex items-center gap-2 ml-2">
             <button
-              onClick={() => setShowTransferForm(true)}
+              onClick={() => openSidebar("transfer")}
               className="bg-black hover:bg-gray-800 text-white p-2.5 rounded-lg shadow-md transition duration-200 flex items-center justify-center"
               title="Transfer Money"
               disabled={accounts.length < 2}
@@ -232,7 +314,7 @@ export const ExpensesView = () => {
               </svg>
             </button>
             <button
-              onClick={() => setShowTransactionForm(true)}
+              onClick={() => openSidebar("transaction")}
               className="bg-black hover:bg-gray-800 text-white p-2.5 rounded-lg shadow-md transition duration-200 flex items-center justify-center text-lg font-bold"
               title="Add Expense/Income"
             >
@@ -242,189 +324,171 @@ export const ExpensesView = () => {
         </div>
       </div>
 
-      {/* Balance Summary */}
-      <BalanceSummary accounts={accounts} />
-
-      {/* Main Content - Transaction List */}
-      <div>
-        <TransactionList
-          transactions={transactions}
-          accounts={accounts}
-          categories={categories}
-          onEdit={handleEditTransaction}
-          onDelete={handleDeleteTransaction}
-        />
-      </div>
-
-      {/* Account Management Modal */}
-      <Modal
-        isOpen={showAccountModal}
-        onClose={() => setShowAccountModal(false)}
-        title="Manage Accounts"
-      >
-        <div className="text-black">
-          {editingAccount ? (
-            <AccountForm
-              accountToEdit={editingAccount}
-              onSave={handleSaveAccount}
-              onCancel={handleCancelAccountEdit}
-            />
-          ) : (
-            <div className="space-y-6">
-              <div>
-                <h4 className="text-lg font-semibold mb-3">
-                  Your Accounts Info
-                </h4>
-                <AccountList accounts={accounts} onEdit={handleEditAccount} />
-              </div>
-              <div>
-                <h4 className="text-lg font-semibold mb-3">Add New Account</h4>
-                <AccountForm onSave={handleSaveAccount} />
-              </div>
-            </div>
-          )}
+      {/* Loading indicator for refetching */}
+      {isRefetching && (
+        <div className="fixed top-4 right-4 bg-black text-white px-4 py-2 rounded-lg shadow-lg z-30">
+          <div className="flex items-center gap-2">
+            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+            <span>Updating...</span>
+          </div>
         </div>
-      </Modal>
+      )}
 
-      {/* Category Management Modal */}
-      <Modal
-        isOpen={showCategoryModal}
-        onClose={() => setShowCategoryModal(false)}
-        title="Manage Categories"
-      >
-        <div className="text-black">
-          <CategoryManager
-            categories={categories}
-            onUpdate={handleUpdateCategories}
-          />
-        </div>
-      </Modal>
+      {/* Main Content Area with Flex Layout */}
+      <div className="flex gap-8">
+        {/* Main Content */}
+        <div className="flex-1">
+          {/* Balance Summary */}
+          <BalanceSummary accounts={accounts} />
 
-      {/* Transaction Form Modal */}
-      <Modal
-        isOpen={showTransactionForm}
-        onClose={() => setShowTransactionForm(false)}
-        title={editingTransaction ? "Edit Transaction" : "Add Expense/Income"}
-      >
-        <div className="text-black">
-          <TransactionForm
-            accounts={accounts}
-            categories={categories}
-            onSave={handleSaveTransaction}
-            transactionToEdit={editingTransaction}
-            onCancelEdit={handleCancelTransactionEdit}
-          />
-        </div>
-      </Modal>
-
-      {/* Transfer Form Modal */}
-      <Modal
-        isOpen={showTransferForm}
-        onClose={() => setShowTransferForm(false)}
-        title="Transfer Money"
-      >
-        <div className="text-black">
-          {accounts.length >= 2 ? (
-            <TransferForm
+          {/* Transaction List */}
+          <div>
+            <TransactionList
+              transactions={transactions}
               accounts={accounts}
-              onSave={handleSaveTransfer}
-              onCancel={handleCancelTransfer}
+              categories={categories}
+              onEdit={handleEditTransaction}
+              onDelete={handleDeleteTransaction}
             />
-          ) : (
-            <div className="text-center py-4">
-              <p className="text-yellow-600">
-                You need at least 2 accounts to make transfers. Please add more
-                accounts first.
-              </p>
-            </div>
-          )}
+          </div>
         </div>
-      </Modal>
 
-      {/* Delete Confirmation Dialog */}
-      <Modal
-        isOpen={showDeleteConfirmation}
-        onClose={cancelDeleteTransaction}
-        title="Delete Transaction"
-      >
-        {transactionToDelete && (
-          <div className="text-black">
-            <p className="mb-4">
-              Are you sure you want to delete this transaction? This action
-              cannot be undone.
-            </p>
+        {/* Sidebar Column - Show when open */}
+        {sidebarOpen && (
+          <div
+            className="bg-white rounded-2xl shadow-lg border border-gray-100 relative"
+            style={{ width: `${sidebarWidth}px` }}
+          >
+            {/* Resize Handle */}
+            <div
+              className="absolute left-0 top-0 w-1 h-full cursor-col-resize bg-gray-200 hover:bg-gray-300 transition-colors"
+              onMouseDown={handleMouseDown}
+            />
 
-            {(() => {
-              const details = getTransactionDetails(transactionToDelete);
-              return (
-                <div className="bg-gray-100 rounded-lg p-4 mb-6">
-                  <div className="grid grid-cols-2 gap-3 text-sm">
-                    <div>
-                      <span className="font-medium text-gray-600">Type:</span>
-                      <span
-                        className={`ml-2 px-2 py-1 rounded text-xs font-medium ${
-                          details.type === "Expense"
-                            ? "bg-gray-100 text-gray-800"
-                            : details.type === "Income"
-                            ? "bg-gray-200 text-gray-900"
-                            : "bg-gray-300 text-black"
-                        }`}
+            <div className="p-6">
+              {/* Header */}
+              <div className="flex justify-between items-center mb-6">
+                <h2 className="text-xl font-semibold text-black">
+                  {sidebarType === "transaction" &&
+                    (editingTransaction
+                      ? "Edit Transaction"
+                      : "Add Expense/Income")}
+                  {sidebarType === "transfer" && "Transfer Money"}
+                  {sidebarType === "account" &&
+                    (editingAccount ? "Edit Account" : "Manage Accounts")}
+                  {sidebarType === "category" && "Manage Categories"}
+                </h2>
+                <button
+                  onClick={closeSidebar}
+                  className="text-gray-500 hover:text-gray-700 transition-colors text-xl"
+                >
+                  ×
+                </button>
+              </div>
+
+              {/* Content */}
+              <div className="overflow-y-auto max-h-[calc(100vh-200px)]">
+                {sidebarType === "transaction" && (
+                  <TransactionForm
+                    accounts={accounts}
+                    categories={categories}
+                    onSave={() => {
+                      handleDataChange();
+                      closeSidebar();
+                    }}
+                    transactionToEdit={editingTransaction}
+                    onCancelEdit={() => setEditingTransaction(null)}
+                  />
+                )}
+
+                {sidebarType === "transfer" &&
+                  (accounts.length >= 2 ? (
+                    <TransferForm
+                      accounts={accounts}
+                      onSave={() => {
+                        handleDataChange();
+                        closeSidebar();
+                      }}
+                      onCancel={closeSidebar}
+                    />
+                  ) : (
+                    <div className="text-center py-8">
+                      <p className="text-gray-600 mb-4">
+                        You need at least 2 accounts to make transfers.
+                      </p>
+                      <button
+                        onClick={() => {
+                          closeSidebar();
+                          openSidebar("account");
+                        }}
+                        className="bg-black hover:bg-gray-800 text-white py-2 px-4 rounded-lg transition-colors"
                       >
-                        {details.type}
-                      </span>
+                        Add More Accounts
+                      </button>
                     </div>
-                    <div>
-                      <span className="font-medium text-gray-600">Amount:</span>
-                      <span className="ml-2 font-bold">{details.amount}</span>
-                    </div>
-                    <div>
-                      <span className="font-medium text-gray-600">
-                        Account:
-                      </span>
-                      <span className="ml-2">{details.account}</span>
-                    </div>
-                    <div>
-                      <span className="font-medium text-gray-600">Date:</span>
-                      <span className="ml-2">{details.date}</span>
-                    </div>
-                    <div className="col-span-2">
-                      <span className="font-medium text-gray-600">
-                        Description:
-                      </span>
-                      <span className="ml-2">{details.description}</span>
-                    </div>
-                    {transactionToDelete.notes && (
-                      <div className="col-span-2">
-                        <span className="font-medium text-gray-600">
-                          Notes:
-                        </span>
-                        <span className="ml-2 italic">
-                          {transactionToDelete.notes}
-                        </span>
-                      </div>
+                  ))}
+
+                {sidebarType === "account" && (
+                  <div className="space-y-6">
+                    {editingAccount ? (
+                      <AccountForm
+                        accountToEdit={editingAccount}
+                        onSave={() => {
+                          handleDataChange();
+                          closeSidebar();
+                        }}
+                        onCancel={() => setEditingAccount(null)}
+                      />
+                    ) : (
+                      <>
+                        <AccountListSidebar
+                          accounts={accounts}
+                          onEdit={handleEditAccount}
+                          onAccountDeleted={() => {
+                            handleDataChange();
+                          }}
+                        />
+                        <div>
+                          <h4 className="text-lg font-semibold mb-3 text-black">
+                            Add New Account
+                          </h4>
+                          <AccountForm
+                            onSave={() => {
+                              handleDataChange();
+                              closeSidebar();
+                            }}
+                            onCancel={() => setEditingAccount(null)}
+                          />
+                        </div>
+                      </>
                     )}
                   </div>
-                </div>
-              );
-            })()}
+                )}
 
-            <div className="flex justify-end gap-4">
-              <button
-                onClick={cancelDeleteTransaction}
-                className="px-4 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300 transition-colors"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={confirmDeleteTransaction}
-                className="px-4 py-2 bg-black text-white rounded-md hover:bg-gray-800 transition-colors"
-              >
-                Delete Transaction
-              </button>
+                {sidebarType === "category" && (
+                  <CategoryManager
+                    categories={categories}
+                    onUpdate={() => {
+                      handleDataChange();
+                    }}
+                  />
+                )}
+              </div>
             </div>
           </div>
         )}
-      </Modal>
+      </div>
+
+      {/* Delete Confirmation Dialog */}
+      {showDeleteConfirmation && transactionToDelete && (
+        <ConfirmationDialog
+          isOpen={showDeleteConfirmation}
+          title="Delete Transaction"
+          message={`Are you sure you want to delete this ${transactionToDelete.type}? This action cannot be undone.`}
+          onConfirm={confirmDeleteTransaction}
+          onClose={cancelDeleteTransaction}
+        />
+      )}
     </div>
   );
 };

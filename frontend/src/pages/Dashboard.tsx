@@ -3,7 +3,7 @@ import { useState } from "react";
 import { Header } from "../components/Header";
 import { useAuth } from "../hooks/useAuth";
 import { TaskView } from "./TaskView";
-import { ExpensesViewNew } from "./ExpensesViewNew";
+import { ExpensesView } from "./ExpensesView";
 import { TodoView } from "../components/todos/TodoView"; // 1. Import the new view
 import { invokeAgent } from "../services/agentService";
 import {
@@ -233,13 +233,13 @@ export const Dashboard = () => {
         {/* Content based on current view */}
         <div>
           {currentView === "tasks" && <TaskView />}
-          {currentView === "expenses" && <ExpensesViewNew />}
+          {currentView === "expenses" && <ExpensesView />}
           {currentView === "todos" && <TodoView />}
         </div>
       </div>
 
       {/* Side Column - Will be managed by individual components */}
-      {currentView !== "tasks" && (
+      {currentView !== "tasks" && currentView !== "expenses" && (
         <div className="w-80 space-y-6">
           {/* AI Agent Section */}
           <div className="bg-white rounded-2xl shadow-lg p-6 border border-gray-100">

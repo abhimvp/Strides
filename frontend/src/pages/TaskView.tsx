@@ -12,10 +12,9 @@ import type {
   DragOverEvent,
   DragStartEvent,
 } from "@dnd-kit/core";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import toast from "react-hot-toast";
 import { TaskList } from "../components/TaskList";
-import { DailyLogModal } from "../components/DailyLogModal";
 // import { Header } from "../components/Header";
 import { Modal } from "../components/Modal";
 import { AddTaskForm } from "../components/AddTaskForm";
@@ -24,24 +23,15 @@ import { ConfirmationDialog } from "../components/ConfirmationDialog";
 import { EditForm } from "../components/EditForm";
 import { initialTasks } from "../data/mockTasks";
 import type { UserTasks, Category, Task, TaskHistory } from "../types";
-import { getWeekDays } from "../utils/date";
 import {
   getTasks,
   createInitialTasks,
   updateTasks,
+  deleteTaskLog,
 } from "../services/taskService";
-import { Plus, Calendar, SquaresFour } from "phosphor-react";
-import { MonthlyView } from "./MonthlyView";
+import { Plus, CaretLeft, CaretRight, Trash } from "phosphor-react";
 import { Button } from "../components/ui/Button";
 import { CategorySkeleton } from "../components/ui/Skeleton";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-  DialogDescription,
-} from "../components/ui/Dialog";
 
 type DeletionInfo = {
   type: "task" | "category";
@@ -60,24 +50,239 @@ type EditingInfo = {
 // New type to reliably track the dragged item
 type ActiveDragItem = { id: number; categoryName: string } | null;
 
-type View = "weekly" | "monthly"; // Type for our view state
-
 const DEFAULT_CATEGORY = "Not Yet Categorized";
 
+// Helper function to get week data for a specific date
+const getWeekDaysForDate = (date: Date) => {
+  const days = [];
+  const startOfWeek = new Date(date);
+  const dayOfWeek = startOfWeek.getDay();
+  startOfWeek.setDate(startOfWeek.getDate() - dayOfWeek);
+
+  for (let i = 0; i < 7; i++) {
+    const day = new Date(startOfWeek);
+    day.setDate(startOfWeek.getDate() + i);
+    days.push(day);
+  }
+  return days;
+};
+
 export const TaskView = () => {
-  const [loggingTask, setLoggingTask] = useState<Task | null>(null);
   const [userTasks, setUserTasks] = useState<UserTasks | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isNewUser, setIsNewUser] = useState(false);
-  const [isCategoryModalOpen, setIsCategoryModalOpen] = useState(false);
-  const [isGlobalTaskModalOpen, setIsGlobalTaskModalOpen] = useState(false);
   const [deletionInfo, setDeletionInfo] = useState<DeletionInfo>(null);
   const [editingInfo, setEditingInfo] = useState<EditingInfo>(null);
   const [openCategory, setOpenCategory] = useState<string | null>(null);
   const [activeDragItem, setActiveDragItem] = useState<ActiveDragItem>(null);
-  const [currentView, setCurrentView] = useState<View>("weekly"); // New state for tabs
+  const [currentWeekStart, setCurrentWeekStart] = useState(new Date());
 
-  const weekData = getWeekDays();
+  // New state for sidebar editing
+  const [sidebarEditingTask, setSidebarEditingTask] = useState<Task | null>(
+    null
+  );
+  const [sidebarMode, setSidebarMode] = useState<
+    "calendar" | "edit-notes" | "edit-logs" | "add-task" | "add-category"
+  >("calendar");
+  const [selectedCategoryForAddTask, setSelectedCategoryForAddTask] =
+    useState<string>("");
+  const [tempNotes, setTempNotes] = useState<string>("");
+  const [tempLogNote, setTempLogNote] = useState<string>("");
+  const [logsToShow, setLogsToShow] = useState<number>(7);
+  const [selectedLogDate, setSelectedLogDate] = useState<string>("");
+  const [editingLogId, setEditingLogId] = useState<string | null>(null);
+
+  // Generate week data based on current week
+  const weekData = getWeekDaysForDate(currentWeekStart);
+
+  // Helper functions for week navigation
+  const goToPreviousWeek = () => {
+    const newDate = new Date(currentWeekStart);
+    newDate.setDate(newDate.getDate() - 7);
+    setCurrentWeekStart(newDate);
+  };
+
+  const goToNextWeek = () => {
+    const newDate = new Date(currentWeekStart);
+    newDate.setDate(newDate.getDate() + 7);
+    setCurrentWeekStart(newDate);
+  };
+
+  const goToCurrentWeek = () => {
+    const today = new Date();
+    const startOfWeek = new Date(today);
+    const dayOfWeek = startOfWeek.getDay();
+    startOfWeek.setDate(startOfWeek.getDate() - dayOfWeek);
+    setCurrentWeekStart(startOfWeek);
+  };
+
+  const formatWeekRange = (weekStart: Date[]) => {
+    if (weekStart.length === 0) return "";
+    const start = weekStart[0];
+    const end = weekStart[6];
+
+    if (start.getMonth() === end.getMonth()) {
+      return `${start.getDate()}-${end.getDate()} ${start.toLocaleDateString(
+        "en-US",
+        { month: "long", year: "numeric" }
+      )}`;
+    } else {
+      return `${start.toLocaleDateString("en-US", {
+        month: "short",
+        day: "numeric",
+      })} - ${end.toLocaleDateString("en-US", {
+        month: "short",
+        day: "numeric",
+        year: "numeric",
+      })}`;
+    }
+  };
+
+  // New handlers for sidebar editing
+  const handleSidebarEditNotes = (task: Task) => {
+    setSidebarEditingTask(task);
+    setSidebarMode("edit-notes");
+    setTempNotes(task.notes || "");
+  };
+
+  const handleSidebarEditLogs = (task: Task) => {
+    setSidebarEditingTask(task);
+    setSidebarMode("edit-logs");
+    setTempLogNote("");
+    setSelectedLogDate(new Date().toISOString().split("T")[0]);
+    setLogsToShow(7); // Reset pagination when opening a new task
+    setEditingLogId(null); // Reset editing state
+  };
+
+  const handleSidebarAddTask = (categoryName?: string) => {
+    setSidebarEditingTask(null);
+    setSelectedCategoryForAddTask(categoryName || DEFAULT_CATEGORY);
+    setSidebarMode("add-task");
+  };
+
+  const handleSidebarAddCategory = () => {
+    setSidebarEditingTask(null);
+    setSidebarMode("add-category");
+  };
+
+  const handleSaveNotes = () => {
+    if (!sidebarEditingTask || !userTasks) return;
+
+    const newCategories = JSON.parse(JSON.stringify(userTasks.categories));
+    const category = newCategories.find((c: Category) =>
+      c.tasks.some((t: Task) => t.id === sidebarEditingTask.id)
+    );
+
+    if (category) {
+      const task = category.tasks.find(
+        (t: Task) => t.id === sidebarEditingTask.id
+      );
+      if (task) {
+        task.notes = tempNotes;
+
+        // Update the sidebar editing task with the new notes
+        setSidebarEditingTask(task);
+
+        updateAndSaveChanges(newCategories);
+        toast.success("Notes updated successfully!");
+      }
+    }
+  };
+
+  const handleSaveTaskLog = (itemId: number, note: string) => {
+    if (!userTasks) return;
+
+    const newCategories = JSON.parse(JSON.stringify(userTasks.categories));
+    const category = newCategories.find((c: Category) =>
+      c.tasks.some((t: Task) => t.id === itemId)
+    );
+
+    if (category) {
+      const task = category.tasks.find((t: Task) => t.id === itemId);
+      if (task) {
+        if (!task.daily_logs) task.daily_logs = [];
+
+        if (editingLogId) {
+          // Editing existing log
+          const existingLogIndex = task.daily_logs.findIndex(
+            (log: { date: string; note: string; created_at?: string }) => {
+              const logId = log.created_at || log.date;
+              return logId === editingLogId;
+            }
+          );
+
+          if (existingLogIndex >= 0) {
+            task.daily_logs[existingLogIndex].note = note;
+            task.daily_logs[existingLogIndex].date = selectedLogDate;
+          }
+        } else {
+          // Creating new log
+          task.daily_logs.push({
+            date: selectedLogDate,
+            note: note,
+            created_at: new Date().toISOString(),
+          });
+        }
+
+        // Update the sidebar editing task with the new log data
+        setSidebarEditingTask(task);
+
+        updateAndSaveChanges(newCategories);
+        toast.success(
+          editingLogId ? "Log updated successfully!" : "Log saved successfully!"
+        );
+        setTempLogNote("");
+        setEditingLogId(null);
+      }
+    }
+  };
+
+  const handleDeleteTaskLog = async (itemId: number, logId: string) => {
+    if (!userTasks) return;
+
+    try {
+      // Call the API to delete the log
+      await deleteTaskLog(itemId, logId);
+
+      // Update local state to reflect the change immediately
+      const newCategories = JSON.parse(JSON.stringify(userTasks.categories));
+      const category = newCategories.find((c: Category) =>
+        c.tasks.some((t: Task) => t.id === itemId)
+      );
+
+      if (category) {
+        const task = category.tasks.find((t: Task) => t.id === itemId);
+        if (task && task.daily_logs) {
+          // Remove the log with the matching unique identifier (created_at or date)
+          task.daily_logs = task.daily_logs.filter(
+            (log: { date: string; note: string; created_at?: string }) => {
+              const currentLogId = log.created_at || log.date;
+              return currentLogId !== logId;
+            }
+          );
+
+          // Update the sidebar editing task with the updated log data
+          setSidebarEditingTask(task);
+
+          // Update local state
+          setUserTasks({ ...userTasks, categories: newCategories });
+          toast.success("Log deleted successfully!");
+        }
+      }
+    } catch (error) {
+      console.error("Error deleting log:", error);
+      toast.error("Failed to delete log. Please try again.");
+    }
+  };
+
+  const handleCloseSidebar = () => {
+    setSidebarEditingTask(null);
+    setSidebarMode("calendar");
+    setTempNotes("");
+    setTempLogNote("");
+    setLogsToShow(7); // Reset pagination when closing sidebar
+    setEditingLogId(null); // Reset editing state
+  };
 
   // Update useEffect to open the first category on load
   useEffect(() => {
@@ -233,24 +438,6 @@ export const TaskView = () => {
     setOpenCategory((prevOpenCategory) =>
       prevOpenCategory === categoryName ? null : categoryName
     );
-  };
-
-  const handleEditTask = (
-    categoryName: string,
-    taskId: number,
-    currentText: string
-  ) => {
-    // Find the full task object to get its current notes
-    const task = userTasks?.categories
-      .find((c) => c.name === categoryName)
-      ?.tasks.find((t) => t.id === taskId);
-    setEditingInfo({
-      type: "task",
-      categoryName,
-      taskId,
-      currentText,
-      currentNotes: task?.notes || "", // Pass current notes to the form
-    });
   };
 
   const handleEditCategory = (categoryName: string) => {
@@ -411,39 +598,6 @@ export const TaskView = () => {
     toast.success(`'${deletionInfo?.type}' deleted successfully.`);
   };
 
-  // Replace your entire existing handleSaveLog function with this one.
-  const handleSaveLog = (taskId: number, logNote: string) => {
-    if (!userTasks || logNote.trim() === "") {
-      return; // Do nothing if the note is empty
-    }
-
-    // Use the full ISO string to include the precise time in UTC.
-    const newTimestamp = new Date().toISOString();
-
-    const newCategories = JSON.parse(JSON.stringify(userTasks.categories));
-    let updatedTaskForModal: Task | null = null;
-
-    for (const category of newCategories) {
-      const task = category.tasks.find((t: Task) => t.id === taskId);
-      if (task) {
-        if (!task.daily_logs) {
-          task.daily_logs = [];
-        }
-        // Always push a new log entry with the precise timestamp.
-        task.daily_logs.push({ date: newTimestamp, note: logNote });
-
-        updatedTaskForModal = task;
-        break;
-      }
-    }
-
-    if (updatedTaskForModal) {
-      updateAndSaveChanges(newCategories);
-      setLoggingTask(updatedTaskForModal);
-      toast.success("Log saved!");
-    }
-  };
-
   if (isLoading) {
     return (
       <div className="bg-white min-h-screen font-sans text-black">
@@ -475,7 +629,7 @@ export const TaskView = () => {
         animate={{ opacity: 1 }}
         className="bg-white min-h-screen font-sans text-black"
       >
-        <div className="container mx-auto p-4 sm:p-6 md:p-8 max-w-4xl">
+        <div className="container mx-auto p-4 sm:p-6 md:p-8 max-w-7xl">
           <motion.div
             initial={{ y: -20, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
@@ -483,61 +637,15 @@ export const TaskView = () => {
           >
             {/* <Header /> */}
             <div className="flex items-center gap-4 mt-4">
-              {/* Enhanced Add Task Button */}
-              <Dialog open={isGlobalTaskModalOpen} onOpenChange={setIsGlobalTaskModalOpen}>
-                <DialogTrigger asChild>
-                  <Button>
-                    <Plus size={16} className="mr-2" />
-                    Add Task
-                  </Button>
-                </DialogTrigger>
-                <DialogContent>
-                  <DialogHeader>
-                    <DialogTitle>Add a New Task</DialogTitle>
-                    <DialogDescription>
-                      Create a new task and assign it to a category to track your progress.
-                    </DialogDescription>
-                  </DialogHeader>
-                  <AddTaskForm
-                    categories={[
-                      DEFAULT_CATEGORY,
-                      ...(userTasks?.categories.map((c) => c.name) || []),
-                    ].filter((cat, index, arr) => arr.indexOf(cat) === index)} // Remove duplicates
-                    defaultCategory={DEFAULT_CATEGORY}
-                    onAddTask={(taskData, categoryName) => {
-                      handleAddTask(categoryName, taskData);
-                      toast.success(`Task added to ${categoryName}!`);
-                      setIsGlobalTaskModalOpen(false);
-                    }}
-                    onClose={() => setIsGlobalTaskModalOpen(false)}
-                  />
-                </DialogContent>
-              </Dialog>
-
-              <Dialog open={isCategoryModalOpen} onOpenChange={setIsCategoryModalOpen}>
-                <DialogTrigger asChild>
-                  <Button variant="outline">
-                    <Plus size={16} className="mr-2" />
-                    Create Category
-                  </Button>
-                </DialogTrigger>
-                <DialogContent>
-                  <DialogHeader>
-                    <DialogTitle>Create New Category</DialogTitle>
-                    <DialogDescription>
-                      Add a new category to organize your tasks and goals.
-                    </DialogDescription>
-                  </DialogHeader>
-                  <AddCategoryForm
-                    onAddCategory={(categoryName) => {
-                      handleAddCategory(categoryName);
-                      setIsCategoryModalOpen(false);
-                    }}
-                    onClose={() => setIsCategoryModalOpen(false)}
-                  />
-                </DialogContent>
-              </Dialog>
-
+              {/* Enhanced Add Task Button */}{" "}
+              <Button onClick={() => handleSidebarAddTask()}>
+                <Plus size={16} className="mr-2" />
+                Add Task
+              </Button>
+              <Button variant="outline" onClick={handleSidebarAddCategory}>
+                <Plus size={16} className="mr-2" />
+                Create Category
+              </Button>
               {isNewUser && (
                 <Button
                   variant="success"
@@ -549,44 +657,52 @@ export const TaskView = () => {
               )}
             </div>
           </motion.div>
-
-          {/* Enhanced View Switcher Tabs */}
-          <motion.div
-            initial={{ y: 10, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            transition={{ delay: 0.1 }}
-            className="mb-6 border-b-2 border-black"
-          >
-            <nav className="-mb-0.5 flex space-x-6">
-              {[
-                { key: "weekly", label: "Weekly View", icon: Calendar },
-                { key: "monthly", label: "Monthly View", icon: SquaresFour },
-              ].map(({ key, label, icon: Icon }) => (
-                <motion.button
-                  key={key}
-                  whileHover={{ y: -2 }}
-                  whileTap={{ y: 0 }}
-                  onClick={() => setCurrentView(key as "weekly" | "monthly")}
-                  className={`py-2 px-4 border-b-4 font-medium text-lg transition-all rounded-t-lg flex items-center gap-2 ${
-                    currentView === key
-                      ? "border-black text-black bg-white"
-                      : "border-transparent text-black hover:text-black hover:bg-white"
-                  }`}
-                >
-                  <Icon size={20} />
-                  {label}
-                </motion.button>
-              ))}
-            </nav>
-          </motion.div>
-
-          <AnimatePresence mode="wait">
-            {currentView === "weekly" ? (
+          {/* Main Content Area with Flex Layout */}
+          <div className="flex gap-8">
+            {/* Main Tasks Content */}
+            <div className="flex-1">
+              {/* Week Navigation Header */}
               <motion.div
-                key="weekly"
+                initial={{ y: 10, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                transition={{ delay: 0.1 }}
+                className="mb-6 bg-white rounded-2xl shadow-lg p-6 border border-gray-100"
+              >
+                <div className="flex items-center justify-between">
+                  <button
+                    onClick={goToPreviousWeek}
+                    className="p-2 rounded-full hover:bg-gray-100 transition-colors"
+                    title="Previous Week"
+                  >
+                    <CaretLeft size={20} className="text-gray-600" />
+                  </button>
+
+                  <div className="text-center">
+                    <h2 className="text-xl font-bold text-gray-800">
+                      {formatWeekRange(weekData)}
+                    </h2>
+                    <button
+                      onClick={goToCurrentWeek}
+                      className="text-sm text-black hover:text-gray-600 transition-colors mt-1"
+                    >
+                      Go to Current Week
+                    </button>
+                  </div>
+
+                  <button
+                    onClick={goToNextWeek}
+                    className="p-2 rounded-full hover:bg-gray-100 transition-colors"
+                    title="Next Week"
+                  >
+                    <CaretRight size={20} className="text-gray-600" />
+                  </button>
+                </div>
+              </motion.div>
+
+              {/* Tasks Content */}
+              <motion.div
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: 20 }}
                 transition={{ duration: 0.2 }}
               >
                 {isNewUser && (
@@ -596,9 +712,10 @@ export const TaskView = () => {
                   >
                     <p className="font-bold">Welcome to Strides!</p>
                     <p>
-                      We've started you off with some example tasks. Feel free
-                      to edit, add, or delete them, then click "Save My Strides"
-                      to begin!
+                      Every great journey begins with a single step. We've
+                      prepared some examples to get you started. Customize them
+                      to match your goals, then click "Save My Strides" to begin
+                      building the life you envision.
                     </p>
                   </div>
                 )}
@@ -608,59 +725,363 @@ export const TaskView = () => {
                     isNewUser={isNewUser}
                     category={category.name}
                     tasks={category.tasks}
-                    weekDays={weekData}
-                    weekDates={weekData}
+                    weekDays={weekData.map((date) => ({
+                      day: date.toLocaleDateString("en-US", {
+                        weekday: "short",
+                      }),
+                      date: date.getDate(),
+                      isToday:
+                        date.toDateString() === new Date().toDateString(),
+                    }))}
+                    weekDates={weekData.map((date) => ({
+                      fullDate: date.toISOString().split("T")[0],
+                      isPast: date < new Date(new Date().setHours(0, 0, 0, 0)),
+                    }))}
                     isOpen={openCategory === category.name}
                     onHeaderClick={() =>
                       handleCategoryHeaderClick(category.name)
                     }
                     onToggleTask={handleToggleTask}
-                    onAddTask={handleAddTask}
+                    onOpenAddTaskSidebar={handleSidebarAddTask}
                     onEditCategory={handleEditCategory}
-                    onEditTask={handleEditTask}
+                    onEditTask={(categoryName: string, taskId: number) => {
+                      const task = userTasks?.categories
+                        .find((c) => c.name === categoryName)
+                        ?.tasks.find((t) => t.id === taskId);
+                      if (task) handleSidebarEditNotes(task);
+                    }}
                     onDeleteTask={handleDeleteTask}
                     onDeleteCategory={handleDeleteCategory}
-                    onOpenLog={(task) => setLoggingTask(task)}
+                    onOpenLog={(task) => handleSidebarEditLogs(task)}
                   />
                 ))}
+              </motion.div>
+            </div>
 
-                {/* <div>
-                <AIAgent />
-              </div> */}
-              </motion.div>
-            ) : (
-              <motion.div
-                key="monthly"
-                initial={{ opacity: 0, x: 20 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -20 }}
-                transition={{ duration: 0.2 }}
-              >
-                <MonthlyView userTasks={userTasks} />
-              </motion.div>
+            {/* Sidebar Column - Show when any mode is active */}
+            {sidebarMode && sidebarMode !== "calendar" && (
+              <div className="w-80">
+                <div className="bg-white rounded-2xl shadow-lg p-6 border border-gray-100">
+                  {sidebarMode === "edit-notes" && sidebarEditingTask && (
+                    <>
+                      <div className="flex items-center justify-between mb-4">
+                        <h3 className="text-lg font-semibold text-gray-800">
+                          Edit Notes
+                        </h3>
+                        <button
+                          onClick={handleCloseSidebar}
+                          className="text-gray-500 hover:text-gray-700 text-xl"
+                        >
+                          ×
+                        </button>
+                      </div>
+                      <div className="space-y-4">
+                        <div>
+                          <p className="text-sm font-medium text-gray-700 mb-2">
+                            Task: {sidebarEditingTask.text}
+                          </p>
+                          <textarea
+                            value={tempNotes}
+                            onChange={(e) => setTempNotes(e.target.value)}
+                            placeholder="Add notes about this task..."
+                            className="w-full h-32 p-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-500 resize-none"
+                          />
+                        </div>
+                        <div className="flex gap-2">
+                          <button
+                            onClick={handleSaveNotes}
+                            className="flex-1 bg-black text-white py-2 px-4 rounded-lg hover:bg-gray-800 transition-colors"
+                          >
+                            Save Notes
+                          </button>
+                          <button
+                            onClick={handleCloseSidebar}
+                            className="flex-1 bg-gray-200 text-gray-700 py-2 px-4 rounded-lg hover:bg-gray-300 transition-colors"
+                          >
+                            Cancel
+                          </button>
+                        </div>
+                      </div>
+                    </>
+                  )}
+
+                  {sidebarMode === "edit-logs" && sidebarEditingTask && (
+                    <>
+                      <div className="flex items-center justify-between mb-4">
+                        <h3 className="text-lg font-semibold text-gray-800">
+                          Add Log
+                        </h3>
+                        <button
+                          onClick={handleCloseSidebar}
+                          className="text-gray-500 hover:text-gray-700 text-xl"
+                        >
+                          ×
+                        </button>
+                      </div>
+                      <div className="space-y-4">
+                        <div>
+                          <p className="text-sm font-medium text-gray-700 mb-3">
+                            Task: {sidebarEditingTask.text}
+                          </p>
+                          <input
+                            type="date"
+                            value={selectedLogDate}
+                            onChange={(e) => setSelectedLogDate(e.target.value)}
+                            className="w-full p-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-500 mb-3"
+                          />
+                          <textarea
+                            value={tempLogNote}
+                            onChange={(e) => setTempLogNote(e.target.value)}
+                            placeholder="What did you accomplish today?"
+                            className="w-full h-24 p-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-500 resize-none"
+                          />
+                        </div>
+                        <div className="flex gap-2">
+                          <button
+                            onClick={() =>
+                              handleSaveTaskLog(
+                                sidebarEditingTask.id,
+                                tempLogNote
+                              )
+                            }
+                            className="flex-1 bg-green-500 text-white py-2 px-4 rounded-lg hover:bg-green-600 transition-colors"
+                          >
+                            {editingLogId ? "Update Log" : "Save Log"}
+                          </button>
+                          {editingLogId && (
+                            <button
+                              onClick={() => {
+                                setEditingLogId(null);
+                                setTempLogNote("");
+                                setSelectedLogDate(
+                                  new Date().toISOString().split("T")[0]
+                                );
+                              }}
+                              className="flex-1 bg-yellow-500 text-white py-2 px-4 rounded-lg hover:bg-yellow-600 transition-colors"
+                            >
+                              Cancel Edit
+                            </button>
+                          )}
+                          <button
+                            onClick={handleCloseSidebar}
+                            className="flex-1 bg-gray-200 text-gray-700 py-2 px-4 rounded-lg hover:bg-gray-300 transition-colors"
+                          >
+                            Cancel
+                          </button>
+                        </div>
+
+                        {/* Previous Logs Section */}
+                        {sidebarEditingTask.daily_logs &&
+                          sidebarEditingTask.daily_logs.length > 0 && (
+                            <div className="mt-6 pt-4 border-t border-gray-200">
+                              <h4 className="text-md font-semibold text-gray-800 mb-3">
+                                Previous Logs
+                              </h4>
+                              <div className="space-y-2 max-h-64 overflow-y-auto">
+                                {sidebarEditingTask.daily_logs
+                                  .sort(
+                                    (
+                                      a: {
+                                        date: string;
+                                        note: string;
+                                        created_at?: string;
+                                      },
+                                      b: {
+                                        date: string;
+                                        note: string;
+                                        created_at?: string;
+                                      }
+                                    ) => {
+                                      // Sort by created_at if available, otherwise by date
+                                      const dateA = a.created_at
+                                        ? new Date(a.created_at)
+                                        : new Date(a.date);
+                                      const dateB = b.created_at
+                                        ? new Date(b.created_at)
+                                        : new Date(b.date);
+                                      return dateB.getTime() - dateA.getTime(); // Newest first
+                                    }
+                                  )
+                                  .slice(0, logsToShow)
+                                  .map(
+                                    (
+                                      log: {
+                                        date: string;
+                                        note: string;
+                                        created_at?: string;
+                                      },
+                                      index: number
+                                    ) => (
+                                      <div
+                                        key={index}
+                                        className="p-3 bg-gray-50 rounded-lg"
+                                      >
+                                        <div className="flex justify-between items-start">
+                                          <div className="flex-1">
+                                            <div className="flex items-center gap-2 mb-1">
+                                              <p className="text-sm font-medium text-gray-600">
+                                                {new Date(
+                                                  log.date
+                                                ).toLocaleDateString()}
+                                              </p>
+                                              {log.created_at && (
+                                                <p className="text-xs text-gray-500">
+                                                  {new Date(
+                                                    log.created_at
+                                                  ).toLocaleTimeString([], {
+                                                    hour: "2-digit",
+                                                    minute: "2-digit",
+                                                  })}
+                                                </p>
+                                              )}
+                                            </div>
+                                            <p className="text-sm text-gray-800">
+                                              {log.note}
+                                            </p>
+                                          </div>
+                                          <div className="flex gap-1 ml-2">
+                                            <button
+                                              onClick={() => {
+                                                setSelectedLogDate(log.date);
+                                                setTempLogNote(log.note);
+                                                setEditingLogId(
+                                                  log.created_at || log.date
+                                                );
+                                              }}
+                                              className="text-black hover:text-gray-600 text-xs px-2 py-1 rounded hover:bg-gray-100 transition-colors"
+                                              title="Edit log"
+                                            >
+                                              Edit
+                                            </button>
+                                            <button
+                                              onClick={() => {
+                                                if (
+                                                  window.confirm(
+                                                    "Are you sure you want to delete this log?"
+                                                  )
+                                                ) {
+                                                  // Use created_at as unique identifier, fallback to date if not available
+                                                  const logId =
+                                                    log.created_at || log.date;
+                                                  handleDeleteTaskLog(
+                                                    sidebarEditingTask.id,
+                                                    logId
+                                                  );
+                                                }
+                                              }}
+                                              className="text-red-500 hover:text-red-700 text-xs p-1 rounded hover:bg-red-50 transition-colors"
+                                              title="Delete log"
+                                            >
+                                              <Trash size={12} />
+                                            </button>
+                                          </div>
+                                        </div>
+                                      </div>
+                                    )
+                                  )}
+
+                                {/* Show More Button */}
+                                {sidebarEditingTask.daily_logs.length >
+                                  logsToShow && (
+                                  <button
+                                    onClick={() =>
+                                      setLogsToShow((prev) => prev + 7)
+                                    }
+                                    className="w-full mt-3 py-2 px-4 text-sm text-black hover:text-gray-600 hover:bg-gray-50 rounded-lg transition-colors border border-gray-200"
+                                  >
+                                    Show More (
+                                    {sidebarEditingTask.daily_logs.length -
+                                      logsToShow}{" "}
+                                    more logs)
+                                  </button>
+                                )}
+
+                                {/* Show Less Button when showing more than 7 */}
+                                {logsToShow > 7 && (
+                                  <button
+                                    onClick={() => setLogsToShow(7)}
+                                    className="w-full mt-2 py-2 px-4 text-sm text-gray-600 hover:text-gray-800 hover:bg-gray-50 rounded-lg transition-colors border border-gray-200"
+                                  >
+                                    Show Less
+                                  </button>
+                                )}
+                              </div>
+                            </div>
+                          )}
+                      </div>
+                    </>
+                  )}
+
+                  {sidebarMode === "add-task" && (
+                    <>
+                      <div className="flex items-center justify-between mb-4">
+                        <h3 className="text-lg font-semibold text-gray-800">
+                          Add New Task
+                        </h3>
+                        <button
+                          onClick={handleCloseSidebar}
+                          className="text-gray-500 hover:text-gray-700 text-xl"
+                        >
+                          ×
+                        </button>
+                      </div>
+                      <div className="space-y-4">
+                        <AddTaskForm
+                          categories={[
+                            DEFAULT_CATEGORY,
+                            ...(userTasks?.categories.map((c) => c.name) || []),
+                          ].filter(
+                            (cat, index, arr) => arr.indexOf(cat) === index
+                          )} // Remove duplicates
+                          defaultCategory={
+                            selectedCategoryForAddTask || DEFAULT_CATEGORY
+                          }
+                          onAddTask={(taskData, categoryName) => {
+                            handleAddTask(categoryName, taskData);
+                            toast.success(`Task added to ${categoryName}!`);
+                            handleCloseSidebar();
+                          }}
+                          onClose={handleCloseSidebar}
+                        />
+                      </div>
+                    </>
+                  )}
+
+                  {sidebarMode === "add-category" && (
+                    <>
+                      <div className="flex items-center justify-between mb-4">
+                        <h3 className="text-lg font-semibold text-gray-800">
+                          Create New Category
+                        </h3>
+                        <button
+                          onClick={handleCloseSidebar}
+                          className="text-gray-500 hover:text-gray-700 text-xl"
+                        >
+                          ×
+                        </button>
+                      </div>
+                      <div className="space-y-4">
+                        <AddCategoryForm
+                          onAddCategory={(categoryName) => {
+                            handleAddCategory(categoryName);
+                            toast.success(
+                              `Category "${categoryName}" created!`
+                            );
+                            handleCloseSidebar();
+                          }}
+                          onClose={handleCloseSidebar}
+                        />
+                      </div>
+                    </>
+                  )}
+                </div>
+              </div>
             )}
-          </AnimatePresence>
-        </div>
+          </div>{" "}
+          {/* Close flex gap-8 */}
+        </div>{" "}
+        {/* Close main container */}
       </motion.div>
-      {/* Updated Modal rendering for Global Add Task */}
-      <Modal
-        isOpen={isGlobalTaskModalOpen}
-        onClose={() => setIsGlobalTaskModalOpen(false)}
-        title="Add a New Task"
-      >
-        <AddTaskForm
-          categories={[
-            DEFAULT_CATEGORY,
-            ...(userTasks?.categories.map((c) => c.name) || []),
-          ].filter((cat, index, arr) => arr.indexOf(cat) === index)} // Remove duplicates
-          defaultCategory={DEFAULT_CATEGORY}
-          onAddTask={(taskData, categoryName) => {
-            handleAddTask(categoryName, taskData);
-            toast.success(`Task added to ${categoryName}!`);
-          }}
-          onClose={() => setIsGlobalTaskModalOpen(false)}
-        />
-      </Modal>
       {/* Updated Modal rendering for EditForm */}
       <Modal
         isOpen={!!editingInfo}
@@ -682,30 +1103,6 @@ export const TaskView = () => {
           />
         )}
       </Modal>
-      <Modal
-        isOpen={isCategoryModalOpen}
-        onClose={() => setIsCategoryModalOpen(false)}
-        title="Create New Category"
-      >
-        <AddCategoryForm
-          onAddCategory={handleAddCategory}
-          onClose={() => setIsCategoryModalOpen(false)}
-        />
-      </Modal>
-      <DailyLogModal
-        isOpen={!!loggingTask}
-        onClose={() => setLoggingTask(null)}
-        item={
-          loggingTask
-            ? {
-                id: String(loggingTask.id),
-                title: loggingTask.text,
-                logs: loggingTask.daily_logs || [],
-              }
-            : null
-        }
-        onSaveLog={(itemId, note) => handleSaveLog(Number(itemId), note)}
-      />
       <ConfirmationDialog
         isOpen={!!deletionInfo}
         onClose={() => setDeletionInfo(null)}

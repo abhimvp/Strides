@@ -21,8 +21,16 @@ export const updateTasks = async (categories: Category[]) => {
 
 // Fetches task completion history for a specific month
 export const getMonthlyHistory = async (year: number, month: number) => {
-  const response = await api.get('/tasks/history', {
-    params: { year, month }
+  const response = await api.get("/tasks/history", {
+    params: { year, month },
+  });
+  return response.data;
+};
+
+// Deletes a specific log entry for a task
+export const deleteTaskLog = async (taskId: number, logId: string) => {
+  const response = await api.delete(`/tasks/logs/${taskId}`, {
+    params: { log_id: logId },
   });
   return response.data;
 };

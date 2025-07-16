@@ -10,7 +10,7 @@ export const Header = () => {
       <div>
         <h1 className="text-4xl font-bold text-black">Strides</h1>
         <p className="text-gray-600 mt-2">
-          Your daily checkpoint for personal growth and well-being.
+          Transform intentions into achievements, one stride at a time.
         </p>
       </div>
     </motion.header>

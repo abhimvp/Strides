@@ -154,7 +154,7 @@ export const TaskItem = ({
                 }
                 // THE FIX: Only disable past dates if the user is new.
                 disabled={isNewUser && isPast}
-                className="flex justify-center items-center h-8 w-8 rounded-lg transition-all focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-400 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="flex justify-center items-center h-12 w-12 rounded-lg transition-all focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-400 disabled:opacity-50 disabled:cursor-not-allowed"
                 aria-label={`Mark task ${task.text} for date ${fullDate} as ${
                   isCompleted ? "incomplete" : "complete"
                 }`}
@@ -166,10 +166,7 @@ export const TaskItem = ({
                     weight="fill"
                   />
                 ) : (
-                  <Circle
-                    className="text-black hover:text-black"
-                    size={22}
-                  />
+                  <Circle className="text-black hover:text-black" size={22} />
                 )}
               </motion.button>
             );

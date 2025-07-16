@@ -47,7 +47,7 @@ export const AuthPage = () => {
           Strides
         </h1>
         <p className="text-center text-gray-600 mb-8">
-          Your daily checkpoint for growth.
+          Where progress meets purpose.
         </p>
         <div className="bg-white p-8 rounded-xl shadow-lg border border-gray-300">
           <h2 className="text-2xl font-bold text-center text-black mb-6">

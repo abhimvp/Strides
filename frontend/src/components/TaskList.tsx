@@ -1,9 +1,6 @@
-import { useState } from "react";
 import { Plus, Trash, PencilSimple, CaretDown } from "phosphor-react";
 import type { Task } from "../types";
 import { TaskItem } from "./TaskItem";
-import { Modal } from "./Modal";
-import { AddTaskForm } from "./AddTaskForm";
 import {
   SortableContext,
   verticalListSortingStrategy,
@@ -28,10 +25,6 @@ interface TaskListProps {
     date: string,
     currentState: boolean
   ) => void;
-  onAddTask: (
-    category: string,
-    taskData: { text: string; notes?: string }
-  ) => void;
   onDeleteTask: (category: string, taskId: number) => void;
   onDeleteCategory: (category: string) => void;
   onEditCategory: (categoryName: string) => void;
@@ -40,9 +33,10 @@ interface TaskListProps {
     taskId: number,
     currentText: string
   ) => void;
+  onOpenAddTaskSidebar: (categoryName: string) => void;
   isOpen: boolean;
   onHeaderClick: () => void;
-  isNewUser: boolean; // <-- Add this to the interface
+  isNewUser: boolean;
 }
 
 export const TaskList = ({
@@ -53,16 +47,14 @@ export const TaskList = ({
   isOpen,
   onHeaderClick,
   onToggleTask,
-  onAddTask,
   onDeleteTask,
   onDeleteCategory,
   onEditCategory,
   onEditTask,
-  isNewUser, // <-- Add this to the props
+  onOpenAddTaskSidebar,
+  isNewUser,
   onOpenLog,
 }: TaskListProps) => {
-  const [isModalOpen, setIsModalOpen] = useState(false);
-
   // THE FIX: The droppable ref is now on the <section>, which is always rendered.
   const { setNodeRef, isOver } = useDroppable({
     id: category,
@@ -121,8 +113,8 @@ export const TaskList = ({
             <Trash size={18} />
           </button>
           <button
-            onClick={() => setIsModalOpen(true)}
-            className="flex items-center gap-2 text-sm bg-black text-white py-2 px-4 rounded-lg shadow-md hover:bg-black"
+            onClick={() => onOpenAddTaskSidebar(category)}
+            className="flex items-center gap-2 text-sm bg-black text-white py-2 px-4 rounded-lg shadow-md hover:bg-gray-800 transition-colors"
           >
             <Plus size={16} />
             Add Task
@@ -135,16 +127,16 @@ export const TaskList = ({
             <div className="font-bold text-black text-sm uppercase tracking-wider flex-grow">
               Task
             </div>
-            <div className="grid grid-cols-7 gap-2 text-center font-bold text-black text-sm uppercase tracking-wider">
+            <div className="grid grid-cols-7 gap-2 text-center font-bold text-black text-xs uppercase tracking-wider">
               {weekDays.map(({ day, date, isToday }) => (
                 <div
                   key={day}
-                  className={`w-8 h-10 flex flex-col items-center justify-center rounded-md ${
+                  className={`w-12 h-12 flex flex-col items-center justify-center rounded-xl ${
                     isToday ? "bg-black text-white" : ""
                   }`}
                 >
-                  <span>{day}</span>
-                  <span className="text-xs">{date}</span>
+                  <span className="text-xs leading-tight">{day}</span>
+                  <span className="text-xs leading-tight">{date}</span>
                 </div>
               ))}
             </div>
@@ -175,17 +167,6 @@ export const TaskList = ({
           )}
         </div>
       )}
-      <Modal
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        title={`Add Task to "${category}"`}
-      >
-        <AddTaskForm
-          defaultCategory={category}
-          onAddTask={(taskData) => onAddTask(category, taskData)}
-          onClose={() => setIsModalOpen(false)}
-        />
-      </Modal>
     </section>
   );
 };

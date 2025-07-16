@@ -3,7 +3,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from models.task_models import UserTasks, Category
 from utils.database import database
 from utils.security import get_current_user
-from datetime import datetime, date
+from datetime import date, datetime
 from calendar import monthrange
 
 router = APIRouter()
@@ -130,3 +130,63 @@ async def get_monthly_history(
             history_map[doc["_id"]] = doc["completed_dates"]
 
     return history_map
+
+
+@router.delete("/logs/{task_id}")
+async def delete_task_log(
+    task_id: int, log_id: str, current_user_email: str = Depends(get_current_user)
+):
+    """
+    Delete a specific log entry for a task using unique identifier.
+    """
+    # Find the user's tasks document
+    user_tasks_doc = await tasks_collection.find_one({"owner_id": current_user_email})
+    if not user_tasks_doc:
+        raise HTTPException(status_code=404, detail="No tasks found for this user.")
+
+    # Find the task and remove the specific log
+    task_found = False
+    log_deleted = False
+
+    for category in user_tasks_doc["categories"]:
+        for task in category["tasks"]:
+            if task["id"] == task_id:
+                task_found = True
+                if "daily_logs" in task:
+                    # Remove the log with the matching unique identifier
+                    original_count = len(task["daily_logs"])
+
+                    # Filter out logs that match the unique identifier
+                    filtered_logs = []
+                    for log in task["daily_logs"]:
+                        # Use created_at as primary identifier, fallback to date
+                        current_log_id = log.get("created_at") or log.get("date", "")
+
+                        # Handle datetime objects for backwards compatibility
+                        if isinstance(current_log_id, datetime):
+                            current_log_id = current_log_id.isoformat()
+                        elif isinstance(log.get("date"), datetime) and not log.get(
+                            "created_at"
+                        ):
+                            current_log_id = log["date"].isoformat()
+
+                        # Keep the log if the IDs don't match (i.e., don't delete it)
+                        if current_log_id != log_id:
+                            filtered_logs.append(log)
+
+                    task["daily_logs"] = filtered_logs
+                    log_deleted = len(task["daily_logs"]) < original_count
+                break
+        if task_found:
+            break
+
+    if not task_found:
+        raise HTTPException(status_code=404, detail="Task not found.")
+
+    if not log_deleted:
+        raise HTTPException(status_code=404, detail="Log entry not found.")
+
+    # Update the document in the database
+    await tasks_collection.replace_one({"owner_id": current_user_email}, user_tasks_doc)
+
+    return {"message": "Log deleted successfully"}

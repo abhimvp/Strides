@@ -2,7 +2,7 @@
 
 from typing import List, Optional
 from datetime import datetime, timezone
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 from models.user_models import PyObjectId
 
 
@@ -19,8 +19,20 @@ class TaskHistory(BaseModel):
 
 # Add this new model for a single log entry
 class DailyLog(BaseModel):
-    date: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    date: str  # Date in YYYY-MM-DD format
     note: str
+    created_at: Optional[str] = None  # ISO string timestamp
+
+    @field_validator("date", mode="before")
+    @classmethod
+    def convert_date_to_string(cls, v):
+        """Convert datetime objects to date strings for backward compatibility"""
+        if isinstance(v, datetime):
+            return v.strftime("%Y-%m-%d")
+        elif isinstance(v, str):
+            # If it's already a string, extract just the date part if it contains time
+            return v.split("T")[0] if "T" in v else v
+        return v
 
 
 class Task(BaseModel):

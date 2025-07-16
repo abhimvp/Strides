@@ -56,7 +56,7 @@ export const Dashboard = () => {
       title: "Tasks",
       icon: CheckSquare,
       description: "Manage your daily tasks and goals",
-      accentColor: "bg-gray-100 text-gray-600",
+      accentColor: "bg-yellow-100 text-gray-600",
     },
     {
       id: "expenses",
@@ -242,35 +242,37 @@ export const Dashboard = () => {
       </div>
 
       {/* Side Column - Will be managed by individual components */}
-      {currentView !== "tasks" && currentView !== "expenses" && (
-        <div className="w-80 space-y-6">
-          {/* AI Agent Section */}
-          <div className="bg-white rounded-2xl shadow-lg p-6 border border-gray-100">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold text-gray-800">
-                Let Agent help with {currentView}
-              </h3>
-              <Robot size={20} className="text-gray-600" />
-            </div>
-            <div className="space-y-3">
-              <textarea
-                value={agentInput}
-                onChange={(e) => setAgentInput(e.target.value)}
-                placeholder={`Ask for help with your ${currentView}...`}
-                className="w-full p-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-400 resize-none"
-                rows={3}
-              />
-              <button
-                onClick={handleAgentSubmit}
-                disabled={isAgentLoading || !agentInput.trim()}
-                className="w-full bg-black text-white py-2 px-4 rounded-lg text-sm hover:bg-gray-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {isAgentLoading ? "Working..." : "Get Help"}
-              </button>
+      {currentView !== "tasks" &&
+        currentView !== "expenses" &&
+        currentView !== "todos" && (
+          <div className="w-80 space-y-6">
+            {/* AI Agent Section */}
+            <div className="bg-white rounded-2xl shadow-lg p-6 border border-gray-100">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-lg font-semibold text-gray-800">
+                  Let Agent help with {currentView}
+                </h3>
+                <Robot size={20} className="text-gray-600" />
+              </div>
+              <div className="space-y-3">
+                <textarea
+                  value={agentInput}
+                  onChange={(e) => setAgentInput(e.target.value)}
+                  placeholder={`Ask for help with your ${currentView}...`}
+                  className="w-full p-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-400 resize-none"
+                  rows={3}
+                />
+                <button
+                  onClick={handleAgentSubmit}
+                  disabled={isAgentLoading || !agentInput.trim()}
+                  className="w-full bg-black text-white py-2 px-4 rounded-lg text-sm hover:bg-gray-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {isAgentLoading ? "Working..." : "Get Help"}
+                </button>
+              </div>
             </div>
           </div>
-        </div>
-      )}
+        )}
     </div>
   );
 

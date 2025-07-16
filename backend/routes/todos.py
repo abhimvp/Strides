@@ -208,6 +208,68 @@ async def add_todo_log(
     return todo_from_db(updated_todo)
 
 
+# PUT update a specific log entry
+@router.put("/{todo_id}/logs/{log_id}", response_model=TodoItem)
+async def update_todo_log(
+    todo_id: str,
+    log_id: str,
+    log_data: CreateTodoLog,
+    db: AsyncIOMotorDatabase = Depends(get_database),
+    user_id: str = Depends(get_current_user),
+):
+    # Check if todo exists and belongs to user
+    todo = await db.todos.find_one({"_id": ObjectId(todo_id), "userId": user_id})
+    if not todo:
+        raise HTTPException(status_code=404, detail="To-Do not found.")
+
+    # Update the specific log entry
+    result = await db.todos.update_one(
+        {"_id": ObjectId(todo_id), "userId": user_id, "logs.id": log_id},
+        {
+            "$set": {
+                "logs.$.notes": log_data.notes,
+                "logs.$.timestamp": datetime.now(timezone.utc),
+            }
+        },
+    )
+
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Log entry not found.")
+
+    updated_todo = await db.todos.find_one({"_id": ObjectId(todo_id)})
+    if not updated_todo:
+        raise HTTPException(status_code=500, detail="Failed to retrieve updated todo")
+    return todo_from_db(updated_todo)
+
+
+# DELETE a specific log entry
+@router.delete("/{todo_id}/logs/{log_id}", response_model=TodoItem)
+async def delete_todo_log(
+    todo_id: str,
+    log_id: str,
+    db: AsyncIOMotorDatabase = Depends(get_database),
+    user_id: str = Depends(get_current_user),
+):
+    # Check if todo exists and belongs to user
+    todo = await db.todos.find_one({"_id": ObjectId(todo_id), "userId": user_id})
+    if not todo:
+        raise HTTPException(status_code=404, detail="To-Do not found.")
+
+    # Remove the specific log entry
+    result = await db.todos.update_one(
+        {"_id": ObjectId(todo_id), "userId": user_id},
+        {"$pull": {"logs": {"id": log_id}}},
+    )
+
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="To-Do not found.")
+
+    updated_todo = await db.todos.find_one({"_id": ObjectId(todo_id)})
+    if not updated_todo:
+        raise HTTPException(status_code=500, detail="Failed to retrieve updated todo")
+    return todo_from_db(updated_todo)
+
+
 # Admin endpoint for migrating todos (remove after migration is complete)
 @router.post("/migrate", status_code=status.HTTP_200_OK)
 async def migrate_user_todos(

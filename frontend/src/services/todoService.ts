@@ -44,6 +44,23 @@ export const addTodoLog = async (
   return transformTodoItem(response.data);
 };
 
+export const updateTodoLog = async (
+  todoId: string,
+  logId: string,
+  data: CreateTodoLogData
+): Promise<TodoItem> => {
+  const response = await api.put(`/todos/${todoId}/logs/${logId}`, data);
+  return transformTodoItem(response.data);
+};
+
+export const deleteTodoLog = async (
+  todoId: string,
+  logId: string
+): Promise<TodoItem> => {
+  const response = await api.delete(`/todos/${todoId}/logs/${logId}`);
+  return transformTodoItem(response.data);
+};
+
 export const getTodoById = async (id: string): Promise<TodoItem> => {
   const response = await api.get(`/todos/${id}`);
   return transformTodoItem(response.data);

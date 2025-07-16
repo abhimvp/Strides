@@ -75,7 +75,7 @@ export const Dashboard = () => {
   ];
 
   const renderSidebar = () => (
-    <div className="w-20 bg-white border-r border-gray-200 flex flex-col items-center py-6 space-y-4">
+    <div className="w-24 bg-white border-r border-gray-200 flex flex-col items-center py-6 space-y-2">
       {sidebarItems.map((item) => {
         const IconComponent = item.icon;
         const isActive = currentView === item.id;
@@ -83,26 +83,29 @@ export const Dashboard = () => {
           <button
             key={item.id}
             onClick={() => setCurrentView(item.id as MainView)}
-            className={`p-3 rounded-xl transition-all duration-200 group relative ${
+            className={`flex flex-col items-center p-3 rounded-xl transition-all duration-200 group ${
               isActive
                 ? "bg-gray-100 border-2 border-gray-300"
                 : "hover:bg-gray-50 border-2 border-transparent"
             }`}
-            title={item.title}
           >
             <IconComponent
               size={24}
-              className={`${
+              className={`mb-1 ${
                 isActive
                   ? "text-gray-800"
                   : "text-gray-500 group-hover:text-gray-700"
               }`}
             />
-            {isActive && (
-              <div className="absolute left-full ml-2 top-1/2 transform -translate-y-1/2 bg-gray-800 text-white text-xs px-2 py-1 rounded whitespace-nowrap">
-                {item.title}
-              </div>
-            )}
+            <span
+              className={`text-xs font-medium ${
+                isActive
+                  ? "text-gray-800"
+                  : "text-gray-500 group-hover:text-gray-700"
+              }`}
+            >
+              {item.title}
+            </span>
           </button>
         );
       })}

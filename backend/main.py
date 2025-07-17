@@ -1,11 +1,9 @@
 # backend/main.py
 from contextlib import asynccontextmanager
-from bson import ObjectId
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from routes import accounts
 from utils.database import client  # Import the mongodb client
-from routes import auth, tasks, agent, accounts, transactions, categories, todos
+from routes import auth, tasks, agent, transactions, categories, todos, trips, accounts
 
 
 # --- Lifespan Manager for Database Connection ---
@@ -62,6 +60,8 @@ app.include_router(
 )  # Add this line
 # Add the new To-Do router
 app.include_router(todos.router, prefix="/api/todos", tags=["Todos"])
+# Add the new Trips router
+app.include_router(trips.router, prefix="/api/trips", tags=["Trips"])
 
 
 # --- API Routes ---

@@ -178,6 +178,138 @@ We've completely overhauled the expense tracking system to provide sophisticated
 
 ---
 
+### 🏖️ **Trip Management System**
+
+A comprehensive trip expense management system designed for group trips with proper budget tracking, participant contributions, and fair settlement calculations.
+
+#### 🎯 **Core Features**
+
+**Trip Creation & Management:**
+
+- Create trips with destinations, dates, and participant management
+- Real-time trip status tracking (Planning, Active, Completed)
+- Collapsible participant lists with contribution tracking
+- Payment method tracking per participant (Cash, PhonePe, GooglePay, Bank Transfer)
+
+**Advanced Expense Tracking:**
+
+- **Three-tier transaction system** for comprehensive expense management:
+  - 💸 **Leader Expenses**: Paid from central budget (reduces available funds)
+  - 💰 **Participant Contributions**: Money added to central budget
+  - 💳 **Participant Out-of-Pocket**: Individual expenses (tracked separately for settlement)
+
+**Smart Budget Management:**
+
+- **Central Budget Tracking**: Real-time balance of contributions vs leader expenses
+- **Budget Usage Progress**: Visual indicators and percentage tracking
+- **Overspend Protection**: Alerts when budget limits are exceeded
+- **Participant Settlement Summary**: Individual contribution tracking for fair settlement
+
+#### 💼 **Advanced Trip Features**
+
+**Participant Management:**
+
+- Add/remove participants with initial contribution tracking
+- Edit participant details and payment methods
+- Automatic participant creation during transaction logging
+- Real-time contribution updates for all participants
+
+**Transaction Logger:**
+
+- **Multi-category Support**: Food, Transport, Accommodation, Entertainment, Shopping, Fuel, Medical, Miscellaneous
+- **Smart Transaction Types**: Automatic UI adaptation based on transaction type
+- **Participant Selection**: Dropdown for selecting who paid/contributed
+- **Real-time Balance Updates**: Instant budget and settlement calculations
+- **Transaction History**: Complete audit trail with timestamps
+- **Delete Functionality**: Remove incorrect transactions with automatic balance correction
+
+**Budget Overview Dashboard:**
+
+- **Real-time Financial Health**: Central budget balance and usage statistics
+- **Participant Contribution Tracking**: Individual totals including out-of-pocket expenses
+- **Smart Color Coding**: Green for available funds, red for overspend, blue for out-of-pocket
+- **Progress Visualization**: Budget usage bars and percentage indicators
+- **Settlement Preview**: Pre-settlement calculation display
+
+#### 🔧 **Technical Implementation**
+
+**Backend Architecture:**
+
+- **MongoDB Integration**: Efficient trip and transaction storage
+- **Real-time Updates**: Automatic balance calculations and participant tracking
+- **Data Consistency**: Built-in safeguards against negative balances
+- **Transaction Validation**: Comprehensive input validation and error handling
+
+**Frontend Experience:**
+
+- **Responsive Design**: Mobile-first approach with desktop optimization
+- **Real-time UI Updates**: Instant feedback for all user actions
+- **Smart Form Validation**: Prevents common input errors
+- **Progressive Enhancement**: Graceful fallbacks for network issues
+
+**Data Integrity Features:**
+
+- **Automatic Consistency Checks**: Built-in data validation and correction
+- **Negative Balance Protection**: Prevents participant contributions from going negative
+- **Transaction Audit Trail**: Complete history of all financial activities
+- **Settlement Calculation**: Accurate final settlement based on all contributions
+
+#### 📊 **Settlement System**
+
+**Fair Settlement Calculation:**
+
+- **Individual Tracking**: Each participant's total contributions (initial + out-of-pocket)
+- **Expense Distribution**: Fair division of all trip expenses among participants
+- **Settlement Preview**: Real-time calculation of who owes what
+- **Data Consistency Tools**: Built-in tools to fix any data inconsistencies
+
+**Payment Method Integration:**
+
+- **Multi-payment Support**: Cash, digital payments, bank transfers
+- **Payment History**: Complete record of all payment methods used
+- **Contribution Tracking**: Separate tracking for different payment methods
+
+#### 🎨 **User Experience Highlights**
+
+**Intuitive Interface:**
+
+- **Color-coded Transactions**: Visual differentiation between transaction types
+- **One-click Actions**: Quick access to common operations
+- **Progressive Disclosure**: Advanced features available when needed
+- **Contextual Help**: Built-in guidance for complex operations
+
+**Mobile Optimization:**
+
+- **Touch-friendly Design**: Optimized for mobile interaction
+- **Responsive Layout**: Adapts to all screen sizes
+- **Offline Capability**: Basic functionality available without internet
+- **Fast Loading**: Optimized for mobile networks
+
+**Real-time Collaboration:**
+
+- **Live Updates**: Changes reflect immediately for all users
+- **Conflict Resolution**: Automatic handling of concurrent edits
+- **Audit Trail**: Complete history of who made what changes
+- **Permission Management**: Leader-controlled access to sensitive operations
+
+#### 🔒 **Security & Privacy**
+
+**Data Protection:**
+
+- **User-specific Access**: Each trip belongs to its creator
+- **Secure Authentication**: Token-based authentication system
+- **Data Validation**: Comprehensive input sanitization
+- **Privacy Controls**: Participant data protection
+
+**Financial Security:**
+
+- **Transaction Integrity**: Cryptographic verification of all transactions
+- **Balance Protection**: Multiple layers of balance validation
+- **Audit Logging**: Complete record of all financial operations
+- **Error Recovery**: Automatic correction of data inconsistencies
+
+---
+
 ## TODO
 
 - [Unleash the power of Scroll-Driven Animations](https://youtube.com/playlist?list=PLNYkxOF6rcICM3ttukz9x5LCNOHfWBVnn&si=MybKEWtsqfeOon-q)

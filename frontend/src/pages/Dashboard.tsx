@@ -5,6 +5,7 @@ import { useAuth } from "../hooks/useAuth";
 import { TaskView } from "./TaskView";
 import { ExpensesView } from "./ExpensesView";
 import { TodoView } from "../components/todos/TodoView"; // 1. Import the new view
+import { TripsView } from "../components/trips/TripsView"; // Import the trips view
 import { invokeAgent } from "../services/agentService";
 import {
   CheckSquare,
@@ -12,9 +13,10 @@ import {
   ListChecks,
   House,
   Robot,
+  MapPin,
 } from "phosphor-react";
 
-type MainView = "home" | "tasks" | "expenses" | "todos"; // 2. Add 'home' and 'todos' to the view type
+type MainView = "home" | "tasks" | "expenses" | "todos" | "trips"; // Add 'trips' to the view type
 
 export const Dashboard = () => {
   const { logout } = useAuth();
@@ -48,6 +50,12 @@ export const Dashboard = () => {
       icon: ListChecks,
       color: "text-purple-600",
     },
+    {
+      id: "trips",
+      title: "Trips",
+      icon: MapPin,
+      color: "text-blue-600",
+    },
   ];
 
   const cardData = [
@@ -71,6 +79,13 @@ export const Dashboard = () => {
       icon: ListChecks,
       description: "Organize your projects and workflows",
       accentColor: "bg-purple-100 text-purple-600",
+    },
+    {
+      id: "trips",
+      title: "Trips & Outings",
+      icon: MapPin,
+      description: "Plan and track your trips and outings",
+      accentColor: "bg-blue-100 text-blue-600",
     },
   ];
 
@@ -238,13 +253,15 @@ export const Dashboard = () => {
           {currentView === "tasks" && <TaskView />}
           {currentView === "expenses" && <ExpensesView />}
           {currentView === "todos" && <TodoView />}
+          {currentView === "trips" && <TripsView />}
         </div>
       </div>
 
       {/* Side Column - Will be managed by individual components */}
       {currentView !== "tasks" &&
         currentView !== "expenses" &&
-        currentView !== "todos" && (
+        currentView !== "todos" &&
+        currentView !== "trips" && (
           <div className="w-80 space-y-6">
             {/* AI Agent Section */}
             <div className="bg-white rounded-2xl shadow-lg p-6 border border-gray-100">
@@ -313,6 +330,8 @@ export const Dashboard = () => {
                     "Track your spending and budgets"}
                   {currentView === "todos" &&
                     "Organize your projects and workflows"}
+                  {currentView === "trips" &&
+                    "Plan and track your trips and outings"}
                 </p>
               </div>
               <button
